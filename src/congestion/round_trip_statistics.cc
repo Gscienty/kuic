@@ -6,9 +6,17 @@ namespace kuic {
     RoundTripStatistics::RoundTripStatistics() {
         this->initialRTTus = RTT_INITIAL_RTT_US;
         this->recentMinRTTWindow = std::numeric_limits<long>::max();
-    }
 
-    inline bool __time_before(timespec a, timespec b, long d) { return (a.tv_nsec < (b.tv_nsec - d)); }
+        this->minRTT = 0L;
+        this->latestRTT = 0L;
+        this->smoothedRTT = 0L;
+        this->meanDeviation = 0L;
+
+        this->newMinRTT = { 0, { 0, 0 } };
+        this->recentMinRTT = { 0, { 0, 0 } };
+        this->halfWindowRTT = { 0, { 0, 0 } };
+        this->quarterWindowRTT = { 0, { 0, 0 } };
+    }
 
     void RoundTripStatistics::updateRecentMinRTT(long sample, timespec now) {
         if (this->numMinRTTSamplesRemaining > 0) {
@@ -35,16 +43,18 @@ namespace kuic {
         else if (sample <= this->quarterWindowRTT.rtt) {
             this->quarterWindowRTT = { sample, now };
         }
-        if (__time_before(this->recentMinRTT.t, now, this->recentMinRTTWindow)) {
+
+
+        if (this->recentMinRTT.t < now - this->recentMinRTTWindow) {
             this->recentMinRTT = this->halfWindowRTT;
             this->halfWindowRTT = this->quarterWindowRTT;
             this->quarterWindowRTT = { sample, now };
         }
-        else if (__time_before(this->recentMinRTT.t, now, ((long) (((float) (this->recentMinRTTWindow / 1000)) * RTT_HALF_WINDOW)) * 1000)) {
+        else if (this->halfWindowRTT.t < now - ((long) (((float) (this->recentMinRTTWindow / 1000)) * RTT_HALF_WINDOW)) * 1000) {
             this->halfWindowRTT = this->quarterWindowRTT;
             this->quarterWindowRTT = { sample, now };
         }
-        else if (__time_before(this->recentMinRTT.t, now, ((long) (((float) (this->recentMinRTTWindow / 1000)) * RTT_QUARTER_WINDOW)) * 1000)) {
+        else if (this->quarterWindowRTT.t < now - ((long) (((float) (this->recentMinRTTWindow / 1000)) * RTT_QUARTER_WINDOW)) * 1000) {
             this->quarterWindowRTT = { sample, now };
         }
     }

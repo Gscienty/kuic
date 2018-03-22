@@ -1,4 +1,5 @@
 #include "congestion/cubic.h"
+#include "extend_timespec.h"
 #include <algorithm>
 
 namespace kuic {
@@ -28,8 +29,11 @@ namespace kuic {
     }
 
     void Cubic::onApplicationLimited() {
-        if (this->appLimitStartTime.tv_nsec == 0) {
+        if (this->appLimitStartTime.tv_sec == 0 && this->appLimitStartTime.tv_nsec == 0) {
             clock_gettime(CLOCK_REALTIME, &this->appLimitStartTime);
+        }
+        else {
+            this->epoch = { 0, 0 };
         }
     }
 
@@ -46,19 +50,19 @@ namespace kuic {
         return (unsigned long) (((float) currentCongestionWindow) * this->beta());
     }
 
-    unsigned long Cubic::congestionWindowAfterAck(unsigned long currentCongestionWindow, long delayMin) {
+    unsigned long Cubic::congestionWindowAfterAck(unsigned long currentCongestionWindow, timespec delayMin) {
         this->ackedPacketsCount++;
         timespec currentTime;
         clock_gettime(CLOCK_REALTIME, &currentTime);
 
-        if (this->lastCongestionWindow == currentCongestionWindow && currentTime.tv_nsec - this->lastUpdateTime.tv_nsec <= CUBIC_MAX_TIME_INTERVAL) {
+        if (this->lastCongestionWindow == currentCongestionWindow && this->currentTime - this->lastUpdateTime <= CUBIC_MAX_TIME_INTERVAL) {
             return std::max<unsigned long>(this->lastTargetCongestionWindow, this->estimatedTCPCongestionWindow);
         }
 
         this->lastCongestionWindow = currentCongestionWindow;
         this->lastUpdateTime = currentTime;
 
-        if (this->epoch.tv_nsec == 0) {
+        if (this->epoch.tv_sec == 0 && this->epoch->tv_nsec) {
             this->epoch = currentTime;
             this->ackedPacketsCount = 1;
 
@@ -72,9 +76,9 @@ namespace kuic {
                 this->originPointCongestionWindow = this->lastMaxCongestionWindow;
             }
         }
-        else if (!this->appLimitStartTime.tv_nsec == 0) {
-            long shift = currentTime.tv_nsec - this->appLimitStartTime.tv_nsec;
-            this->epoch.tv_nsec += shift;
+        else if (!(this->appLimitStartTime.tv_nsec == 0 && this->appLimitStartTime.tv_sec == 0)) {
+            timespec shift = currentTime - this->appLimitStartTime;
+            this->epoch += shift;
             this->appLimitStartTime = { 0, 0 };
         }
 

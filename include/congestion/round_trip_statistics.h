@@ -1,7 +1,6 @@
 #ifndef _KUIC_RTT_
 #define _KUIC_RTT_
-
-#include <sys/time.h>
+#include "extend_timespec.h"
 
 namespace kuic {
     struct RoundTripStatisticsSample {

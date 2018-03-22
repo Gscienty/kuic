@@ -1,7 +1,7 @@
 #ifndef _KUIC_CUBIC_
 #define _KUIC_CUBIC_
 
-#include <time.h>
+#include <sys/time.h>
 
 namespace kuic {
     class Cubic {
@@ -26,7 +26,7 @@ namespace kuic {
         float beta() const;
         void onApplicationLimited();
         unsigned long congestionWindowAfterPacketLoss(unsigned long currentCongestionWindow);
-        unsigned long congestionWindowAfterAck(unsigned long currentCongestionWindow, long delayMin);
+        unsigned long congestionWindowAfterAck(unsigned long currentCongestionWindow, timespec delayMin);
         void setNumConnections(int n) { this->numConnections = n; }
     };
 
