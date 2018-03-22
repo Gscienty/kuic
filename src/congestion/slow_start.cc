@@ -5,7 +5,7 @@ namespace kuic {
         this->endPacketNumber = lastSent;
         this->currentMinRTT = 0;
         this->rttSampleCount = 0;
-        this->isStarted = true;
+        this->started = true;
     }
 
     bool SlowStart::isEndOfRound(unsigned long ack) {
@@ -13,7 +13,7 @@ namespace kuic {
     }
 
     bool SlowStart::shouldExitSlowStart(long latestRTT, long minRTT, long congestionWindow) {
-        if (!this->isStarted) {
+        if (!this->isStarted()) {
             this->startReceiveRound(this->lastSentPacketNumber);
         }
         if (this->startFound) {
@@ -49,16 +49,16 @@ namespace kuic {
 
     void SlowStart::onPacketAcked(unsigned long packetNumber) {
         if (this->isEndOfRound(packetNumber)) {
-            this->isStarted = false;
+            this->started = false;
         }
     }
 
     bool SlowStart::isStarted() const {
-        return this->isStarted;
+        return this->started;
     }
 
     void SlowStart::restart() {
-        this->isStarted = false;
+        this->started = false;
         this->startFound = false;
     }
 }
