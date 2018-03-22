@@ -19,6 +19,10 @@ namespace kuic {
             packetNumber++;
             EXPECT_TRUE(slowStart.isEndOfRound(packetNumber));
         }
+
+        TEST(slow_start, work_with_delay) {
+            
+        }
     }
 }
 
