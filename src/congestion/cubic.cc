@@ -3,7 +3,7 @@
 #include <algorithm>
 
 namespace kuic {
-    Cubic::Cubic() {
+    Cubic::Cubic(Clock& clock) : clock(clock) {
         this->numConnections = CUBIC_DEFAULT_NUM_CONNECTION;
         this->reset();
     }
@@ -21,16 +21,18 @@ namespace kuic {
         this->lastTargetCongestionWindow = 0;
     }
 
-    float Cubic::beta() const { return (((float) (this->numConnections)) - 1 + CUBIC_BETA) / ((float) (this->numConnections)); }
+    float Cubic::beta() const {
+        return (((float) this->numConnections) - 1 + CUBIC_BETA) / ((float) this->numConnections);
+    }
 
     float Cubic::alpha() const {
         float b = this->beta();
-        return 3 * ((float) (this->numConnections)) * ((float) (this->numConnections)) * (1 - b) / (1 + b);
+        return 3 * ((float) this->numConnections) * ((float) this->numConnections) * (1 - b) / (1 + b);
     }
 
     void Cubic::onApplicationLimited() {
         if (this->appLimitStartTime.tv_sec == 0 && this->appLimitStartTime.tv_nsec == 0) {
-            clock_gettime(CLOCK_REALTIME, &this->appLimitStartTime);
+            this->appLimitStartTime = this->clock.now();
         }
         else {
             this->epoch = { 0, 0 };
@@ -50,19 +52,19 @@ namespace kuic {
         return (unsigned long) (((float) currentCongestionWindow) * this->beta());
     }
 
-    unsigned long Cubic::congestionWindowAfterAck(unsigned long currentCongestionWindow, timespec delayMin) {
+    unsigned long Cubic::congestionWindowAfterAck(unsigned long currentCongestionWindow, long delayMin) {
         this->ackedPacketsCount++;
-        timespec currentTime;
-        clock_gettime(CLOCK_REALTIME, &currentTime);
+        
+        timespec currentTime = this->clock.now();
 
-        if (this->lastCongestionWindow == currentCongestionWindow && this->currentTime - this->lastUpdateTime <= CUBIC_MAX_TIME_INTERVAL) {
+        if (this->lastCongestionWindow == currentCongestionWindow && currentTime - this->lastUpdateTime <= CUBIC_MAX_TIME_INTERVAL) {
             return std::max<unsigned long>(this->lastTargetCongestionWindow, this->estimatedTCPCongestionWindow);
         }
 
         this->lastCongestionWindow = currentCongestionWindow;
         this->lastUpdateTime = currentTime;
 
-        if (this->epoch.tv_sec == 0 && this->epoch->tv_nsec) {
+        if (this->epoch.tv_sec == 0 && this->epoch.tv_nsec == 0) {
             this->epoch = currentTime;
             this->ackedPacketsCount = 1;
 
@@ -77,19 +79,25 @@ namespace kuic {
             }
         }
         else if (!(this->appLimitStartTime.tv_nsec == 0 && this->appLimitStartTime.tv_sec == 0)) {
-            timespec shift = currentTime - this->appLimitStartTime;
+            long shift = currentTime - this->appLimitStartTime;
             this->epoch += shift;
             this->appLimitStartTime = { 0, 0 };
         }
 
-        long elapsedTime = ((long) (((currentTime.tv_nsec + delayMin - this->epoch.tv_nsec) / 1000) << 10)) / 1000000;
+        long elapsedTime = ((long) (((currentTime + delayMin - this->epoch) / 1000) << 10)) / (1000 * 1000);
         long offset = std::abs<long>(((long) this->timeToOriginPoint) - elapsedTime);
 
         unsigned long deltaCongestionWindow = (unsigned long) ((CUBIC_CONGESTION_WINDOW_SCALE * offset * offset * offset) >> CUBIC_SCALE);
-        unsigned long targetCongestionWindow = this->originPointCongestionWindow + (elapsedTime > ((long) (this->timeToOriginPoint)) ? 1 : -1) * deltaCongestionWindow;
+        unsigned long targetCongestionWindow;
+        if (elapsedTime > ((long) this->timeToOriginPoint)) {
+            targetCongestionWindow = this->originPointCongestionWindow + deltaCongestionWindow;
+        }
+        else {
+            targetCongestionWindow = this->originPointCongestionWindow - deltaCongestionWindow;
+        }
 
         while (true) {
-            unsigned long requiredAckCount = (unsigned long) (((float) (this->estimatedTCPCongestionWindow)) / this->alpha());
+            unsigned long requiredAckCount = (unsigned long) (((float) this->estimatedTCPCongestionWindow) / this->alpha());
             if (this->ackedPacketsCount < requiredAckCount) {
                 break;
             }
