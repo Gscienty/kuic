@@ -39,19 +39,14 @@ namespace kuic {
         return a;
     }
 
-    timespec operator- (const timespec& a, const timespec& b) {
-        __time_t second = a.tv_sec - b.tv_sec;
-        __syscall_slong_t nanoSecond = a.tv_nsec - b.tv_nsec;
-        if (nanoSecond < 0) {
-            second--;
-            nanoSecond += 1000 * 1000 * 1000;
-        }
-
-        return { second, nanoSecond };
+    timespec& operator+= (timespec& a, const timespec& b) {
+        a.tv_sec += b.tv_sec + (a.tv_nsec + b.tv_nsec) / (1000 * 1000 * 1000);
+        a.tv_nsec += (a.tv_nsec + b.tv_nsec) % (1000 * 1000 * 1000);
+        return a;
     }
 
-    timespec operator- (const timespec& a, const long b) {
-        return a + (-b);
+    long operator- (const timespec& a, const timespec& b) {
+        return (a.tv_sec * 1000 * 1000 * 1000 + a.tv_nsec) - (b.tv_sec * 1000 * 1000 * 1000 + b.tv_nsec);
     }
 
     bool operator<= (const timespec& a, const long b) {
@@ -60,5 +55,11 @@ namespace kuic {
 
     bool operator< (const timespec& a, const timespec& b) {
         return a.tv_sec < b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec < b.tv_nsec);
+    }
+
+    timespec DefaultClock::now() const {
+        timespec ret;
+        clock_gettime(CLOCK_REALTIME, &ret);
+        return ret;
     }
 }

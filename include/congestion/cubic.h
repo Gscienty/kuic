@@ -1,11 +1,12 @@
 #ifndef _KUIC_CUBIC_
 #define _KUIC_CUBIC_
 
-#include <sys/time.h>
+#include "extend_timespec.h"
 
 namespace kuic {
     class Cubic {
     private:
+        Clock& clock;
         int numConnections;
         timespec epoch;
         timespec appLimitStartTime;
@@ -19,14 +20,14 @@ namespace kuic {
         unsigned long lastTargetCongestionWindow;
 
     public:
-        Cubic();
+        Cubic(Clock& clock);
 
         void reset();
         float alpha() const;
         float beta() const;
         void onApplicationLimited();
         unsigned long congestionWindowAfterPacketLoss(unsigned long currentCongestionWindow);
-        unsigned long congestionWindowAfterAck(unsigned long currentCongestionWindow, timespec delayMin);
+        unsigned long congestionWindowAfterAck(unsigned long currentCongestionWindow, long delayMin);
         void setNumConnections(int n) { this->numConnections = n; }
     };
 
