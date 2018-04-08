@@ -16,11 +16,23 @@ namespace kuic {
     class Clock {
     public:
         virtual timespec now() const = 0;
+        virtual long since(const Clock &);
     };
 
-    class DefaultClock : public Clock {
+    class CurrentClock : public Clock {
     public:
         timespec now() const;
+        long since(const Clock &);
+    };
+
+    class SpecialClock : public Clock {
+    private:
+        timespec specialTime;
+    public:
+        SpecialClock();
+        SpecialClock(const timespec &);
+        timespec now() const;
+        long since(const Clock &);
     };
 }
 
