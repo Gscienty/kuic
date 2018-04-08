@@ -39,7 +39,7 @@ namespace kuic {
         void tryIncreaseCongrestionWindow(unsigned long ackedPacketNumber, unsigned long ackedBytes, unsigned long bytesInFlight);
 
     public:
-        CubicSender(RoundTripStatistics& rtt, unsigned long initialCongestionWindow, unsigned long initialMaxCongestionWindow);
+        CubicSender(RoundTripStatistics &rtt, unsigned long initialCongestionWindow, unsigned long initialMaxCongestionWindow);
         ~CubicSender();
 
         bool inRecovery() const;
@@ -54,7 +54,7 @@ namespace kuic {
         void tryExitSlowStart();
         unsigned long bandwidthEstimate();
 
-        SlowStart& getSlowStart() const;
+        SlowStart &getSlowStart() const;
 
         void setNumEmulatedConnections(int n);
         void onRetransmissionTimeout(bool packetsRetransmitted);

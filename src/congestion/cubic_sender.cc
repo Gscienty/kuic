@@ -3,9 +3,9 @@
 
 namespace kuic {
     CubicSender::CubicSender(
-        RoundTripStatistics& rtt,
+        RoundTripStatistics &rtt,
         unsigned long initialCongestionWindow,
-        unsigned long initialMaxCongestionWindow) : rtt(rtt) {
+        unsigned long initialMaxCongestionWindow) : rtt { rtt } {
         this->initialCongestionWindow = initialCongestionWindow;
         this->initialMaxCongestionWindow = initialMaxCongestionWindow;
         this->congestionWindow = initialCongestionWindow;

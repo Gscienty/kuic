@@ -20,7 +20,7 @@ namespace kuic {
         unsigned long lastTargetCongestionWindow;
 
     public:
-        Cubic(Clock& clock);
+        Cubic(Clock &clock);
 
         void reset();
         float alpha() const;

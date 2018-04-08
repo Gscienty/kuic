@@ -3,7 +3,7 @@
 #include <algorithm>
 
 namespace kuic {
-    Cubic::Cubic(Clock& clock) : clock(clock) {
+    Cubic::Cubic(Clock &clock) : clock { clock } {
         this->numConnections = CUBIC_DEFAULT_NUM_CONNECTION;
         this->reset();
     }
