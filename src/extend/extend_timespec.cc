@@ -57,27 +57,23 @@ namespace kuic {
         return a.tv_sec < b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec < b.tv_nsec);
     }
 
+    long Clock::since(const Clock &clock) {
+        return this->now() - clock.now();
+    }
+
     timespec CurrentClock::now() const {
         timespec ret;
         clock_gettime(CLOCK_REALTIME, &ret);
         return ret;
     }
 
-    long CurrentClock::since(const Clock &clock) {
-        return this->now() - clock.now();
-    }
-
     SpecialClock::SpecialClock()
-        : specialTime { { 0, 0 } } { }
+        : Clock(), specialTime ( { 0, 0 } ) { }
 
     SpecialClock::SpecialClock(const timespec &specialTime)
-        : specialTime { specialTime } { }
+        : Clock(), specialTime { specialTime } { }
 
     timespec SpecialClock::now() const {
         return this->specialTime;
-    }
-
-    long SpecialClock::since(const Clock &clock) {
-        return this->specalTime - clock.now();
     }
 }
