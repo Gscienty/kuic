@@ -9,7 +9,7 @@ namespace kuic {
             BaseFlowController ctr(rtt, 0, 0);
 
             ctr.addSentBytesCount(5);
-            ctr.updateSendOffset(15);
+            ctr.setSendWindow(15);
 
             EXPECT_EQ(15 - 5, ctr.getSendWindowSize());
         }
@@ -19,7 +19,7 @@ namespace kuic {
             BaseFlowController ctr(rtt, 0, 0);
 
             ctr.addSentBytesCount(15);
-            ctr.updateSendOffset(10);
+            ctr.setSendWindow(10);
 
             EXPECT_EQ(0, ctr.getSendWindowSize());
         }
@@ -28,9 +28,9 @@ namespace kuic {
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, 0, 0);
 
-            ctr.updateSendOffset(20);
+            ctr.setSendWindow(20);
             EXPECT_EQ(20, ctr.getSendWindowSize());
-            ctr.updateSendOffset(10);
+            ctr.setSendWindow(10);
             EXPECT_EQ(20, ctr.getSendWindowSize());
         }
 
@@ -39,7 +39,7 @@ namespace kuic {
             unsigned long receiveWindowSize = 1000;
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
 
             ctr.setReadedBytesCount(5);
             ctr.addReadedBytesCount(6);
@@ -52,15 +52,15 @@ namespace kuic {
             unsigned long receiveWindowSize = 1000;
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
 
             double bytesConsumed = ((double) receiveWindowSize) * WINDOW_UPDATE_THRESHOLD + 1;
             unsigned long bytesRemaining = receiveWindowSize - ((unsigned long) bytesConsumed);
             unsigned long readPosition = receiveWindow - bytesRemaining;
             ctr.setReadedBytesCount(readPosition);
-            unsigned long offset = ctr.receiveBytesCountUpdate();
+            unsigned long offset = ctr.receiveWindowUpdate();
             EXPECT_EQ(readPosition + receiveWindowSize, offset);
-            EXPECT_EQ(readPosition + receiveWindowSize, ctr.getReceivedBytesCount());
+            EXPECT_EQ(readPosition + receiveWindowSize, ctr.getReceiveWindow());
         }
 
         TEST(flowcontrol_base_flow_controller, dont_trigger_window_update_necessary) {
@@ -68,13 +68,13 @@ namespace kuic {
             unsigned long receiveWindowSize = 1000;
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
 
             double bytesConsumed = ((double) receiveWindowSize) * WINDOW_UPDATE_THRESHOLD - 1;
             unsigned long bytesRemaining = receiveWindowSize - ((unsigned long) bytesConsumed);
             unsigned long readPosition = receiveWindow - bytesRemaining;
             ctr.setReadedBytesCount(readPosition);
-            unsigned long offset = ctr.receiveBytesCountUpdate();
+            unsigned long offset = ctr.receiveWindowUpdate();
             EXPECT_EQ(0, offset);
         }
 
@@ -88,7 +88,7 @@ namespace kuic {
             unsigned long receiveWindowSize = 1000;
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, 5000);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
 
             ctr.tryAdjustWindowSize();
             EXPECT_EQ(receiveWindowSize, ctr.getReceiveWindowSize());
@@ -100,12 +100,12 @@ namespace kuic {
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, 5000);
             ctr.setReadedBytesCount(receiveWindow - receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
             
             setRTT(rtt, 0);
             ctr.startNewAutoTuningEpoch();
             ctr.addReadedBytesCount(400);
-            unsigned long offset = ctr.receiveBytesCountUpdate();
+            unsigned long offset = ctr.receiveWindowUpdate();
             EXPECT_NE(0, offset);
             EXPECT_EQ(receiveWindowSize, ctr.getReceiveWindowSize());
         }
@@ -121,7 +121,7 @@ namespace kuic {
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, 5000);
             ctr.setReadedBytesCount(receiveWindow - receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
             
             unsigned long bytesRead = ctr.getReadedBytesCount();
             long rttTime = scaleDuration(20 * 1000 * 1000);
@@ -130,7 +130,7 @@ namespace kuic {
             ctr.setEpochStartOffset(ctr.getReadedBytesCount());
             ctr.setEpochStartTime(CurrentClock().now() + (-rttTime * 4 * 2 / 3));
             ctr.addReadedBytesCount(dataRead);
-            unsigned long offset = ctr.receiveBytesCountUpdate();
+            unsigned long offset = ctr.receiveWindowUpdate();
 
             EXPECT_NE(0, offset);
 
@@ -145,7 +145,7 @@ namespace kuic {
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, 5000);
             ctr.setReadedBytesCount(receiveWindow - receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
 
             unsigned long bytesRead = ctr.getReadedBytesCount();
             long rttTime = scaleDuration(20 * 1000 * 1000);
@@ -154,7 +154,7 @@ namespace kuic {
             ctr.setEpochStartOffset(ctr.getReadedBytesCount());
             ctr.setEpochStartTime(CurrentClock().now() + (-rttTime * 4 * 1 / 3));
             ctr.addReadedBytesCount(dataRead);
-            unsigned long offset = ctr.receiveBytesCountUpdate();
+            unsigned long offset = ctr.receiveWindowUpdate();
             EXPECT_NE(0, offset);
             unsigned long newWindowSize = ctr.getReceiveWindowSize();
             EXPECT_EQ(newWindowSize, receiveWindowSize);
@@ -167,7 +167,7 @@ namespace kuic {
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, 5000);
             ctr.setReadedBytesCount(receiveWindow - receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
 
             unsigned long bytesRead = ctr.getReadedBytesCount();
             long rttTime = scaleDuration(20 * 1000 * 1000);
@@ -176,7 +176,7 @@ namespace kuic {
             ctr.setEpochStartOffset(ctr.getReadedBytesCount());
             ctr.setEpochStartTime(CurrentClock().now() + (-rttTime * 4 * 2 / 3));
             ctr.addReadedBytesCount(dataRead);
-            unsigned long offset = ctr.receiveBytesCountUpdate();
+            unsigned long offset = ctr.receiveWindowUpdate();
             EXPECT_NE(0, offset);
             EXPECT_EQ(receiveWindowSize, ctr.getReceiveWindowSize());
             EXPECT_EQ(offset, bytesRead + dataRead + receiveWindowSize);
@@ -194,7 +194,7 @@ namespace kuic {
             RoundTripStatistics rtt;
             BaseFlowController ctr(rtt, receiveWindowSize, 5000);
             ctr.setReadedBytesCount(receiveWindow - receiveWindowSize);
-            ctr.setReceivedBytesCount(receiveWindow);
+            ctr.setReceiveWindow(receiveWindow);
 
             setRTT(rtt, scaleDuration(20 * 1000 * 1000));
             resetEpoch(ctr);

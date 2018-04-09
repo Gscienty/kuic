@@ -9,12 +9,12 @@ namespace kuic {
         : rtt(rtt)
         , rwLock(false)
         , sentBytesCount(0UL)
-        , sendOffset(0UL)
+        , sendWindow(0UL)
         , readedBytesCount(0UL)
         , highestReceived(0UL)
-        , receivedBytesCount(0UL)
+        , receiveWindow(receiveWindowSize)
         , receiveWindowSize(receiveWindowSize)
-        , maxReceiveWindowSize(std::max<unsigned long>(maxReceiveWindowSize, receiveWindowSize)) { }
+        , maxReceiveWindowSize(maxReceiveWindowSize) { }
     
     void BaseFlowController::setEpochStartTime(SpecialClock clock) {
         this->epochStartTime = clock;
@@ -28,16 +28,32 @@ namespace kuic {
         this->receiveWindowSize = receiveWindowSize;
     }
 
-    void BaseFlowController::setReceivedBytesCount(unsigned long receivedBytesCount) {
-        this->receivedBytesCount = receivedBytesCount;
+    void BaseFlowController::setReceiveWindow(unsigned long receiveWindow) {
+        this->receiveWindow = receiveWindow;
     }
 
     unsigned long BaseFlowController::getReceiveWindowSize() const {
         return this->receiveWindowSize;
     }
 
-    unsigned long BaseFlowController::getReceivedBytesCount() const {
-        return this->receivedBytesCount;
+    void BaseFlowController::setMaxReceiveWindowSize(unsigned long maxReceiveWindowSize) {
+        this->maxReceiveWindowSize = maxReceiveWindowSize;
+    }
+
+    unsigned long BaseFlowController::getMaxReceiveWindowSize() const {
+        return this->maxReceiveWindowSize;
+    }
+
+    void BaseFlowController::setHighestReceived(unsigned long highestReceived) {
+        this->highestReceived = highestReceived;
+    }
+    
+    unsigned long BaseFlowController::getHighestReceived() const {
+        return this->highestReceived;
+    }
+
+    unsigned long BaseFlowController::getReceiveWindow() const {
+        return this->receiveWindow;
     }
 
     void BaseFlowController::setReadedBytesCount(unsigned long readedBytesCount) {
@@ -52,17 +68,21 @@ namespace kuic {
         this->sentBytesCount += n;
     }
 
-    void BaseFlowController::updateSendOffset(unsigned long offset) {
-        if (offset > this->sendOffset) {
-            this->sendOffset = offset;
+    unsigned long BaseFlowController::getSendWindow() const {
+        return this->sendWindow;
+    }
+
+    void BaseFlowController::setSendWindow(unsigned long offset) {
+        if (offset > this->sendWindow) {
+            this->sendWindow = offset;
         }
     }
 
     unsigned long BaseFlowController::getSendWindowSize() const {
-        if (this->sentBytesCount > this->sendOffset) {
+        if (this->sentBytesCount > this->sendWindow) {
             return 0UL;
         }
-        return this->sendOffset - this->sentBytesCount;
+        return this->sendWindow - this->sentBytesCount;
     }
 
     void BaseFlowController::startNewAutoTuningEpoch() {
@@ -103,18 +123,22 @@ namespace kuic {
         this->startNewAutoTuningEpoch();
     }
 
-    unsigned long BaseFlowController::receiveBytesCountUpdate() {
+    unsigned long BaseFlowController::receiveWindowUpdate() {
         if (this->receiveWindowHasUpdate() == false) {
             return 0;
         }
 
         this->tryAdjustWindowSize();
-        this->receivedBytesCount = this->readedBytesCount + this->receiveWindowSize;
-        return this->receivedBytesCount;
+        this->receiveWindow = this->readedBytesCount + this->receiveWindowSize;
+        return this->receiveWindow;
     }
 
     bool BaseFlowController::receiveWindowHasUpdate() const {
-        unsigned long bytesRemaining = this->receivedBytesCount - this->readedBytesCount;
+        unsigned long bytesRemaining = this->receiveWindow - this->readedBytesCount;
         return bytesRemaining <= ((unsigned long) (((double) this->receiveWindowSize) * ((double) (1 - WINDOW_UPDATE_THRESHOLD))));
+    }
+
+    bool BaseFlowController::checkFlowControlViolation() const {
+        return this->highestReceived > this->receiveWindow;
     }
 }

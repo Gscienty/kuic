@@ -9,12 +9,10 @@ namespace kuic {
     class BaseFlowController {
     private:
         unsigned long sentBytesCount;
-        unsigned long sendOffset;
+        unsigned long sendWindow;
         
-        KuicRWLock rwLock;
         unsigned long readedBytesCount;
-        unsigned long highestReceived;
-        unsigned long receivedBytesCount;
+        unsigned long receiveWindow;
         unsigned long receiveWindowSize;
         unsigned long maxReceiveWindowSize;
 
@@ -22,6 +20,11 @@ namespace kuic {
         unsigned long epochStartOffset;
         RoundTripStatistics& rtt;
 
+    protected:
+        unsigned long highestReceived;
+        KuicRWLock rwLock;
+
+        bool checkFlowControlViolation() const;
 
     public:
         BaseFlowController(RoundTripStatistics &rtt,
@@ -33,20 +36,31 @@ namespace kuic {
 
         void setEpochStartTime(SpecialClock clock);
         void setEpochStartOffset(unsigned long offset);
+
+        void setMaxReceiveWindowSize(unsigned long maxReceiveWindowSize);
+        unsigned long getMaxReceiveWindowSize() const;
+
+        void setHighestReceived(unsigned long highestReceived);
+        unsigned long getHighestReceived() const;
+
         void setReceiveWindowSize(unsigned long receiveWindowSize);
         unsigned long getReceiveWindowSize() const;
-        void setReceivedBytesCount(unsigned long receivedBytesCount);
-        unsigned long getReceivedBytesCount() const;
+
+        void setReceiveWindow(unsigned long receiveWindow);
+        unsigned long getReceiveWindow() const;
+
+        void setSendWindow(unsigned long offset);
+        unsigned long getSendWindow() const;
 
         void setReadedBytesCount(unsigned long readedBytesCount);
         unsigned long getReadedBytesCount() const;
 
-        void addSentBytesCount(unsigned long n);
-        void addReadedBytesCount(unsigned long n);
-        void updateSendOffset(unsigned long offset);
-        unsigned long getSendWindowSize() const;
-        unsigned long receiveBytesCountUpdate();
-        bool receiveWindowHasUpdate() const;
+        virtual unsigned long getSendWindowSize() const;
+
+        virtual void addSentBytesCount(unsigned long n);
+        virtual void addReadedBytesCount(unsigned long n);
+        virtual unsigned long receiveWindowUpdate();
+        virtual bool receiveWindowHasUpdate() const;
     };
 }
 
