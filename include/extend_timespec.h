@@ -3,15 +3,17 @@
 
 #include <sys/time.h>
 namespace kuic {
-    timespec operator+ (const timespec& a, const timespec& b);
-    timespec operator+ (const timespec& a, const long b);
-    timespec& operator+= (timespec& a, const long b);
-    timespec& operator+= (timespec& a, const timespec& b);
+    timespec operator+ (const timespec &a, const timespec &b);
+    timespec operator+ (const timespec &a, const long b);
+    timespec& operator+= (timespec &a, const long b);
+    timespec& operator+= (timespec &a, const timespec &b);
 
-    long operator- (const timespec& a, const timespec& b);
+    long operator- (const timespec &a, const timespec &b);
+    long operator- (const timespec &a, const long b);
 
-    bool operator<= (const timespec& a, const long b);
-    bool operator< (const timespec& a, const timespec& b);
+    bool operator<= (const timespec &a, const long b);
+    bool operator< (const timespec &a, const long b);
+    bool operator< (const timespec &a, const timespec &b);
 
     class Clock {
     public:

@@ -22,16 +22,29 @@ namespace kuic {
         unsigned long epochStartOffset;
         RoundTripStatistics& rtt;
 
-        void startNewAutoTuningEpoch();
 
     public:
-        BaseFlowController(RoundTripStatistics &rtt);
+        BaseFlowController(RoundTripStatistics &rtt,
+                        unsigned long receiveWindowSize,
+                        unsigned long maxReceiveWindowSize);
+
+        void startNewAutoTuningEpoch();
+        void tryAdjustWindowSize();
+
+        void setEpochStartTime(SpecialClock clock);
+        void setEpochStartOffset(unsigned long offset);
+        void setReceiveWindowSize(unsigned long receiveWindowSize);
+        unsigned long getReceiveWindowSize() const;
+        void setReceivedBytesCount(unsigned long receivedBytesCount);
+        unsigned long getReceivedBytesCount() const;
+
+        void setReadedBytesCount(unsigned long readedBytesCount);
+        unsigned long getReadedBytesCount() const;
 
         void addSentBytesCount(unsigned long n);
-        void addReadBytesCount(unsigned long n);
+        void addReadedBytesCount(unsigned long n);
         void updateSendOffset(unsigned long offset);
         unsigned long getSendWindowSize() const;
-        void tryAdjustWindowSize();
         unsigned long receiveBytesCountUpdate();
         bool receiveWindowHasUpdate() const;
     };

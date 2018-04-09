@@ -35,7 +35,7 @@ namespace kuic {
     void KuicRWLock::readRelease() {
         std::unique_lock<std::mutex> locker(this->innerMutex);
         this->readingCount--;
-        if (this->reading == 0 && this->waitingWriteCount > 0) {
+        if (this->readingCount == 0 && this->waitingWriteCount > 0) {
             this->condWriter.notify_one();
         }
     }
@@ -62,12 +62,12 @@ namespace kuic {
     KuicRWLockReaderLockGuard::KuicRWLockReaderLockGuard(KuicRWLock &locker) 
         : locker(locker) { this->locker.readLock(); }
     KuicRWLockReaderLockGuard::~KuicRWLockReaderLockGuard() {
-        this->locker->readRelease();
+        this->locker.readRelease();
     }
 
     KuicRWLockWriterLockGuard::KuicRWLockWriterLockGuard(KuicRWLock &locker) 
         : locker(locker) { this->locker.writeLock(); }
     KuicRWLockWriterLockGuard::~KuicRWLockWriterLockGuard() {
-        this->locker->writeRelease();
+        this->locker.writeRelease();
     }
 }
