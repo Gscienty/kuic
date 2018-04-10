@@ -22,6 +22,9 @@ namespace kuic {
                             unsigned long initialSendWindow,
                             RoundTripStatistics &rtt);
         
+        unsigned long getStreamID() const;
+        bool getContributesToConnection() const;
+
         ErrorCode updateHighestReceived(unsigned long byteOffset, bool isFinal);
 
         void addReadedBytesCount(unsigned long n);

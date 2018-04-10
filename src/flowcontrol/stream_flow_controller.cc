@@ -19,6 +19,14 @@ namespace kuic {
         this->setSendWindow(initialSendWindow);
     }
 
+    unsigned long StreamFlowController::getStreamID() const {
+        return this->streamID;
+    }
+
+    bool StreamFlowController::getContributesToConnection() const {
+        return this->contributesToConnection;
+    }
+
     ErrorCode StreamFlowController::updateHighestReceived(unsigned long byteOffset, bool isFinal) {
         KuicRWLockWriterLockGuard locker(this->rwLock);
 
