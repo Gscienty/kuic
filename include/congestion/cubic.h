@@ -17,8 +17,8 @@ namespace kuic {
 
         class cubic {
         private:
-            kuic::clock clock;
-            std::size_t connections_count;
+            kuic::clock &clock;
+            size_t connections_count;
             kuic::special_clock epoch;
             kuic::special_clock app_limit_start_time;
             kuic::special_clock last_update_time;
@@ -39,9 +39,11 @@ namespace kuic {
             float alpha() const;
             float beta() const;
             void on_application_limited();
-            kuic::packet_number_t congestion_window_after_packet_loss(kuic::packet_number_t current_congestion_window);
-            kuic::packet_number_t congestion_window_after_ack(kuic::packet_number_t current_congestion_window, kuic::kuic_time_t delay_min);
-            void set_connection_counts(std::size_t count);
+            kuic::packet_number_t congestion_window_after_packet_loss(
+                kuic::packet_number_t current_congestion_window);
+            kuic::packet_number_t congestion_window_after_ack(
+                kuic::packet_number_t current_congestion_window, kuic::kuic_time_t delay_min);
+            void set_connection_counts(size_t count);
         };
     }
 }

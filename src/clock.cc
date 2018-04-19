@@ -64,7 +64,7 @@ bool kuic::clock::is_zero() const {
     return __inl_ttl(this->get()) == 0L;
 }
 
-kuic::kuic_time_t kuic::clock::since(kuic::clock &c) const {
+kuic::kuic_time_t kuic::clock::since(const kuic::clock &c) const {
     return __inl_ttl(this->get()) - __inl_ttl(c.get());
 }
 
