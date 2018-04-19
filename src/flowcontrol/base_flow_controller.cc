@@ -1,5 +1,19 @@
 #include "flowcontrol/base_flow_controller.h"
 
+kuic::flowcontrol::base_flow_controller::base_flow_controller(
+    kuic::congestion::rtt &rtt,
+    kuic::bytes_count_t receive_window_size,
+    kuic::bytes_count_t max_receive_window_size)
+        : _rtt(rtt)
+        , rw_m(false)
+        , bytes_sent(0)
+        , send_window(0)
+        , bytes_read(0)
+        , highest_received(0)
+        , receive_window(receive_window_size)
+        , receive_window_size(receive_window_size)
+        , max_receive_window_size(max_receive_window_size) { }
+
 void kuic::flowcontrol::base_flow_controller::add_bytes_sent(
     kuic::bytes_count_t n) {
 
@@ -24,7 +38,7 @@ void kuic::flowcontrol::base_flow_controller::add_bytes_read(kuic::bytes_count_t
     this->bytes_read += n;
 }
 
-bool kuic::flowcontrol::base_flow_controller::has_window_update() {
+bool kuic::flowcontrol::base_flow_controller::has_window_update() const {
     kuic::bytes_count_t bytes_remaining = this->receive_window - this->bytes_read;
     return bytes_remaining <= kuic::bytes_count_t(
         double(this->receive_window_size) * double(1 - kuic::window_update_threshold));
@@ -67,4 +81,12 @@ void kuic::flowcontrol::base_flow_controller::start_new_auto_tuning_epoch() {
 
 bool kuic::flowcontrol::base_flow_controller::check_flow_control_violation() {
     return this->highest_received > this->receive_window;
+}
+
+kuic::bytes_count_t
+kuic::flowcontrol::base_flow_controller::send_window_size() const {
+    if (this->bytes_sent > this->send_window) {
+        return 0;
+    }
+    return this->send_window - this->bytes_sent;
 }
