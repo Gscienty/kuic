@@ -1,17 +1,24 @@
 #ifndef _KUIC_CLOCK_
 #define _KUIC_CLOCK_
 
-#include <sys/time.h>
+#include "type.h"
+#include <time.h>
 
 namespace kuic {
-    const long clock_second = 1000 * 1000 * 1000;
+    const kuic_time_t clock_second = 1000 * 1000 * 1000;
+    const kuic_time_t clock_millisecond = 1000 * 1000;
+    const kuic_time_t clock_microsecond = 1000;
 
     class clock {
     public:
         virtual timespec get() const = 0;
 
-        long operator- (const clock &b);
-        long operator- (const long t);
+        bool is_zero() const;
+        kuic_time_t since(const clock &) const;
+        bool before(const clock &) const;
+
+        kuic_time_t operator- (const clock &b);
+        kuic_time_t operator- (const kuic_time_t t);
 
         bool operator< (const clock &b);
         bool operator> (const clock &b);
@@ -20,12 +27,12 @@ namespace kuic {
         bool operator>= (const clock &b);
         bool operator!= (const clock &b);
 
-        bool operator< (const long b);
-        bool operator> (const long b);
-        bool operator== (const long b);
-        bool operator<= (const long b);
-        bool operator>= (const long b);
-        bool operator!= (const long b);
+        bool operator< (const kuic_time_t b);
+        bool operator> (const kuic_time_t b);
+        bool operator== (const kuic_time_t b);
+        bool operator<= (const kuic_time_t b);
+        bool operator>= (const kuic_time_t b);
+        bool operator!= (const kuic_time_t b);
     };
 
     class current_clock : public clock {
@@ -44,8 +51,8 @@ namespace kuic {
         timespec get() const;
 
         special_clock operator+ (const clock &b);
-        special_clock operator+ (const long b);
-        special_clock &operator+= (const long b);
+        special_clock operator+ (const kuic_time_t b);
+        special_clock &operator+= (const kuic_time_t b);
         special_clock &operator+= (const clock &b);
     };
 }
