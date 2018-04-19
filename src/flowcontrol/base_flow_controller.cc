@@ -3,11 +3,12 @@
 kuic::flowcontrol::base_flow_controller::base_flow_controller(
     kuic::congestion::rtt &rtt,
     kuic::bytes_count_t receive_window_size,
-    kuic::bytes_count_t max_receive_window_size)
+    kuic::bytes_count_t max_receive_window_size,
+    kuic::bytes_count_t initial_send_window)
         : _rtt(rtt)
         , rw_m(false)
         , bytes_sent(0)
-        , send_window(0)
+        , send_window(initial_send_window)
         , bytes_read(0)
         , highest_received(0)
         , receive_window(receive_window_size)
@@ -38,7 +39,7 @@ void kuic::flowcontrol::base_flow_controller::add_bytes_read(kuic::bytes_count_t
     this->bytes_read += n;
 }
 
-bool kuic::flowcontrol::base_flow_controller::has_window_update() const {
+bool kuic::flowcontrol::base_flow_controller::has_window_update() {
     kuic::bytes_count_t bytes_remaining = this->receive_window - this->bytes_read;
     return bytes_remaining <= kuic::bytes_count_t(
         double(this->receive_window_size) * double(1 - kuic::window_update_threshold));

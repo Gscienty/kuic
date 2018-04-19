@@ -7,7 +7,8 @@ kuic::flowcontrol::connection_flow_controller::connection_flow_controller(
         : kuic::flowcontrol::base_flow_controller(
             rtt,
             receive_window,
-            max_receive_window) { }
+            max_receive_window,
+            0) { }
 
 kuic::bytes_count_t
 kuic::flowcontrol::connection_flow_controller::send_window_size() const {

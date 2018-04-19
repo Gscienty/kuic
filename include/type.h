@@ -6,6 +6,7 @@ namespace kuic {
     typedef unsigned long packet_number_t;
     typedef unsigned long bytes_count_t;
     typedef unsigned long band_width_t;
+    typedef unsigned long stream_id_t;
 }
 
 #endif

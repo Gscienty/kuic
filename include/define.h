@@ -10,6 +10,7 @@ namespace kuic {
     
     const bytes_count_t default_tcp_mss = 1460;
     const float window_update_threshold = 0.25;
+    const float connection_flow_control_multiplier = 1.5;
 
     const band_width_t bits_per_second = 1;
     const band_width_t bytes_per_second = 8 * bits_per_second;

@@ -29,12 +29,13 @@ namespace kuic {
             base_flow_controller(
                 kuic::congestion::rtt &rtt,
                 kuic::bytes_count_t receive_window_size,
-                kuic::bytes_count_t max_receive_window_size);
+                kuic::bytes_count_t max_receive_window_size,
+                kuic::bytes_count_t initial_send_window);
             void add_bytes_sent(kuic::bytes_count_t n);
             void update_send_window(kuic::bytes_count_t offset);
             kuic::bytes_count_t send_window_size() const;
             void add_bytes_read(kuic::bytes_count_t n);
-            bool has_window_update() const;
+            bool has_window_update();
             kuic::bytes_count_t get_window_update();
             void try_adjust_window_size();
             void start_new_auto_tuning_epoch();
