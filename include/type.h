@@ -3,7 +3,8 @@
 
 namespace kuic {
     typedef long kuic_time_t;
-    typedef unsigned long packet_number_t
+    typedef unsigned long packet_number_t;
+    typedef unsigned long bytes_count_t;
 }
 
 #endif
