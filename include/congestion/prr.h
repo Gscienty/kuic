@@ -19,7 +19,7 @@ namespace kuic {
             void on_packet_acked(kuic::bytes_count_t acked_bytes);
             kuic::kuic_time_t time_until_send(
                 kuic::bytes_count_t congestion_window,
-                kuic::bytes_count_t byres_in_flight,
+                kuic::bytes_count_t bytes_in_flight,
                 kuic::bytes_count_t slowstart_threhold);
         };
     }

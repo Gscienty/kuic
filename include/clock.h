@@ -1,14 +1,11 @@
 #ifndef _KUIC_CLOCK_
 #define _KUIC_CLOCK_
 
+#include "define.h"
 #include "type.h"
 #include <time.h>
 
 namespace kuic {
-    const kuic_time_t clock_second = 1000 * 1000 * 1000;
-    const kuic_time_t clock_millisecond = 1000 * 1000;
-    const kuic_time_t clock_microsecond = 1000;
-
     class clock {
     public:
         virtual timespec get() const = 0;

@@ -15,7 +15,7 @@ namespace kuic {
 
         struct rtt_sample {
             kuic::kuic_time_t rtt;
-            kuic::clock t;
+            kuic::special_clock t;
         };
 
         class rtt {
@@ -34,7 +34,7 @@ namespace kuic {
             rtt_sample half_window_rtt;
             rtt_sample quarter_window_rtt;
 
-            void update_recent_min_rtt(kuic::kuic_time_t sample, kuic::clock now);
+            void update_recent_min_rtt(kuic::kuic_time_t sample, kuic::special_clock &now);
         public:
             rtt();
             kuic::kuic_time_t get_initial_rtt_us() const;
@@ -48,7 +48,7 @@ namespace kuic {
 
             void set_recent_min_rtt_window(const kuic::kuic_time_t recent_min_rtt_window);
 
-            void update_rtt(kuic::kuic_time_t send_delta, kuic::kuic_time_t ack_delay, kuic::clock now);
+            void update_rtt(kuic::kuic_time_t send_delta, kuic::kuic_time_t ack_delay, kuic::special_clock &now);
             void sample_new_recent_min_rtt(unsigned int samples_count);
             void on_connection_migration();
 

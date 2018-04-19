@@ -25,7 +25,11 @@ void kuic::congestion::prr::on_packet_acked(kuic::bytes_count_t acked_bytes) {
     this->ack_count_since_loss++;
 }
 
-kuic::kuic_time_t kuic::congestion::prr::time_until_send(kuic::bytes_count_t congestion_window, kuic::bytes_count_t bytes_in_flight, kuic::bytes_count_t slowstart_threshold) {
+kuic::kuic_time_t kuic::congestion::prr::time_until_send(
+    kuic::bytes_count_t congestion_window,
+    kuic::bytes_count_t bytes_in_flight,
+    kuic::bytes_count_t slowstart_threshold) {
+    
     if (this->bytes_delivered_since_loss == 0 || bytes_in_flight < kuic::default_tcp_mss) {
         return 0;
     }

@@ -3,7 +3,7 @@
 
 kuic::congestion::cubic::cubic(kuic::clock &clock)
     : clock(clock) 
-    , connections_count(kuic::congestion::cubic_default_connections_count) {
+    , connections_count(kuic::congestion::default_connections_count) {
 
     this->reset();
 }
@@ -39,7 +39,8 @@ void kuic::congestion::cubic::on_application_limited() {
     }
 }
 
-kuic::packet_number_t kuic::congestion::cubic::congestion_window_after_packet_loss(
+kuic::packet_number_t
+kuic::congestion::cubic::congestion_window_after_packet_loss(
     kuic::packet_number_t current_congestion_window) {
     
     if (current_congestion_window < this->last_max_congestion_window) {
@@ -54,7 +55,8 @@ kuic::packet_number_t kuic::congestion::cubic::congestion_window_after_packet_lo
     return kuic::packet_number_t(float(current_congestion_window) * this->beta());
 }
 
-kuic::packet_number_t kuic::congestion::cubic::congestion_window_after_ack(
+kuic::packet_number_t
+kuic::congestion::cubic::congestion_window_after_ack(
     kuic::packet_number_t current_congestion_window, kuic::kuic_time_t delay_min) {
     
     this->acked_packets_count++;
@@ -118,4 +120,8 @@ kuic::packet_number_t kuic::congestion::cubic::congestion_window_after_ack(
     this->last_target_congestion_window = target_congestion_window;
 
     return std::max<kuic::packet_number_t>(target_congestion_window, this->estimated_tcp_congestion_window);
+}
+
+void kuic::congestion::cubic::set_connections_count(size_t count) {
+    this->connections_count = count;
 }
