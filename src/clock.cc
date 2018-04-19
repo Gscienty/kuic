@@ -1,15 +1,14 @@
 #include "clock.h"
-#include <time.h>
 
-long inline __inl_ttl(timespec t) {
+kuic::kuic_time_t inline __inl_ttl(timespec t) {
     return t.tv_sec * kuic::clock_second + t.tv_nsec;
 }
 
-long kuic::clock::operator- (const kuic::clock &b) {
+kuic::kuic_time_t kuic::clock::operator- (const kuic::clock &b) {
     return __inl_ttl(this->get()) - __inl_ttl(b.get());
 }
 
-long kuic::clock::operator- (const long b) {
+kuic::kuic_time_t kuic::clock::operator- (const kuic::kuic_time_t b) {
     return __inl_ttl(this->get()) - b;
 }
 
@@ -37,28 +36,40 @@ bool kuic::clock::operator!= (const kuic::clock &b) {
     return __inl_ttl(this->get()) != __inl_ttl(b.get());
 }
 
-bool kuic::clock::operator< (const long b) {
+bool kuic::clock::operator< (const kuic::kuic_time_t b) {
     return __inl_ttl(this->get()) < b;
 }
 
-bool kuic::clock::operator> (const long b) {
+bool kuic::clock::operator> (const kuic::kuic_time_t b) {
     return __inl_ttl(this->get()) > b;
 }
 
-bool kuic::clock::operator== (const long b) {
+bool kuic::clock::operator== (const kuic::kuic_time_t b) {
     return __inl_ttl(this->get()) == b;
 }
 
-bool kuic::clock::operator<= (const long b) {
+bool kuic::clock::operator<= (const kuic::kuic_time_t b) {
     return __inl_ttl(this->get()) <= b;
 }
 
-bool kuic::clock::operator>= (const long b) {
+bool kuic::clock::operator>= (const kuic::kuic_time_t b) {
     return __inl_ttl(this->get()) >= b;
 }
 
-bool kuic::clock::operator!= (const long b) {
+bool kuic::clock::operator!= (const kuic::kuic_time_t b) {
     return __inl_ttl(this->get()) != b;
+}
+
+bool kuic::clock::is_zero() const {
+    return __inl_ttl(this->get()) == 0L;
+}
+
+kuic::kuic_time_t kuic::clock::since(kuic::clock &c) const {
+    return __inl_ttl(this->get()) - __inl_ttl(c.get());
+}
+
+bool kuic::clock::before(const kuic::clock &c) const {
+    return __inl_ttl(this->get()) < __inl_ttl(c.get());
 }
 
 timespec kuic::current_clock::get() const {
@@ -81,23 +92,23 @@ timespec kuic::special_clock::get() const {
 }
 
 kuic::special_clock kuic::special_clock::operator+ (const clock &b) {
-    long nano_second = __inl_ttl(this->get()) + __inl_ttl(b.get());
+    kuic::kuic_time_t nano_second = __inl_ttl(this->get()) + __inl_ttl(b.get());
     return kuic::special_clock({
         nano_second / kuic::clock_second,
         nano_second % kuic::clock_second
     });
 }
 
-kuic::special_clock kuic::special_clock::operator+ (const long b) {
-    long nano_second = __inl_ttl(this->get()) + b;
+kuic::special_clock kuic::special_clock::operator+ (const kuic::kuic_time_t b) {
+    kuic::kuic_time_t nano_second = __inl_ttl(this->get()) + b;
     return kuic::special_clock({
         nano_second / kuic::clock_second,
         nano_second % kuic::clock_second
     });
 }
 
-kuic::special_clock &kuic::special_clock::operator+= (const long b) {
-    long nano_second = __inl_ttl(this->get()) + b;
+kuic::special_clock &kuic::special_clock::operator+= (const kuic::kuic_time_t b) {
+    kuic::kuic_time_t nano_second = __inl_ttl(this->get()) + b;
     this->special_time.tv_sec = nano_second / kuic::clock_second;
     this->special_time.tv_nsec = nano_second % kuic::clock_second;
 
@@ -105,7 +116,7 @@ kuic::special_clock &kuic::special_clock::operator+= (const long b) {
 }
 
 kuic::special_clock &kuic::special_clock::operator+= (const clock &b) {
-    long nano_second = __inl_ttl(this->get()) + __inl_ttl(b.get());
+    kuic::kuic_time_t nano_second = __inl_ttl(this->get()) + __inl_ttl(b.get());
     this->special_time.tv_sec = nano_second / kuic::clock_second;
     this->special_time.tv_nsec = nano_second % kuic::clock_second;
 
