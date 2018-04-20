@@ -1,6 +1,7 @@
+#include "define.h"
+#include "error.h"
 #include "handshake/handshake_message.h"
 #include "handshake/tag.h"
-#include "define.h"
 #include "eys.h"
 #include <memory>
 #include <utility>
@@ -35,7 +36,7 @@ kuic::handshake::handshake_message::parse_handshake_message(
     char *index;
     size_t truth_size;
     std::tie<char *, size_t>(index, truth_size) = reader.get_range(parameters_count * 8);
-    std::unique_ptr<char []> uni_index(reinterpret_cast<char []>(index));
+    std::unique_ptr<char []> uni_index(index);
 
     if (truth_size != parameters_count * 8) {
         return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
@@ -61,7 +62,7 @@ kuic::handshake::handshake_message::parse_handshake_message(
         char *seg;
         size_t seg_truth_len;
         std::tie<char *, size_t>(seg, seg_truth_len) = reader.get_range(seg_len);
-        std::unique_ptr<char []> uni_seg(reinterpret_cast<char []>(seg));
+        std::unique_ptr<char []> uni_seg(seg);
 
         if (seg_truth_len != seg_len) {
             return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
@@ -78,7 +79,7 @@ kuic::handshake::handshake_message::parse_handshake_message(
         kuic::handshake::handshake_message(tag, result_map), kuic::no_error);
 }
 
-std::vector<kuic::byte_t>unique_ptr
+std::vector<kuic::byte_t>
 kuic::handshake::handshake_message::serialize() {
     std::vector<kuic::byte_t> result;
     
@@ -87,14 +88,14 @@ kuic::handshake::handshake_message::serialize() {
         kuic::handshake::tag_serializer::serialize(this->tag, ser_size));
     result.insert(result.begin(), ser_buffer.get(), ser_buffer.get() + ser_size);
 
-    ser_buffer = eys::serializer<unsigned short>::serialize(
-        static_cast<unsigned short>(this->data.size()), ser_size);
+    ser_buffer = std::unique_ptr<char []>(eys::serializer<unsigned short>::serialize(
+        static_cast<unsigned short>(this->data.size()), ser_size));
     result.insert(result.end(), ser_buffer.get(), ser_buffer.get() + ser_size);
 
     result.push_back(kuic::byte_t(0));
     result.push_back(kuic::byte_t(0));
 
-    ser_buffer = new char[this->data.size() * 8];
+    ser_buffer = std::unique_ptr<char []>(new char[this->data.size() * 8]);
     unsigned int offset = 0;
     
     std::vector<kuic::tag_t> tags_sorted = this->get_tags_sorted();
@@ -109,7 +110,7 @@ kuic::handshake::handshake_message::serialize() {
         size_t size;
         std::unique_ptr<char []> t_ser(kuic::handshake::tag_serializer::serialize(t, size));
         std::uninitialized_copy_n(t_ser.get(), size, ser_buffer.get() + i * 8);
-        t_ser = eys::serializer<unsigned int>::serialize(offset, size);
+        t_ser = std::unique_ptr<char []>(eys::serializer<unsigned int>::serialize(offset, size));
         std::uninitialized_copy_n(t_ser.get(), size, ser_buffer.get() + i * 8 + 4);
 
         i++;

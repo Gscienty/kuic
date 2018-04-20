@@ -2,6 +2,7 @@
 #define _KUIC_TYPE_
 
 namespace kuic {
+    typedef int error_t;
     typedef long kuic_time_t;
     typedef unsigned long packet_number_t;
     typedef unsigned long bytes_count_t;

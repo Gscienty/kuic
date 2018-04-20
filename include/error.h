@@ -1,9 +1,9 @@
 #ifndef _KUIC_ERROR_
 #define _KUIC_ERROR_
 
-namespace kuic {
-    typedef int error_t;
+#include "type.h"
 
+namespace kuic {
     const error_t no_error = 0;
     const error_t flow_control_received_too_much_data = 1001;
     const error_t stream_data_after_termination = 2001;

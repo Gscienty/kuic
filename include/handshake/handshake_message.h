@@ -1,8 +1,7 @@
 #ifndef _KUIC_HANDSHAKE_HANDSHAKE_MESSAGE_
 #define _KUIC_HANDSHAKE_HANDSHAKE_MESSAGE_
 
-#include "handshake/tag.h"
-#include "error.h"
+#include "type.h"
 #include "eys.h"
 #include <utility>
 #include <map>
