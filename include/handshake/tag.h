@@ -42,7 +42,7 @@ namespace kuic {
         struct tag_serializer {
             static char *serialize(kuic::tag_t e, size_t &size) {
                 char *buffer(new char[4]);
-                if (e & 0xFF000000 == 0) {
+                if ((e & 0xFF000000) == 0) {
                     buffer[0] = (e & 0x00FF0000) >> 16;
                     buffer[1] = (e & 0x0000FF00) >> 8;
                     buffer[2] = (e & 0x000000FF);

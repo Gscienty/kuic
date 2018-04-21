@@ -118,6 +118,14 @@ TEST(handshake_message, sample_chelo_message) {
     std::string sni_str(sni.begin(), sni.end());
     EXPECT_EQ(1016, padding.size());
     EXPECT_EQ(0, sni_str.compare("www.example.org"));
+
+    std::vector<kuic::byte_t> ser = msg.serialize();
+
+    EXPECT_EQ(sizeof(chelo), ser.size());
+
+    std::for_each(ser.begin(), ser.end(), [] (kuic::byte_t &b) -> void {
+        std::cout << std::hex << int(b) << ' ';
+    });
 }
 
 int main() {

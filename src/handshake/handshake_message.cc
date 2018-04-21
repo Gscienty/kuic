@@ -85,7 +85,7 @@ kuic::handshake::handshake_message::serialize() {
         kuic::handshake::tag_serializer::serialize(this->tag, ser_size));
     result.insert(result.begin(), ser_buffer.get(), ser_buffer.get() + ser_size);
 
-    ser_buffer = std::unique_ptr<char []>(eys::serializer<unsigned short>::serialize(
+    ser_buffer = std::unique_ptr<char []>(kuic::little_endian_serializer<unsigned short>::serialize(
         static_cast<unsigned short>(this->data.size()), ser_size));
     result.insert(result.end(), ser_buffer.get(), ser_buffer.get() + ser_size);
 
@@ -107,7 +107,7 @@ kuic::handshake::handshake_message::serialize() {
         size_t size;
         std::unique_ptr<char []> t_ser(kuic::handshake::tag_serializer::serialize(t, size));
         std::uninitialized_copy_n(t_ser.get(), size, ser_buffer.get() + i * 8);
-        t_ser = std::unique_ptr<char []>(eys::serializer<unsigned int>::serialize(offset, size));
+        t_ser = std::unique_ptr<char []>(kuic::little_endian_serializer<unsigned int>::serialize(offset, size));
         std::uninitialized_copy_n(t_ser.get(), size, ser_buffer.get() + i * 8 + 4);
 
         i++;

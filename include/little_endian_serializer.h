@@ -7,10 +7,12 @@
 namespace kuic {
     
     template<class T>
-    inline void __inl_little_endian_serialize(T &e, char *&buffer) {
+    inline char *__inl_little_endian_serialize(T &e) {
+        char *buffer = new char[sizeof(e)];
         for (int i = 0; i < sizeof(T); i++) {
             buffer[i] = reinterpret_cast<char *>(&e)[i];
         }
+        return buffer;
     }
 
     template<class T>
@@ -23,17 +25,13 @@ namespace kuic {
     }
 
     template<class T>
-    struct little_endian_serializer {
-        static char *serialize(T e, size_t &size);
-        static T deserialize(const char *buffer, size_t len, ssize_t &seek);
-    };
+    struct little_endian_serializer { };
 
     template<>
     struct little_endian_serializer<unsigned int> {
         static char *serialize(unsigned int e, size_t &size) {
-            char *buffer = new char[sizeof(e)];
-            __inl_little_endian_serialize(e, buffer);
-            return buffer;
+            size = sizeof(unsigned int);
+            return __inl_little_endian_serialize(e);
         }
 
         static unsigned int deserialize(const char *buffer, size_t len, ssize_t &seek) {
@@ -41,6 +39,21 @@ namespace kuic {
                 return 0;
             }
             return __inl_little_endian_deserialize<unsigned int>(buffer, seek);
+        }
+    };
+
+    template<>
+    struct little_endian_serializer<unsigned short> {
+        static char *serialize(unsigned short e, size_t &size) {
+            size = sizeof(unsigned short);
+            return __inl_little_endian_serialize(e);
+        }
+
+        static unsigned short deserialize(const char *buffer, size_t len, ssize_t &seek) {
+            if (seek + sizeof(unsigned short) > len) {
+                return 0;
+            }
+            return __inl_little_endian_deserialize<unsigned short>(buffer, seek);
         }
     };
 }
