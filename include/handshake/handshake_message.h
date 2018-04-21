@@ -15,14 +15,15 @@ namespace kuic {
             std::map<kuic::tag_t, std::vector<kuic::byte_t> > data;
 
             handshake_message(kuic::tag_t tag, std::map<kuic::tag_t, std::vector<kuic::byte_t> > &data);
-            handshake_message();
         public:
+            handshake_message();
+            
             static std::pair<handshake_message, kuic::error_t>
             parse_handshake_message(eys::in_buffer &reader);
-
             std::vector<kuic::byte_t> serialize();
-
             std::vector<kuic::tag_t> get_tags_sorted() const;
+
+            std::vector<kuic::byte_t> &get(kuic::tag_t tag);
         };
     }
 }

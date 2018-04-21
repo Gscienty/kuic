@@ -54,12 +54,13 @@ namespace kuic {
                     buffer[2] = (e & 0x0000FF00) >> 8;
                     buffer[3] = (e & 0x000000FF);
                 }
+                size = 4;
                 return buffer;
             }
 
             static kuic::tag_t deserialize(const char *buffer, size_t len, ssize_t &seek) {
                 kuic::tag_t result = (buffer[seek] << 24) | (buffer[seek + 1] << 16) | (buffer[seek + 2] << 8) | (buffer[seek + 3]);
-                if (result & 0x000000FF == 0) {
+                if ((result & 0x000000FF) == 0) {
                     result >>= 8;
                 }
                 seek += 4;

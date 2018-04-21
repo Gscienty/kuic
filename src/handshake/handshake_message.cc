@@ -1,5 +1,6 @@
 #include "define.h"
 #include "error.h"
+#include "little_endian_serializer.h"
 #include "handshake/handshake_message.h"
 #include "handshake/tag.h"
 #include "eys.h"
@@ -26,8 +27,7 @@ kuic::handshake::handshake_message::parse_handshake_message(
     kuic::tag_t tag;
     reader.get<kuic::tag_t, kuic::handshake::tag_serializer>(tag);
     unsigned int parameters_count;
-    reader.get(parameters_count);
-
+    reader.get<unsigned int, kuic::little_endian_serializer<unsigned int>>(parameters_count);
     if (parameters_count > kuic::max_parameters_count) {
         return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
             kuic::handshake::handshake_message(), kuic::handshake_too_many_entries);
@@ -44,16 +44,14 @@ kuic::handshake::handshake_message::parse_handshake_message(
     }
 
     std::map<kuic::tag_t, std::vector<kuic::byte_t> > result_map;
-
     unsigned int seg_start = 0;
     for (ssize_t pos = 0; pos < parameters_count * 8; ) {
         kuic::tag_t tag = kuic::handshake::tag_serializer::deserialize(
             uni_index.get(), parameters_count * 8, pos);
-        unsigned int seg_end = eys::deserializer<unsigned int>::deserialize(
+        unsigned int seg_end = kuic::little_endian_serializer<unsigned int>::deserialize(
             uni_index.get(), parameters_count * 8, pos);
         
         unsigned int seg_len = seg_end - seg_start;
-
         if (seg_len > kuic::parameter_max_length) {
             return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
                 kuic::handshake::handshake_message(), kuic::handshake_invalid_value_length);
@@ -68,7 +66,6 @@ kuic::handshake::handshake_message::parse_handshake_message(
             return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
                 kuic::handshake::handshake_message(), kuic::reader_buffer_remain_not_enough);
         }
-        
         result_map.insert(std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(
             tag, std::vector<kuic::byte_t>(seg, seg + seg_truth_len)));
         
@@ -134,4 +131,9 @@ kuic::handshake::handshake_message::get_tags_sorted() const {
     });
 
     return result;
+}
+
+std::vector<kuic::byte_t> &
+kuic::handshake::handshake_message::get(kuic::tag_t tag) {
+    return this->data[tag];
 }
