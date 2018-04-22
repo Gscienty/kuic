@@ -96,7 +96,8 @@ void kuic::crypt::sm3::cf_func(kuic::byte_t *iv, kuic::byte_t *b) {
             kuic::crypt::sm3::add(kuic::crypt::sm3::add(
                 kuic::crypt::sm3::left_loop_move(12, reg[0]),
                 reg[4]),
-                kuic::crypt::sm3::left_loop_move(j, kuic::crypt::sm3::get_tvec(j))));
+                kuic::crypt::sm3::left_loop_move(j,
+                    kuic::crypt::sm3::get_tvec(j))));
 
         kuic::word_t ss2 = ss1 ^ kuic::crypt::sm3::left_loop_move(12, reg[0]);
 
@@ -107,7 +108,10 @@ void kuic::crypt::sm3::cf_func(kuic::byte_t *iv, kuic::byte_t *b) {
             w_[j]);
 
         kuic::word_t tt2 = kuic::crypt::sm3::add(kuic::crypt::sm3::add(kuic::crypt::sm3::add(
-            kuic::crypt::sm3::gg(j, reg[4], reg[5], reg[6]), reg[7]), ss1), w[j]);
+            kuic::crypt::sm3::gg(j, reg[4], reg[5], reg[6]),
+            reg[7]),
+            ss1),
+            w[j]);
 
         reg[3] = reg[2];
         reg[2] = kuic::crypt::sm3::left_loop_move(9, reg[1]);
