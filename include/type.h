@@ -10,6 +10,7 @@ namespace kuic {
     typedef unsigned long stream_id_t;
     typedef unsigned int tag_t;
     typedef unsigned char byte_t;
+    typedef unsigned int word_t;
 }
 
 #endif
