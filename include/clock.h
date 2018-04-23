@@ -34,7 +34,7 @@ namespace kuic {
 
     class current_clock : public clock {
     public:
-        timespec get() const;
+        timespec get() const override;
     };
 
     class special_clock : public clock {
@@ -45,7 +45,7 @@ namespace kuic {
         special_clock(const timespec &);
         special_clock(const clock &c);
 
-        timespec get() const;
+        timespec get() const override;
 
         special_clock operator+ (const clock &b);
         special_clock operator+ (const kuic_time_t b);
