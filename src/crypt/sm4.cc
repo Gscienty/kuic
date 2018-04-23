@@ -97,12 +97,22 @@ kuic::crypt::sm4::encrypt(kuic::byte_t *m, kuic::byte_t *key) {
 
 kuic::byte_t *
 kuic::crypt::sm4::decrypt(kuic::byte_t *m, kuic::byte_t *key) {
-    std::unique_ptr<kuic::word_t[]> k_group = kuic::crypt::sm4::extend_key(key);
+    std::unique_ptr<kuic::word_t[]> k_group(kuic::crypt::sm4::extend_key(key));
     std::unique_ptr<kuic::word_t[]> r_k_group(new kuic::word_t[32]);
     for (int i = 0; i < 32; i++) {
         r_k_group[i] = k_group[32 + 3 - i];
     }
     return kuic::crypt::sm4::cipher(m, r_k_group.get());
+}
+
+kuic::byte_t *
+kuic::crypt::sm4::encrypt_rk(kuic::byte_t *m, kuic::word_t *rk) {
+    return kuic::crypt::sm4::cipher(m, rk);
+}
+
+kuic::byte_t *
+kuic::crypt::sm4::decrypt_rk(kuic::byte_t *m, kuic::word_t *rk) {
+    return kuic::crypt::sm4::cipher(m, rk);
 }
 
 std::unique_ptr<kuic::word_t[]>
