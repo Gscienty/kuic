@@ -3,6 +3,7 @@
 
 #include "type.h"
 #include <utility>
+#include <memory>
 
 namespace kuic {
     namespace crypt {
@@ -84,8 +85,13 @@ namespace kuic {
                 kuic::word_t x_2,
                 kuic::word_t x_3,
                 kuic::word_t rk);
+
+            static kuic::byte_t *cipher(kuic::byte_t *m, kuic::word_t *rk);
+
+            static std::unique_ptr<kuic::word_t[]> extend_key(kuic::byte_t *key);
         public:
             static kuic::byte_t *encrypt(kuic::byte_t *m, kuic::byte_t *key);
+            static kuic::byte_t *decrypt(kuic::byte_t *m, kuic::byte_t *key);
         };
     }
 }
