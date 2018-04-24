@@ -11,6 +11,15 @@ namespace kuic {
     typedef unsigned int tag_t;
     typedef unsigned char byte_t;
     typedef unsigned int word_t;
+
+    typedef unsigned int kbr_protocol_version_t;
+    typedef unsigned int kbr_message_type_t;
+    typedef unsigned int kbr_flag_t;
+    typedef unsigned int kbr_encryption_type_t;
+    typedef unsigned int kbr_key_version_t;
+    typedef unsigned int kbr_padata_type_t;
+    typedef unsigned int kbr_name_type_t;
+    typedef unsigned int kbr_ticket_version_t;
 }
 
 #endif

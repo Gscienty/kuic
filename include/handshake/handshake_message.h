@@ -17,12 +17,16 @@ namespace kuic {
             handshake_message(kuic::tag_t tag, std::map<kuic::tag_t, std::vector<kuic::byte_t> > &data);
         public:
             handshake_message();
-            
+            handshake_message(kuic::tag_t tag);
+
+            void insert(kuic::tag_t tag, kuic::byte_t *data, size_t size);
+
             static std::pair<handshake_message, kuic::error_t>
             parse_handshake_message(eys::in_buffer &reader);
-            std::vector<kuic::byte_t> serialize();
-            std::vector<kuic::tag_t> get_tags_sorted() const;
 
+            std::vector<kuic::byte_t> serialize();
+            
+            std::vector<kuic::tag_t> get_tags_sorted() const;
             std::vector<kuic::byte_t> &get(kuic::tag_t tag);
         };
     }

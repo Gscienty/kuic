@@ -15,6 +15,17 @@ kuic::handshake::handshake_message::handshake_message(
 
 kuic::handshake::handshake_message::handshake_message() { }
 
+kuic::handshake::handshake_message::handshake_message(kuic::tag_t tag)
+    : tag(tag) { }
+
+void kuic::handshake::handshake_message::insert(
+    kuic::tag_t tag, kuic::byte_t *data, size_t size) {
+    
+    this->data.insert(
+        std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(
+            tag, std::vector<kuic::byte_t>(data, data + size)));
+}
+
 std::pair<kuic::handshake::handshake_message, kuic::error_t>
 kuic::handshake::handshake_message::parse_handshake_message(
     eys::in_buffer &reader) {

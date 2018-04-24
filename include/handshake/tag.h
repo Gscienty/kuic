@@ -6,38 +6,23 @@
 
 namespace kuic {
     namespace handshake {
-        const kuic::tag_t tag_client_hello = 'CHLO';
-        const kuic::tag_t tag_server_rejection = 'REJ';
-        const kuic::tag_t tag_server_config = 'SCFG';
+        const kuic::tag_t tag_kerberos_as_request = 'KSRQ';
+        const kuic::tag_t tag_kdc_request_body = 'KRBY';
+        const kuic::tag_t tag_protocol_version = 'PVNO';
+        const kuic::tag_t tag_message_type = 'MTYP';
+        const kuic::tag_t tag_padata = 'PADA';
+        const kuic::tag_t tag_client_principal_name = 'CNAM';
+        const kuic::tag_t tag_realm = 'DMAN';
+        const kuic::tag_t tag_server_principal_name = 'SNAM';
+        const kuic::tag_t tag_time_from = 'TFRM';
+        const kuic::tag_t tag_time_till = 'TTIL';
+        const kuic::tag_t tag_renew_till_time = 'TRNW';
+        const kuic::tag_t tag_nonce = 'NONC';
+        const kuic::tag_t tag_encrypt_type = 'ETYP';
+        const kuic::tag_t tag_address = 'CADR';
+        const kuic::tag_t tag_encrypted_data = 'EDAT';
+        const kuic::tag_t tag_additional_tickets = 'ADTK';
 
-        const kuic::tag_t tag_padding = 'PAD';
-        const kuic::tag_t tag_server_name_indication = 'SNI';
-        const kuic::tag_t tag_version = 'VER';
-        const kuic::tag_t tag_max_stream_per_connection = 'MSPC';
-        const kuic::tag_t tag_max_incoming_dyanamic_stream = 'MIDS';
-        const kuic::tag_t tag_user_agent_id = 'UAID';
-        const kuic::tag_t tag_truncation_connection_id = 'TCID';
-        const kuic::tag_t tag_proof_demand = 'PDMD';
-        const kuic::tag_t tag_socket_receive_buffer = 'SRBF';
-        const kuic::tag_t tag_idle_connection_state_lifetime = 'ICSL';
-        const kuic::tag_t tag_client_proof_nonce = 'NONP';
-        const kuic::tag_t tag_silently_close_timeout = 'SCLS';
-        const kuic::tag_t tag_cert_timestamp_leaf_cert = 'CSCT';
-        const kuic::tag_t tag_connection_options = 'COPT';
-        const kuic::tag_t tag_initial_connection_flow_control_receive_window = 'CFCW';
-        const kuic::tag_t tag_initial_stream_flow_control_receive_window = 'SFCW';
-        
-        const kuic::tag_t tag_source_address_token = 'STK';
-        const kuic::tag_t tag_server_nonce = 'SNO';
-        const kuic::tag_t tag_server_proof = 'PROF';
-
-        const kuic::tag_t tag_client_nonce = 'NONC';
-        
-        const kuic::tag_t tag_server_config_id = 'SCID';
-        const kuic::tag_t tag_list_aead_algo = 'AEAD';
-        
-        const kuic::tag_t tag_server_hello = 'SHLO';
-        const kuic::tag_t tag_public_reset_tag = 'PRST';
 
         struct tag_serializer {
             static char *serialize(kuic::tag_t e, size_t &size) {

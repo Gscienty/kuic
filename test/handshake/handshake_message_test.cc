@@ -113,8 +113,8 @@ TEST(handshake_message, sample_chelo_message) {
     std::tie(msg, err) = kuic::handshake::handshake_message::parse_handshake_message(mock);
     EXPECT_EQ(err, kuic::no_error);
 
-    std::vector<kuic::byte_t> &padding = msg.get(kuic::handshake::tag_padding);
-    std::vector<kuic::byte_t> &sni = msg.get(kuic::handshake::tag_server_name_indication);
+    std::vector<kuic::byte_t> &padding = msg.get('PAD');
+    std::vector<kuic::byte_t> &sni = msg.get('SNI');
     std::string sni_str(sni.begin(), sni.end());
     EXPECT_EQ(1016, padding.size());
     EXPECT_EQ(0, sni_str.compare("www.example.org"));
