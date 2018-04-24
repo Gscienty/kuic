@@ -6,7 +6,8 @@
 
 namespace kuic {
     namespace handshake {
-        const kuic::tag_t tag_kerberos_as_request = 'KSRQ';
+        const kuic::tag_t tag_kbr_as_request = 'ASRQ';
+        const kuic::tag_t tag_kbr_tgs_request = 'TSRQ';
         const kuic::tag_t tag_kdc_request_body = 'KRBY';
         const kuic::tag_t tag_protocol_version = 'PVNO';
         const kuic::tag_t tag_message_type = 'MTYP';

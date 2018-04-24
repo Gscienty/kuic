@@ -12,6 +12,8 @@ namespace kuic {
             std::string name;
         public:
             kbr_principal_name(std::string name);
+
+            char *serialize(size_t &size);
         };
     }
 }

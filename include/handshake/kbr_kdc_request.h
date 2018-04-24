@@ -7,6 +7,7 @@
 #include "handshake/kbr_encrypted_data.h"
 #include "handshake/kbr_principal_name.h"
 #include "handshake/kbr_ticket.h"
+#include "handshake/handshake_message.h"
 #include <string>
 #include <vector>
 
@@ -38,6 +39,8 @@ namespace kuic {
                 kbr_principal_name client_name,
                 std::string realm,
                 unsigned int nonce);
+
+            handshake_message serialize();
         };
     }
 }
