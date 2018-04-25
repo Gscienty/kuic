@@ -163,9 +163,37 @@ kuic::handshake::kbr_kdc_request::get_message_type() const {
     return this->message_type;
 }
 
-kuic::handshake::kbr_principal_name &
-kuic::handshake::kbr_kdc_request::get_client_name() {
+kuic::handshake::kbr_principal_name 
+kuic::handshake::kbr_kdc_request::get_client_name() const {
     return this->client_name;
 }
 
+std::string 
+kuic::handshake::kbr_kdc_request::get_realm() const {
+    return this->realm;
+}
 
+kuic::handshake::kbr_principal_name 
+kuic::handshake::kbr_kdc_request::get_server_name() const {
+    return this->server_name;
+}
+
+kuic::special_clock
+kuic::handshake::kbr_kdc_request::get_from() const {
+    return this->from;
+}
+
+kuic::special_clock
+kuic::handshake::kbr_kdc_request::get_till() const {
+    return this->till;
+}
+
+kuic::special_clock 
+kuic::handshake::kbr_kdc_request::get_rtime() const {
+    return this->rtime;
+}
+
+unsigned int
+kuic::handshake::kbr_kdc_request::get_nonce() const {
+    return this->nonce;
+}

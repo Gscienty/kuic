@@ -23,14 +23,6 @@ TEST(kbr_kdc_request, as_request) {
             0x01234567);
    std::vector<kuic::byte_t> buff = req.serialize().serialize();
 
-   std::for_each(buff.begin(), buff.end(), [] (const kuic::byte_t &b) -> void {
-           std::cout 
-                << std::hex 
-                << std::setw(2) 
-                << std::setfill('0')
-                << int(b);
-    });
-
     sepical_in_buffer in_bufferer(buff);
 
     kuic::handshake::handshake_message msg;
@@ -38,6 +30,10 @@ TEST(kbr_kdc_request, as_request) {
     std::tie(msg, err) = kuic::handshake::handshake_message::parse_handshake_message(in_bufferer);
 
     kuic::handshake::kbr_kdc_request rec_req = kuic::handshake::kbr_kdc_request::deserialize(msg);
+
+    EXPECT_EQ(0x01234567, rec_req.get_nonce());
+    EXPECT_EQ(0, rec_req.get_realm().compare("local"));
+    EXPECT_EQ(0, rec_req.get_client_name().get_name().compare("user"));
 }
 
 int main() {

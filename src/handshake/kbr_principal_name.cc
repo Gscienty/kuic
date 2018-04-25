@@ -36,3 +36,13 @@ kuic::handshake::kbr_principal_name::deserialize(
     
     return ret;
 }
+
+kuic::kbr_name_type_t
+kuic::handshake::kbr_principal_name::get_type() const {
+    return this->type;
+}
+
+std::string
+kuic::handshake::kbr_principal_name::get_name() const {
+    return this->name;
+}

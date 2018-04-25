@@ -47,7 +47,13 @@ namespace kuic {
 
             kuic::kbr_protocol_version_t get_version() const;
             kuic::kbr_message_type_t get_message_type() const;
-            kbr_principal_name &get_client_name();
+            kbr_principal_name get_client_name() const;
+            std::string get_realm() const;
+            kbr_principal_name get_server_name() const;
+            kuic::special_clock get_from() const;
+            kuic::special_clock get_till() const;
+            kuic::special_clock get_rtime() const;
+            unsigned int get_nonce() const;
         };
     }
 }
