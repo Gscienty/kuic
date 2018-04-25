@@ -28,6 +28,8 @@ namespace kuic {
             
             std::vector<kuic::tag_t> get_tags_sorted() const;
             std::vector<kuic::byte_t> &get(kuic::tag_t tag);
+            bool exist(kuic::tag_t tag) const;
+            kuic::tag_t get_tag() const;
         };
     }
 }

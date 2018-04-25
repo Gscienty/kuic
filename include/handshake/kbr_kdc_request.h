@@ -1,5 +1,5 @@
-#ifndef _KUIC_HANDSHAKE_CLIENT_TO_KBR_
-#define _KUIC_HANDSHAKE_CLIENT_TO_KBR_
+#ifndef _KUIC_HANDSHAKE_KDC_REQUEST_ 
+#define _KUIC_HANDSHAKE_KDC_REQUEST_
 
 #include "type.h"
 #include "clock.h"
@@ -34,13 +34,20 @@ namespace kuic {
             kbr_encrypted_data encrypted_data;
             std::vector<kbr_ticket> tickets;
 
+            kbr_kdc_request();
         public:
             static kbr_kdc_request build_as_request(
                 kbr_principal_name client_name,
                 std::string realm,
                 unsigned int nonce);
 
+            static kbr_kdc_request deserialize(handshake_message &msg);
+
             handshake_message serialize();
+
+            kuic::kbr_protocol_version_t get_version() const;
+            kuic::kbr_message_type_t get_message_type() const;
+            kbr_principal_name &get_client_name();
         };
     }
 }

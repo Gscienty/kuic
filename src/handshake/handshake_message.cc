@@ -148,3 +148,11 @@ std::vector<kuic::byte_t> &
 kuic::handshake::handshake_message::get(kuic::tag_t tag) {
     return this->data[tag];
 }
+
+bool kuic::handshake::handshake_message::exist(kuic::tag_t tag) const {
+    return this->data.find(tag) != this->data.end();
+}
+
+kuic::tag_t kuic::handshake::handshake_message::get_tag() const {
+    return this->tag;
+}

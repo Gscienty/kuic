@@ -11,6 +11,8 @@ namespace kuic {
             kuic::kbr_name_type_t type;
             std::string name;
         public:
+            static kbr_principal_name deserialize(const char *buffer, size_t len);
+            kbr_principal_name();
             kbr_principal_name(std::string name);
 
             char *serialize(size_t &size);

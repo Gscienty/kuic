@@ -4,6 +4,7 @@
 #include "define.h"
 #include "type.h"
 #include <time.h>
+#include <sys/types.h> 
 
 namespace kuic {
     class clock {
@@ -13,6 +14,9 @@ namespace kuic {
         bool is_zero() const;
         kuic_time_t since(const clock &) const;
         bool before(const clock &) const;
+
+        char *timestamp_serialize(size_t &size);
+        char *timestamp_nano_serialize(size_t &size);
 
         kuic_time_t operator- (const clock &b);
         kuic_time_t operator- (const kuic_time_t t);
@@ -41,6 +45,8 @@ namespace kuic {
     private:
         timespec special_time;
     public:
+        static special_clock deserialize(const char *buffer, size_t len, ssize_t &seek);
+
         special_clock();
         special_clock(const timespec &);
         special_clock(const clock &c);
