@@ -134,3 +134,7 @@ size_t kuic::crypt::sm4::get_message_length() const {
 size_t kuic::crypt::sm4::get_key_length() const {
     return 16;
 }
+
+size_t kuic::crypt::sm4::get_cipher_length() const {
+    return 16;
+}

@@ -77,6 +77,7 @@ namespace kuic {
 
             virtual size_t get_message_length() const override;
             virtual size_t get_key_length() const override;
+            virtual size_t get_cipher_length() const override;
         };
     }
 }
