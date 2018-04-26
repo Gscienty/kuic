@@ -126,3 +126,11 @@ kuic::crypt::sm4::extend_key(kuic::byte_t *key) {
     }
     return k_group;
 }
+
+size_t kuic::crypt::sm4::get_message_length() const {
+    return 16; 
+}
+
+size_t kuic::crypt::sm4::get_key_length() const {
+    return 16;
+}
