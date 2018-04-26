@@ -16,10 +16,12 @@ namespace kuic {
     typedef unsigned int kbr_message_type_t;
     typedef unsigned int kbr_flag_t;
     typedef unsigned int kbr_encryption_type_t;
+    typedef unsigned int kbr_encryption_key_t;
     typedef unsigned int kbr_key_version_t;
     typedef unsigned int kbr_padata_type_t;
     typedef unsigned int kbr_name_type_t;
     typedef unsigned int kbr_ticket_version_t;
+    typedef unsigned int kbr_address_type_t;
 }
 
 #endif
