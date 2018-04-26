@@ -54,6 +54,8 @@ namespace kuic {
             kuic::special_clock get_till() const;
             kuic::special_clock get_rtime() const;
             unsigned int get_nonce() const;
+            
+            void support_encrypt_type(kuic::kbr_encryption_type_t encryption_type);
         };
     }
 }
