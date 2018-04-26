@@ -2,7 +2,7 @@
 #include "crypt/sm4.h"
 #include <algorithm>
 
-kuic::crypt::mode::mode(crypter *&&crypter_ptr)
+kuic::crypt::mode::mode(crypter *crypter_ptr)
     : crypter_ptr(std::unique_ptr<kuic::crypt::crypter>(crypter_ptr))
     , message_length(0)
     , key_length(0) { }

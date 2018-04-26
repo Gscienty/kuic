@@ -18,7 +18,7 @@ namespace kuic {
             size_t key_length;
 
         public:
-            mode(crypter *&&_crypter);
+            mode(crypter *_crypter);
             void set_secret_key(kuic::byte_t *key, size_t key_len);
             void set_message(kuic::byte_t *message, size_t message_len);
 

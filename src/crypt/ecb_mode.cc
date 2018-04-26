@@ -1,6 +1,9 @@
 #include "crypt/ecb_mode.h"
 #include <algorithm>
 
+kuic::crypt::ecb_mode::ecb_mode(kuic::crypt::crypter *_crypter)
+    : mode(_crypter) { }
+
 std::pair<kuic::byte_t *, size_t>
 kuic::crypt::ecb_mode::encrypt() {
     // calculate group count
