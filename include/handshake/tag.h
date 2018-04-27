@@ -24,6 +24,12 @@ namespace kuic {
         const kuic::tag_t tag_encrypted_data = 'EDAT';
         const kuic::tag_t tag_additional_tickets = 'ADTK';
 
+        const kuic::tag_t tag_kbr_tgt = 'TGT\0';
+        const kuic::tag_t tag_tgt_key = 'TGTK';
+        const kuic::tag_t tag_time_auth = 'TAUT';
+        const kuic::tag_t tag_time_start = 'TSTR';
+        const kuic::tag_t tag_time_end = 'TEND';
+        const kuic::tag_t tag_time_key_expiration = 'TKEP';
 
         struct tag_serializer {
             static char *serialize(kuic::tag_t e, size_t &size) {

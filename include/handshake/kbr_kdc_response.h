@@ -35,14 +35,18 @@ namespace kuic {
             std::string server_realm;
             kbr_principal_name server_name;
             kbr_host_address client_address;
-
+            
+            kbr_kdc_response_part();
         public:
-            kbr_kdc_response_part(
-                    std::string server_name,
-                    std::string server_realm,
-                    unsigned int nonce);
+            kbr_kdc_response_part(unsigned int nonce);
 
+            void set_nonce(unsigned int nonce);
+            void set_key(kbr_encryption_key key);
             void set_key_expiration(kuic::special_clock &clock);
+            void set_server_realm(std::string realm);
+            void set_server_name(kbr_principal_name server_name);
+
+            char *serialize(size_t &size);
         };
 
 
@@ -55,7 +59,6 @@ namespace kuic {
             kbr_principal_name client_name;
             kbr_ticket ticket;
             kbr_encrypted_data encrypted_data;
-            kbr_kdc_response_part encryped_part;
             
             kbr_kdc_response();
         public:

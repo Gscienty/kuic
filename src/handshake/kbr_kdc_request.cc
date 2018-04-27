@@ -53,6 +53,11 @@ kuic::handshake::kbr_kdc_request::serialize() {
         serialize_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->realm.length()]);
         std::copy(this->realm.begin(), this->realm.end(), serialize_buffer.get());
         msg.insert(kuic::handshake::tag_realm, serialize_buffer.get(), this->realm.length());
+
+        // encryption types
+        serialize_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->encrypt_types.size() * sizeof(kuic::kbr_encryption_type_t)]);
+        std::copy(this->encrypt_types.begin(), this->encrypt_types.end(), reinterpret_cast<kuic::kbr_encryption_type_t *>(serialize_buffer.get()));
+        msg.insert(kuic::handshake::tag_encrypt_type, serialize_buffer.get(), this->encrypt_types.size() * sizeof(kuic::kbr_encryption_type_t));
         
         // from timestamp
         serialize_buffer = std::unique_ptr<kuic::byte_t>(
@@ -118,6 +123,13 @@ kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message
         ret.realm = std::string(
                 msg.get(kuic::handshake::tag_realm).begin(),
                 msg.get(kuic::handshake::tag_realm).end());
+    }
+
+    // deserialize encrypt type
+    if (msg.exist(kuic::handshake::tag_encrypt_type)) {
+        ret.encrypt_types.assign(
+                msg.get(kuic::handshake::tag_encrypt_type).begin(),
+                msg.get(kuic::handshake::tag_encrypt_type).end());
     }
 
     // deserialize from
@@ -196,4 +208,9 @@ kuic::handshake::kbr_kdc_request::get_rtime() const {
 unsigned int
 kuic::handshake::kbr_kdc_request::get_nonce() const {
     return this->nonce;
+}
+
+void kuic::handshake::kbr_kdc_request::support_encrypt_type(
+        kuic::kbr_encryption_type_t encryption_type) {
+    this->encrypt_types.push_back(encryption_type);
 }
