@@ -50,7 +50,107 @@ char *kuic::handshake::kbr_kdc_response_part::serialize(
  
     // declare serialize buffer, 
     // used to store middle serialize value
-    std::unique_ptr<kuic::byte_t> seialize_buffer;
+    std::unique_ptr<kuic::byte_t> serialize_buffer;
+
+    // declare serialize buffer length
+    size_t serialize_size = 0;
+
+    // serialize key
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            this->key.serialize(serialize_size));
+    msg.insert(
+            kuic::handshake::tag_tgt_key,
+            serialize_buffer.get(),
+            serialize_size);
+
+    // serialize nonce
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            reinterpret_cast<kuic::byte_t *>(
+                eys::serializer<unsigned int>::serialize(
+                this->nonce,
+                serialize_size)));
+    msg.insert(
+            kuic::handshake::tag_nonce,
+            serialize_buffer.get(),
+            serialize_size);
+
+    // serialize auth time
+    serialize_size = 0;
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            reinterpret_cast<kuic::byte_t *>(
+                this->auth_time.timestamp_serialize(
+                    serialize_size)));
+    msg.insert(
+            kuic::handshake::tag_time_auth,
+            serialize_buffer.get(),
+            serialize_size);
+
+    // serialize start time
+    serialize_size = 0;
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            reinterpret_cast<kuic::byte_t *>(
+                this->start_time.timestamp_serialize(
+                    serialize_size)));
+    msg.insert(
+            kuic::handshake::tag_time_start,
+            serialize_buffer.get(),
+            serialize_size);
+
+    // serialize end time
+    serialize_size = 0;
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            reinterpret_cast<kuic::byte_t *>(
+                this->end_time.timestamp_serialize(
+                    serialize_size)));
+    msg.insert(
+            kuic::handshake::tag_time_end,
+            serialize_buffer.get(),
+            serialize_size);
+
+    // serialize time renew till
+    serialize_size = 0;
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            reinterpret_cast<kuic::byte_t *>(
+                this->renew_till.timestamp_serialize(
+                    serialize_size)));
+    msg.insert(
+            kuic::handshake::tag_renew_till_time,
+            serialize_buffer.get(),
+            serialize_size);
+
+    // serialize key expiration
+    serialize_size = 0;
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            reinterpret_cast<kuic::byte_t *>(
+                this->key_expiration.timestamp_serialize(
+                    serialize_size)));
+    msg.insert(
+            kuic::handshake::tag_time_key_expiration,
+            serialize_buffer.get(),
+            serialize_size);
+
+    // serialize server realm
+    serialize_size = 0;
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            new kuic::byte_t[this->server_realm.size()]);
+    std::copy(
+            this->server_realm.begin(),
+            this->server_realm.end(),
+            serialize_buffer.get());
+    msg.insert(
+            kuic::handshake::tag_server_realm,
+            serialize_buffer.get(),
+            this->server_realm.size());
+
+    // serialize server name
+    serialize_size = 0;
+    serialize_buffer = std::unique_ptr<kuic::byte_t>(
+            reinterpret_cast<kuic::byte_t *>(
+                this->server_name.serialize(serialize_size)));
+    msg.insert(
+            kuic::handshake::tag_server_principal_name,
+            serialize_buffer.get(),
+            serialize_size);
 
     // TODO serialize kbr_kdc_response_part fields
 

@@ -13,7 +13,9 @@ namespace kuic {
         const kuic::tag_t tag_message_type = 'MTYP';
         const kuic::tag_t tag_padata = 'PADA';
         const kuic::tag_t tag_client_principal_name = 'CNAM';
-        const kuic::tag_t tag_realm = 'DMAN';
+        const kuic::tag_t tag_client_realm = 'CMAN';
+        const kuic::tag_t tag_server_realm = 'SMAN';
+
         const kuic::tag_t tag_server_principal_name = 'SNAM';
         const kuic::tag_t tag_time_from = 'TFRM';
         const kuic::tag_t tag_time_till = 'TTIL';

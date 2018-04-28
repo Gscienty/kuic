@@ -52,7 +52,10 @@ kuic::handshake::kbr_kdc_request::serialize() {
         // realm
         serialize_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->realm.length()]);
         std::copy(this->realm.begin(), this->realm.end(), serialize_buffer.get());
-        msg.insert(kuic::handshake::tag_realm, serialize_buffer.get(), this->realm.length());
+        msg.insert(
+                kuic::handshake::tag_client_realm,
+                serialize_buffer.get(),
+                this->realm.length());
 
         // encryption types
         serialize_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->encrypt_types.size() * sizeof(kuic::kbr_encryption_type_t)]);
