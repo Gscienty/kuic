@@ -38,7 +38,7 @@ namespace kuic {
 
     const kbr_protocol_version_t kbr_current_protocol_version = 0x00000001;
 
-    const kbr_encryption_type_t kbr_encryption_type_sm4_ecb = 0x00000001;
+    const kbr_encryption_type_t kbr_encryption_type_sm4_ecb = 0x00010001;
 }
 
 #endif

@@ -62,7 +62,12 @@ namespace kuic {
             
             kbr_kdc_response();
         public:
-            static kbr_kdc_response build_as_response();
+            static kbr_kdc_response build_as_response(
+                    std::string realm,
+                    kuic::kbr_encryption_type_t encryption_type,
+                    kuic::byte_t *secret_key,
+                    size_t secret_key_size,
+                    kuic::handshake::kbr_kdc_response_part &part);
         };
     }
 }

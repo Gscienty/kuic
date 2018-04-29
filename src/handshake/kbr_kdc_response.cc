@@ -152,8 +152,6 @@ char *kuic::handshake::kbr_kdc_response_part::serialize(
             serialize_buffer.get(),
             serialize_size);
 
-    // TODO serialize kbr_kdc_response_part fields
-
     // serialize temporary handshake_message
     // you should encrypt the result
     // (byte-string) in other function.
@@ -172,11 +170,34 @@ char *kuic::handshake::kbr_kdc_response_part::serialize(
 kuic::handshake::kbr_kdc_response::kbr_kdc_response() { }
 
 kuic::handshake::kbr_kdc_response
-kuic::handshake::kbr_kdc_response::build_as_response() {
+kuic::handshake::kbr_kdc_response::build_as_response(
+        std::string server_realm,
+        kuic::kbr_encryption_type_t encryption_type,
+        kuic::byte_t *secret_key,
+        size_t secret_key_size,
+        kuic::handshake::kbr_kdc_response_part &part) {
     kuic::handshake::kbr_kdc_response ret;
     
     ret.version = kuic::kbr_current_protocol_version;
+    ret.message_type = kuic::handshake::kbr_kdc_as_response;
+    ret.realm = server_realm;
 
+    // prepare part buffer
+    size_t serialized_part_size = 0;
+    std::unique_ptr<kuic::byte_t> serialized_part (
+            reinterpret_cast<kuic::byte_t *>(
+                part.serialize(
+                serialized_part_size)));
+    // construct encrypted data (a field in TGT response body)
+    kuic::handshake::kbr_encrypted_data encrypted_data(
+            0x00000000,
+            encryption_type);
+    encrypted_data.set_plain_message(
+            serialized_part.get(),
+            serialized_part_size,
+            secret_key,
+            secret_key_size);
+    ret.encrypted_data = encrypted_data;
 
     return ret;
 }
