@@ -122,10 +122,10 @@ kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message
     }
 
     // deserialize realm
-    if (msg.exist(kuic::handshake::tag_realm)) {
+    if (msg.exist(kuic::handshake::tag_client_realm)) {
         ret.realm = std::string(
-                msg.get(kuic::handshake::tag_realm).begin(),
-                msg.get(kuic::handshake::tag_realm).end());
+                msg.get(kuic::handshake::tag_client_realm).begin(),
+                msg.get(kuic::handshake::tag_client_realm).end());
     }
 
     // deserialize encrypt type
