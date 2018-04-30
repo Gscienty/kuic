@@ -22,7 +22,9 @@ namespace kuic {
             void insert(kuic::tag_t tag, kuic::byte_t *data, size_t size);
 
             static std::pair<handshake_message, kuic::error_t>
-            parse_handshake_message(eys::in_buffer &reader);
+                parse_handshake_message(eys::in_buffer &reader);
+            static std::pair<handshake_message, kuic::error_t>
+                deserialize(kuic::byte_t *buffer, size_t len, ssize_t &seek);
 
             std::vector<kuic::byte_t> serialize();
             

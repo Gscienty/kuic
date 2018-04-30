@@ -30,44 +30,61 @@ std::pair<kuic::handshake::handshake_message, kuic::error_t>
 kuic::handshake::handshake_message::parse_handshake_message(
     eys::in_buffer &reader) {
 
+    // check reader remain lawful handshake message
     if (reader.remain() < 4) {
         return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
             kuic::handshake::handshake_message(), kuic::reader_buffer_remain_not_enough);
     }
 
+    // get main tag name
     kuic::tag_t tag;
     reader.get<kuic::tag_t, kuic::handshake::tag_serializer>(tag);
+    // get current message parameters count
     unsigned int parameters_count;
     reader.get<unsigned int, kuic::little_endian_serializer<unsigned int>>(parameters_count);
+    // if current message parameters count too many
+    // then return error
     if (parameters_count > kuic::max_parameters_count) {
         return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
             kuic::handshake::handshake_message(), kuic::handshake_too_many_entries);
     }
 
+    // get handshake message index area
+    // use unique_ptr store it
+    // each parameter has 8 bytes
+    // first 4 bytes store child-tag 
+    // next 4 bytes store segment length
     char *index;
     size_t truth_size;
     std::tie<char *, size_t>(index, truth_size) = reader.get_range(parameters_count * 8);
     std::unique_ptr<char []> uni_index(index);
-
+    
+    // check current handshake message remain bytes is enough
     if (truth_size != parameters_count * 8) {
         return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
             kuic::handshake::handshake_message(), kuic::reader_buffer_remain_not_enough);
     }
-
+    
+    // declare tag-value map to store current serialized bytes-string
     std::map<kuic::tag_t, std::vector<kuic::byte_t> > result_map;
     unsigned int seg_start = 0;
     for (ssize_t pos = 0; pos < parameters_count * 8; ) {
+        // get current segment tag name
         kuic::tag_t tag = kuic::handshake::tag_serializer::deserialize(
             uni_index.get(), parameters_count * 8, pos);
         unsigned int seg_end = kuic::little_endian_serializer<unsigned int>::deserialize(
             uni_index.get(), parameters_count * 8, pos);
-        
+
+        // calculate current segment length
         unsigned int seg_len = seg_end - seg_start;
+        // check current segment length
         if (seg_len > kuic::parameter_max_length) {
             return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
                 kuic::handshake::handshake_message(), kuic::handshake_invalid_value_length);
         }
-
+        
+        // get current segment
+        // use unique_ptr to store temporary bytes-string
         char *seg;
         size_t seg_truth_len;
         std::tie<char *, size_t>(seg, seg_truth_len) = reader.get_range(seg_len);
@@ -77,6 +94,8 @@ kuic::handshake::handshake_message::parse_handshake_message(
             return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
                 kuic::handshake::handshake_message(), kuic::reader_buffer_remain_not_enough);
         }
+
+        // insert current segment to result_map
         result_map.insert(std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(
             tag, std::vector<kuic::byte_t>(seg, seg + seg_truth_len)));
         
@@ -127,6 +146,90 @@ kuic::handshake::handshake_message::serialize() {
     result.insert(result.end(), data_buffer.begin(), data_buffer.end());
 
     return result;
+}
+
+std::pair<kuic::handshake::handshake_message, kuic::error_t>
+kuic::handshake::handshake_message::deserialize(
+        kuic::byte_t *buffer, size_t len, ssize_t &seek) {
+    // check it is a lawful handshake message
+    // if it not, return reader buffer remain not enough 
+    if (len - seek < 4) {
+        return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
+                kuic::handshake::handshake_message(),
+                kuic::reader_buffer_remain_not_enough);
+    }
+
+    // get global tag name
+    kuic::tag_t tag = kuic::handshake::tag_serializer::deserialize(reinterpret_cast<char *>(buffer), len, seek);
+    // get handshake message parameters count
+    // index part's length is parameters count * 8
+    // because tag occupy 4 bytes 
+    // and content length occupy 4bytes
+    unsigned int parameters_count = kuic::little_endian_serializer<unsigned int>::deserialize(
+            reinterpret_cast<char *>(buffer), len, seek);
+    // if remain bytes have not enough 
+    // or too many parameters count
+    // then return them errors
+    if (parameters_count > kuic::max_parameters_count) {
+        return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
+                kuic::handshake::handshake_message(),
+                kuic::handshake_too_many_entries);
+    }
+
+    if (len - seek < parameters_count * 8) {
+        return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
+                kuic::handshake::handshake_message(),
+                kuic::reader_buffer_remain_not_enough);
+    }
+
+    // declare child tag-value map
+    std::map<kuic::tag_t, std::vector<kuic::byte_t> > result_map;
+    // declare index point to index start position
+    kuic::byte_t *index = buffer + seek;
+    // set seek to value area start position
+    seek += parameters_count * 8;
+    unsigned int seg_start = 0;
+    for (ssize_t pos = 0; pos < parameters_count * 8; ) {
+        // get child tag name
+        kuic::tag_t tag = kuic::handshake::tag_serializer::deserialize(
+                reinterpret_cast<char *>(index),
+                parameters_count * 8,
+                pos);
+        // get end of current segment
+        unsigned int seg_end = kuic::little_endian_serializer<unsigned int>::deserialize(
+                reinterpret_cast<char *>(index),
+                parameters_count * 8,
+                pos);
+        // calculate current segment length
+        unsigned int seg_len = seg_end - seg_start;
+        // if current segment length great than 
+        // parameter max length, then return error
+        if (seg_len > kuic::parameter_max_length) {
+            return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
+                    kuic::handshake::handshake_message(),
+                    kuic::handshake_invalid_value_length);
+        }
+        // check remain bytes is enough current segment bytes
+        if (len - seek < seg_len) {
+            return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
+                    kuic::handshake::handshake_message(),
+                    kuic::handshake_invalid_value_length);
+        }
+        // insert current tag & value
+        result_map.insert(
+                std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(
+                    tag,
+                    std::vector<kuic::byte_t>(
+                        buffer + seek,
+                        buffer + seek + seg_len)));
+        
+        // add seg_len to seek
+        seek += seg_len; 
+    }
+    
+    return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
+            kuic::handshake::handshake_message(tag, result_map),
+            kuic::no_error); 
 }
 
 std::vector<kuic::tag_t>
