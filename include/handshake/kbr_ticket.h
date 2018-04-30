@@ -15,7 +15,7 @@ namespace kuic {
             kbr_principal_name server_name;
             kbr_encrypted_data encrypted_data;
         public:
-            kbr_ticket();
+            kbr_ticket() { }
         };
     }
 }
