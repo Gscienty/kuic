@@ -36,6 +36,13 @@ namespace kuic {
             std::pair<kuic::byte_t *, size_t> get_plain_message(
                     kuic::byte_t *secret_key,
                     size_t secret_key_size);
+
+            kuic::byte_t *serialize(size_t &size);
+
+            static kbr_encrypted_data deserialize(
+                    kuic::byte_t *buffer,
+                    size_t size,
+                    ssize_t &seek);
         };
     }
 }
