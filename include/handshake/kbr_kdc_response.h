@@ -9,6 +9,7 @@
 #include "handshake/kbr_encrypted_data.h"
 #include "handshake/kbr_encryption_key.h"
 #include "handshake/kbr_host_address.h"
+#include "handshake/handshake_message.h"
 #include <vector>
 #include <string>
 
@@ -47,6 +48,9 @@ namespace kuic {
             void set_server_name(kbr_principal_name server_name);
 
             char *serialize(size_t &size);
+            static kbr_kdc_response_part deserialize(
+                    kuic::byte_t *buffer,
+                    size_t size);
         };
 
 
@@ -68,6 +72,7 @@ namespace kuic {
                     kuic::byte_t *secret_key,
                     size_t secret_key_size,
                     kuic::handshake::kbr_kdc_response_part &part);
+            kuic::handshake::handshake_message serialize();
         };
     }
 }
