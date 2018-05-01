@@ -110,24 +110,33 @@ std::vector<kuic::byte_t>
 kuic::handshake::handshake_message::serialize() {
     std::vector<kuic::byte_t> result;
     
+    // declare segment size
     size_t ser_size;
+    // declare segment temporary buffer
+    // current ser_buffer store main tag
     std::unique_ptr<char []> ser_buffer(
         kuic::handshake::tag_serializer::serialize(this->tag, ser_size));
+    // copy current ser_buffer to result (byte vector)
     result.insert(result.begin(), ser_buffer.get(), ser_buffer.get() + ser_size);
-
+    
+    // reset ser_buffer to store segment count
     ser_buffer = std::unique_ptr<char []>(kuic::little_endian_serializer<unsigned short>::serialize(
         static_cast<unsigned short>(this->data.size()), ser_size));
+    // copy current ser_buffer to result (only set short (max is 65535))
     result.insert(result.end(), ser_buffer.get(), ser_buffer.get() + ser_size);
-
+    // fill zero (like int)
     result.push_back(kuic::byte_t(0));
     result.push_back(kuic::byte_t(0));
 
+    // reset ser_buffer to store index area
     ser_buffer = std::unique_ptr<char []>(new char[this->data.size() * 8]);
     unsigned int offset = 0;
-    
+    // get sorted_tags
     std::vector<kuic::tag_t> tags_sorted = this->get_tags_sorted();
+    // declare temporary data_buffer to store data area
     std::vector<kuic::byte_t> data_buffer;
 
+    // enum each tag to stored index & data
     int i = 0;
     std::for_each(tags_sorted.begin(), tags_sorted.end(), [&] (const kuic::tag_t &t) -> void {
         std::vector<kuic::byte_t> &value = this->data[t];
@@ -202,8 +211,9 @@ kuic::handshake::handshake_message::deserialize(
                 pos);
         // calculate current segment length
         unsigned int seg_len = seg_end - seg_start;
+        
         // if current segment length great than 
-        // parameter max length, then return error
+        // parameter max length, then return error  
         if (seg_len > kuic::parameter_max_length) {
             return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
                     kuic::handshake::handshake_message(),
@@ -224,7 +234,9 @@ kuic::handshake::handshake_message::deserialize(
                         buffer + seek + seg_len)));
         
         // add seg_len to seek
-        seek += seg_len; 
+        seek += seg_len;
+        seg_start = seg_end;
+
     }
     
     return std::pair<kuic::handshake::handshake_message, kuic::error_t>(
