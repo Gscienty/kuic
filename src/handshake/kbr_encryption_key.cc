@@ -5,6 +5,13 @@
 
 kuic::handshake::kbr_encryption_key::kbr_encryption_key() { }
 
+kuic::handshake::kbr_encryption_key::kbr_encryption_key(
+        kuic::kbr_encryption_key_t key_type,
+        std::vector<kuic::byte_t> &&key_value)
+    : key_type(key_type)
+    , key_value(std::move(key_value)) { }
+
+
 kuic::handshake::kbr_encryption_key
 kuic::handshake::kbr_encryption_key::deserialize(
         kuic::byte_t *buffer, size_t size) {
@@ -23,6 +30,7 @@ kuic::handshake::kbr_encryption_key::serialize(size_t &size) {
     // calculate result buffer capacity (type + value)
     size = sizeof(kuic::kbr_encryption_key_t) +
         this->key_value.size();
+    
     // declare result buffer
     kuic::byte_t *result = new kuic::byte_t[size];
 
@@ -37,7 +45,7 @@ kuic::handshake::kbr_encryption_key::serialize(size_t &size) {
             serialized_buffer.get(),
             serialized_size,
             result);
-
+    // copy secret key to result
     std::copy_n(
             this->key_value.begin(),
             this->key_value.size(),
