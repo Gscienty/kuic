@@ -47,6 +47,12 @@ namespace kuic {
             void set_server_realm(std::string realm);
             void set_server_name(kbr_principal_name server_name);
 
+            unsigned int get_nonce() const;
+            kbr_encryption_key get_encryption_key() const;
+            kuic::special_clock get_key_expiration() const;
+            std::string get_server_realm() const;
+            kbr_principal_name get_server_name() const;
+
             char *serialize(size_t &size);
             static kbr_kdc_response_part deserialize(
                     kuic::byte_t *buffer,

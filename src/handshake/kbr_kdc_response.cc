@@ -23,6 +23,31 @@ void kuic::handshake::kbr_kdc_response_part::set_nonce(
     this->nonce = nonce;
 }
 
+unsigned int 
+kuic::handshake::kbr_kdc_response_part::get_nonce() const {
+    return this->nonce;
+}
+
+kuic::handshake::kbr_encryption_key
+kuic::handshake::kbr_kdc_response_part::get_encryption_key() const {
+    return this->key;
+}
+
+kuic::special_clock
+kuic::handshake::kbr_kdc_response_part::get_key_expiration() const {
+    return this->key_expiration;
+}
+
+std::string
+kuic::handshake::kbr_kdc_response_part::get_server_realm() const {
+    return this->server_realm;
+}
+
+kuic::handshake::kbr_principal_name
+kuic::handshake::kbr_kdc_response_part::get_server_name() const {
+    return this->server_name;
+}
+
 void kuic::handshake::kbr_kdc_response_part::set_key(
         kuic::handshake::kbr_encryption_key key) {
     this->key = key;
@@ -177,15 +202,16 @@ kuic::handshake::kbr_kdc_response_part::deserialize(
     std::tie(temporary_msg, err) =
         kuic::handshake::handshake_message::deserialize(
                 buffer, size, seek);
+
     if (err != kuic::no_error) {
         return kuic::handshake::kbr_kdc_response_part();
     }
     if (temporary_msg.get_tag() != kuic::handshake::tag_kbr_tgt) {
         return kuic::handshake::kbr_kdc_response_part();
     }
-    
+
+    // declare result
     kuic::handshake::kbr_kdc_response_part result;
-    
     // deserialize secret key
     if (temporary_msg.exist(kuic::handshake::tag_tgt_key)) {
         result.key = kuic::handshake::kbr_encryption_key::deserialize(
