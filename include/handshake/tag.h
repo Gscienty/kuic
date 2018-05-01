@@ -57,8 +57,8 @@ namespace kuic {
                     return kuic::tag_t(0);
                 }
                 kuic::tag_t result = (buffer[seek] << 24) | (buffer[seek + 1] << 16) | (buffer[seek + 2] << 8) | (buffer[seek + 3]);
-                if ((result & 0x000000FF) == 0) {
-                    result >>= 8;
+                if ((result & 0xFF000000) == 0) {
+                    result <<= 8;
                 }
                 seek += 4;
                 return result;
