@@ -34,8 +34,8 @@ namespace kuic {
         const kuic::tag_t tag_time_key_expiration = 'TKEP';
 
         struct tag_serializer {
-            static char *serialize(kuic::tag_t e, size_t &size) {
-                char *buffer(new char[4]);
+            static std::pair<kuic::byte_t *, size_t> serialize(kuic::tag_t e) {
+                kuic::byte_t *buffer(new kuic::byte_t[4]);
                 if ((e & 0xFF000000) == 0) {
                     buffer[0] = (e & 0x00FF0000) >> 16;
                     buffer[1] = (e & 0x0000FF00) >> 8;
@@ -48,12 +48,11 @@ namespace kuic {
                     buffer[2] = (e & 0x0000FF00) >> 8;
                     buffer[3] = (e & 0x000000FF);
                 }
-                size = 4;
-                return buffer;
+                return std::pair<kuic::byte_t *, size_t>(buffer, 4);
             }
 
-            static kuic::tag_t deserialize(const char *buffer, size_t len, ssize_t &seek) {
-                if (seek + 4> ssize_t(len)) {
+            static kuic::tag_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+                if (seek + 4> len) {
                     return kuic::tag_t(0);
                 }
                 kuic::tag_t result = (buffer[seek] << 24) | (buffer[seek + 1] << 16) | (buffer[seek + 2] << 8) | (buffer[seek + 3]);
