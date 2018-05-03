@@ -10,6 +10,8 @@ namespace kuic {
     const error_t reader_buffer_remain_not_enough = 3001;
     const error_t handshake_too_many_entries = 4001;
     const error_t handshake_invalid_value_length = 4002;
+
+    const error_t not_expect = 5001;
 }
 
 #endif
