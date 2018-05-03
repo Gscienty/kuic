@@ -19,9 +19,9 @@ TEST(kbr_kdc_request, as_request) {
     size_t seek = 0;
     kuic::handshake::kbr_kdc_request rec_req = kuic::handshake::kbr_kdc_request::deserialize(buff, size, seek);
 
-    EXPECT_EQ(0x01234567, rec_req.get_nonce());
-    EXPECT_EQ(0, rec_req.get_realm().compare("local"));
-    EXPECT_EQ(0, rec_req.get_client_name().get_name().compare("user"));
+    EXPECT_EQ(0x01234567, rec_req.get_body().get_nonce());
+    EXPECT_EQ(0, rec_req.get_body().get_realm().compare("local"));
+    EXPECT_EQ(0, rec_req.get_body().get_client_name().get_name().compare("user"));
 }
 
 int main() {
