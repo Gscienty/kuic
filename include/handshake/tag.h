@@ -51,7 +51,7 @@ namespace kuic {
                 return std::pair<kuic::byte_t *, size_t>(buffer, 4);
             }
 
-            static kuic::tag_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::tag_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
                 if (seek + 4> len) {
                     return kuic::tag_t(0);
                 }
