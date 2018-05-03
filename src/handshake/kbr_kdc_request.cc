@@ -1,7 +1,6 @@
 #include "handshake/kbr_kdc_request.h"
 #include "handshake/tag.h"
 #include "handshake/serializer.h"
-#include "little_endian_serializer.h"
 #include "clock.h"
 #include "define.h"
 #include <memory>
@@ -29,53 +28,52 @@ kuic::handshake::kbr_kdc_request::build_as_request(
 }
 
 kuic::handshake::handshake_message
-kuic::handshake::kbr_kdc_request::serialize() {
+kuic::handshake::kbr_kdc_request::__serialize() const {
     if (this->message_type == kuic::handshake::kbr_kdc_as_request) {
         kuic::handshake::handshake_message msg(kuic::handshake::tag_kbr_as_request);
-        size_t size;
+        
+        // declare temporary
+        size_t size = 0;
+        kuic::byte_t *serialized_buffer_ptr = nullptr;
+        std::unique_ptr<kuic::byte_t> serialized_buffer;
 
         // version
-        std::unique_ptr<kuic::byte_t> serialize_buffer(
-                reinterpret_cast<kuic::byte_t *>(kuic::handshake::kbr_protocol_version_serializer::serialize(this->version, size)));
-        msg.insert(kuic::handshake::tag_protocol_version, serialize_buffer.get(), size);
+        std::tie(serialized_buffer_ptr, size) = kuic::handshake::kbr_protocol_version_serializer::serialize(this->version);
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(serialized_buffer_ptr);
+        msg.insert(kuic::handshake::tag_protocol_version, serialized_buffer.get(), size);
 
         // message type
-        serialize_buffer = std::unique_ptr<kuic::byte_t>(
-                reinterpret_cast<kuic::byte_t *>(kuic::handshake::kbr_message_type_serializer::serialize(this->message_type, size)));
-        msg.insert(kuic::handshake::tag_message_type, serialize_buffer.get(), size);
+        std::tie(serialized_buffer_ptr, size) = kuic::handshake::kbr_message_type_serializer::serialize(this->message_type);
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(serialized_buffer_ptr);
+        msg.insert(kuic::handshake::tag_message_type, serialized_buffer.get(), size);
         
         // client princpal
-        serialize_buffer = std::unique_ptr<kuic::byte_t>(
-                reinterpret_cast<kuic::byte_t *>(this->client_name.serialize(size)));
-        msg.insert(kuic::handshake::tag_client_principal_name, serialize_buffer.get(), size);
+        std::tie(serialized_buffer_ptr, size) = this->client_name.serialize();
+        msg.insert(kuic::handshake::tag_client_principal_name, serialized_buffer.get(), size);
 
         // realm
-        serialize_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->realm.length()]);
-        std::copy(this->realm.begin(), this->realm.end(), serialize_buffer.get());
-        msg.insert(
-                kuic::handshake::tag_client_realm,
-                serialize_buffer.get(),
-                this->realm.length());
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->realm.length()]);
+        std::copy(this->realm.begin(), this->realm.end(), serialized_buffer.get());
+        msg.insert(kuic::handshake::tag_client_realm, serialized_buffer.get(), this->realm.length());
 
         // encryption types
-        serialize_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->encrypt_types.size() * sizeof(kuic::kbr_encryption_type_t)]);
-        std::copy(this->encrypt_types.begin(), this->encrypt_types.end(), reinterpret_cast<kuic::kbr_encryption_type_t *>(serialize_buffer.get()));
-        msg.insert(kuic::handshake::tag_encrypt_type, serialize_buffer.get(), this->encrypt_types.size() * sizeof(kuic::kbr_encryption_type_t));
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->encrypt_types.size() * sizeof(kuic::kbr_encryption_type_t)]);
+        std::copy(this->encrypt_types.begin(), this->encrypt_types.end(), reinterpret_cast<kuic::kbr_encryption_type_t *>(serialized_buffer.get()));
+        msg.insert(kuic::handshake::tag_encrypt_type, serialized_buffer.get(), this->encrypt_types.size() * sizeof(kuic::kbr_encryption_type_t));
         
         // from timestamp
-        serialize_buffer = std::unique_ptr<kuic::byte_t>(
-                reinterpret_cast<kuic::byte_t *>(this->from.timestamp_serialize(size)));
-        msg.insert(kuic::handshake::tag_time_from, serialize_buffer.get(), size);
+        std::tie(serialized_buffer_ptr, size) = this->from.serialize();
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(serialized_buffer_ptr);
+        msg.insert(kuic::handshake::tag_time_from, serialized_buffer.get(), size);
 
         // till timestamp
-        serialize_buffer = std::unique_ptr<kuic::byte_t>(
-                reinterpret_cast<kuic::byte_t *>(this->till.timestamp_serialize(size)));
-        msg.insert(kuic::handshake::tag_time_till, serialize_buffer.get(), size);
+        std::tie(serialized_buffer_ptr, size) = this->till.serialize();
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(serialized_buffer_ptr);
+        msg.insert(kuic::handshake::tag_time_till, serialized_buffer.get(), size);
 
         // nonce
-        serialize_buffer = std::unique_ptr<kuic::byte_t>(
-                reinterpret_cast<kuic::byte_t *>(eys::serializer<unsigned int>::serialize(this->nonce, size)));
-        msg.insert(kuic::handshake::tag_nonce, serialize_buffer.get(), size);
+        std::tie(serialized_buffer_ptr, size) = eys::bigendian_serializer<kuic::byte_t, unsigned int>::serialize(this->nonce);
+        msg.insert(kuic::handshake::tag_nonce, serialized_buffer.get(), size);
 
         return msg;
     }
@@ -88,18 +86,18 @@ kuic::handshake::kbr_kdc_request::serialize() {
 }
 
 kuic::handshake::kbr_kdc_request
-kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message &msg) { 
+kuic::handshake::kbr_kdc_request::__deserialize(kuic::handshake::handshake_message &msg) { 
     kuic::handshake::kbr_kdc_request ret;
     // check msg tag (AS | TGS)
     if (msg.get_tag() != kuic::handshake::tag_kbr_as_request) {
         return ret;
     }
     
-    ssize_t seek = 0;
+    size_t seek = 0;
     // deserialize protocol version
     if (msg.exist(kuic::handshake::tag_protocol_version)) {
         ret.version = kuic::handshake::kbr_protocol_version_serializer::deserialize(
-                reinterpret_cast<char *>(msg.get(kuic::handshake::tag_protocol_version).data()),
+                msg.get(kuic::handshake::tag_protocol_version).data(),
                 msg.get(kuic::handshake::tag_protocol_version).size(),
                 seek);
     }
@@ -108,17 +106,18 @@ kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message
     if (msg.exist(kuic::handshake::tag_message_type)) {
         seek = 0;
         ret.message_type = kuic::handshake::kbr_message_type_serializer::deserialize(
-                reinterpret_cast<char *>(msg.get(kuic::handshake::tag_message_type).data()),
+                msg.get(kuic::handshake::tag_message_type).data(),
                 msg.get(kuic::handshake::tag_message_type).size(),
                 seek);
     }
 
     // deserialize client principal name
     if (msg.exist(kuic::handshake::tag_client_principal_name)) {
+        seek = 0;
         ret.client_name = kuic::handshake::kbr_principal_name::deserialize(
-                reinterpret_cast<char *>(
-                    msg.get(kuic::handshake::tag_client_principal_name).data()),
-                msg.get(kuic::handshake::tag_client_principal_name).size());
+                msg.get(kuic::handshake::tag_client_principal_name).data(),
+                msg.get(kuic::handshake::tag_client_principal_name).size(),
+                seek);
     }
 
     // deserialize realm
@@ -139,8 +138,7 @@ kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message
     if (msg.exist(kuic::handshake::tag_time_from)) {
         seek = 0;
         ret.from = kuic::special_clock::deserialize(
-                reinterpret_cast<char *>(
-                    msg.get(kuic::handshake::tag_time_from).data()),
+                msg.get(kuic::handshake::tag_time_from).data(),
                 msg.get(kuic::handshake::tag_time_from).size(),
                 seek);
     }
@@ -149,8 +147,7 @@ kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message
     if (msg.exist(kuic::handshake::tag_time_till)) {
         seek = 0;
         ret.till = kuic::special_clock::deserialize(
-                reinterpret_cast<char *>(
-                    msg.get(kuic::handshake::tag_time_till).data()),
+                msg.get(kuic::handshake::tag_time_till).data(),
                 msg.get(kuic::handshake::tag_time_till).size(),
                 seek);
     }
@@ -158,14 +155,25 @@ kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message
     // deserialize nonce
     if (msg.exist(kuic::handshake::tag_nonce)) {
         seek = 0;
-        ret.nonce = eys::deserializer<unsigned int>::deserialize(
-                reinterpret_cast<char *>(
-                    msg.get(kuic::handshake::tag_nonce).data()),
+        ret.nonce = eys::bigendian_serializer<kuic::byte_t, unsigned int>::deserialize( 
+                msg.get(kuic::handshake::tag_nonce).data(),
                 msg.get(kuic::handshake::tag_nonce).size(),
                 seek);
     }
 
     return ret;
+}
+
+std::pair<kuic::byte_t *, size_t>
+kuic::handshake::kbr_kdc_request::serialize() const {
+    return this->__serialize().serialize();
+}
+
+kuic::handshake::kbr_kdc_request
+kuic::handshake::kbr_kdc_request::deserialize(kuic::byte_t *buffer, const size_t len, size_t &seek) {
+    kuic::handshake::handshake_message msg = 
+        kuic::handshake::handshake_message::deserialize(buffer, len, seek);
+    return kuic::handshake::kbr_kdc_request::__deserialize(msg);
 }
 
 kuic::kbr_protocol_version_t 

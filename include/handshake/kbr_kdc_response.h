@@ -3,6 +3,7 @@
 
 #include "type.h"
 #include "clock.h"
+#include "package_serializer.h"
 #include "handshake/kbr_padata.h"
 #include "handshake/kbr_principal_name.h"
 #include "handshake/kbr_ticket.h"
@@ -22,7 +23,7 @@ namespace kuic {
         
         };
 
-        class kbr_kdc_response_part {
+        class kbr_kdc_response_part : public kuic::package_serializer {
         private:
             kbr_encryption_key key;
             std::vector<kbr_kdc_last_request> last_req;    
@@ -53,14 +54,12 @@ namespace kuic {
             std::string get_server_realm() const;
             kbr_principal_name get_server_name() const;
 
-            char *serialize(size_t &size);
-            static kbr_kdc_response_part deserialize(
-                    kuic::byte_t *buffer,
-                    size_t size);
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static kbr_kdc_response_part deserialize(kuic::byte_t *buffer, const size_t size, size_t &seek);
         };
 
 
-        class kbr_kdc_response {
+        class kbr_kdc_response : public kuic::package_serializer {
         private:
             kuic::kbr_protocol_version_t version;
             kuic::kbr_message_type_t message_type;
@@ -70,6 +69,7 @@ namespace kuic {
             kbr_ticket ticket;
             kbr_encrypted_data encrypted_data;
             
+            kuic::handshake::handshake_message __serialize() const;
             kbr_kdc_response();
         public:
             static kbr_kdc_response build_as_response(
@@ -78,7 +78,8 @@ namespace kuic {
                     kuic::byte_t *secret_key,
                     size_t secret_key_size,
                     kuic::handshake::kbr_kdc_response_part &part);
-            kuic::handshake::handshake_message serialize();
+
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
         };
     }
 }

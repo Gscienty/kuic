@@ -80,28 +80,20 @@ timespec kuic::current_clock::get() const {
     return result;
 }
 
-char *
-kuic::clock::timestamp_serialize(size_t &size) {
-    return eys::serializer<unsigned long>::serialize((unsigned long)(this->get().tv_sec), size);
-}
-
-char *
-kuic::clock::timestamp_nano_serialize(size_t &size) {
-    return eys::serializer<long>::serialize(long(__inl_ttl(this->get())), size);
+std::pair<kuic::byte_t *, size_t>
+kuic::clock::serialize() const {
+    return eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::serialize(
+            __inl_ttl(this->get()));
 }
 
 kuic::special_clock
-kuic::special_clock::deserialize(const char *buffer, size_t len, ssize_t &seek) {
-    if (seek + ssize_t(sizeof(unsigned long)) < ssize_t(len)) {
+kuic::special_clock::deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+    if (seek + sizeof(unsigned long) < len) {
         return kuic::special_clock();
     }
-    
-    timespec ts;
-
-    ts.tv_sec = eys::deserializer<unsigned long>::deserialize(buffer, len, seek);
-    ts.tv_nsec = 0; 
-    
-    return kuic::special_clock(ts);
+    kuic::kuic_time_t kuic_time = eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::deserialize(buffer, len, seek);
+    return kuic::special_clock(
+            timespec({ kuic_time / kuic::clock_second, kuic_time % kuic::clock_second }));
 }
 
 kuic::special_clock::special_clock()

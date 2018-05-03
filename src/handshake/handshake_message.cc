@@ -39,10 +39,10 @@ kuic::handshake::handshake_message::parse_handshake_message(
 
     // get main tag name
     kuic::tag_t tag;
-    reader.get<kuic::tag_t, kuic::handshake::tag_serializer>(tag);
+    reader.get<kuic::byte_t, kuic::tag_t, kuic::handshake::tag_serializer>(tag);
     // get current message parameters count
     unsigned int parameters_count;
-    reader.get<unsigned int, eys::bigendian_serializer<kuic::byte_t, unsigned int>>(parameters_count);
+    reader.get<kuic::byte_t, unsigned int, eys::littleendian_serializer<kuic::byte_t, unsigned int>>(parameters_count);
     // if current message parameters count too many
     // then return error
     if (parameters_count > kuic::max_parameters_count) {
@@ -56,7 +56,7 @@ kuic::handshake::handshake_message::parse_handshake_message(
     // next 4 bytes store segment length
     kuic::byte_t *index;
     size_t truth_size;
-    std::tie<kuic::byte_t *, size_t>(index, truth_size) = reader.get_range(parameters_count * 8);
+    std::tie<kuic::byte_t *, size_t>(index, truth_size) = reader.get_range<kuic::byte_t>(parameters_count * 8);
     std::unique_ptr<kuic::byte_t []> uni_index(index);
     
     // check current handshake message remain bytes is enough
@@ -86,7 +86,7 @@ kuic::handshake::handshake_message::parse_handshake_message(
         // use unique_ptr to store temporary bytes-string
         kuic::byte_t *seg;
         size_t seg_truth_len;
-        std::tie<kuic::byte_t *, size_t>(seg, seg_truth_len) = reader.get_range<kuic::byte_t>(seg_len);
+        std::tie(seg, seg_truth_len) = reader.get_range<kuic::byte_t>(seg_len);
         std::unique_ptr<kuic::byte_t []> uni_seg(seg);
 
         if (seg_truth_len != seg_len) {

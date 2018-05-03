@@ -2,20 +2,21 @@
 #define _KUIC_HANDSHAKE_KBR_PRINCIPAL_NAME_
 
 #include "type.h"
+#include "package_serializer.h"
 #include <string>
 
 namespace kuic {
     namespace handshake {
-        class kbr_principal_name {
+        class kbr_principal_name : public package_serializer {
         private:
             kuic::kbr_name_type_t type;
             std::string name;
         public:
-            static kbr_principal_name deserialize(const char *buffer, size_t len);
             kbr_principal_name();
             kbr_principal_name(std::string name);
 
-            char *serialize(size_t &size);
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static kbr_principal_name deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
 
             kuic::kbr_name_type_t get_type() const;
             std::string get_name() const;

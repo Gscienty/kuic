@@ -108,27 +108,28 @@ public:
 TEST(handshake_message, sample_chelo_message) {
     sepical_in_buffer mock(chelo, sizeof(chelo));
 
-    kuic::handshake::handshake_message msg;
-    kuic::error_t err;
-    std::tie(msg, err) = kuic::handshake::handshake_message::parse_handshake_message(mock);
-    EXPECT_EQ(err, kuic::no_error);
+    kuic::handshake::handshake_message msg = kuic::handshake::handshake_message::parse_handshake_message(mock);
+    EXPECT_TRUE(msg.is_lawful());
 
-    std::vector<kuic::byte_t> &padding = msg.get('PAD');
-    std::vector<kuic::byte_t> &sni = msg.get('SNI');
-    std::string sni_str(sni.begin(), sni.end());
-    EXPECT_EQ(1016, padding.size());
-    EXPECT_EQ(0, sni_str.compare("www.example.org"));
+    EXPECT_TRUE(msg.exist('PAD\0'));
+    EXPECT_EQ(1016, msg.get('PAD\0').size());
+    EXPECT_TRUE(msg.exist('SNI\0'));
 
-    std::vector<kuic::byte_t> ser = msg.serialize();
+    std::for_each(msg.get('PAD\0').begin(), msg.get('PAD\0').end(), [] (const kuic::byte_t &i) -> void {
+                std::cout << std::hex << (int) i << ' ';
+            });
 
-    EXPECT_EQ(sizeof(chelo), ser.size());
+    std::cout << std::endl;
 
-    std::for_each(ser.begin(), ser.end(), [] (kuic::byte_t &b) -> void {
-        std::cout << std::hex << int(b) << ' ';
-    });
+    std::for_each(msg.get('SNI\0').begin(), msg.get('SNI\0').end(), [] (const kuic::byte_t &i) -> void {
+                std::cout << std::hex << (int) i << ' ';
+            });
+
+
+    std::string sni(msg.get('SNI\0').begin(), msg.get('SNI\0').end());
+    std::cout << sni << std::endl;
 }
 
 int main() {
-    RUN_ALL_TESTS();
-    return 0;
+    return RUN_ALL_TESTS();
 }

@@ -1,6 +1,7 @@
 #ifndef _KUIC_HANDSHAKE_KDC_REQUEST_ 
 #define _KUIC_HANDSHAKE_KDC_REQUEST_
 
+#include "package_serializer.h"
 #include "type.h"
 #include "clock.h"
 #include "handshake/kbr_padata.h"
@@ -16,7 +17,7 @@ namespace kuic {
         const kuic::kbr_message_type_t kbr_kdc_as_request = 10;
         const kuic::kbr_message_type_t kbr_kdc_tgs_request = 12;
 
-        class kbr_kdc_request {
+        class kbr_kdc_request : public package_serializer {
         private:
             kuic::kbr_protocol_version_t version;
             kuic::kbr_message_type_t message_type;
@@ -34,16 +35,15 @@ namespace kuic {
             kbr_encrypted_data encrypted_data;
             std::vector<kbr_ticket> tickets;
 
+            static kbr_kdc_request __deserialize(handshake_message &msg);
+            handshake_message __serialize() const;
+
             kbr_kdc_request();
         public:
-            static kbr_kdc_request build_as_request(
-                kbr_principal_name client_name,
-                std::string realm,
-                unsigned int nonce);
+            static kbr_kdc_request build_as_request(kbr_principal_name client_name, std::string realm, unsigned int nonce);
 
-            static kbr_kdc_request deserialize(handshake_message &msg);
-
-            handshake_message serialize();
+            static kbr_kdc_request deserialize(kuic::byte_t *buffer, const size_t len, size_t &seek);
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
 
             kuic::kbr_protocol_version_t get_version() const;
             kuic::kbr_message_type_t get_message_type() const;

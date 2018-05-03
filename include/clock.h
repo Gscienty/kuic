@@ -1,13 +1,14 @@
 #ifndef _KUIC_CLOCK_
 #define _KUIC_CLOCK_
 
+#include "package_serializer.h"
 #include "define.h"
 #include "type.h"
 #include <time.h>
 #include <sys/types.h> 
 
 namespace kuic {
-    class clock {
+    class clock : public package_serializer {
     public:
         virtual timespec get() const = 0;
 
@@ -15,8 +16,7 @@ namespace kuic {
         kuic_time_t since(const clock &) const;
         bool before(const clock &) const;
 
-        char *timestamp_serialize(size_t &size);
-        char *timestamp_nano_serialize(size_t &size);
+        virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
 
         kuic_time_t operator- (const clock &b);
         kuic_time_t operator- (const kuic_time_t t);
@@ -45,7 +45,7 @@ namespace kuic {
     private:
         timespec special_time;
     public:
-        static special_clock deserialize(const char *buffer, size_t len, ssize_t &seek);
+        static special_clock deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
 
         special_clock();
         special_clock(const timespec &);
