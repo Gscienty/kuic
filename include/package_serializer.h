@@ -6,12 +6,10 @@
 #include <unistd.h>
 
 namespace kuic {
-    namespace handshake {
-        class package_serializer {
-        public:
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const = 0;
-        };
-    }
+    class package_serializer {
+    public:
+        virtual std::pair<kuic::byte_t *, size_t> serialize() const = 0;
+    };
 }
 
 #endif
