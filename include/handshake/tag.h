@@ -8,13 +8,14 @@ namespace kuic {
     namespace handshake {
         const kuic::tag_t tag_kbr_as_request = 'ASRQ';
         const kuic::tag_t tag_kbr_tgs_request = 'TSRQ';
-        const kuic::tag_t tag_kdc_request_body = 'KRBY';
+        const kuic::tag_t tag_kbr_kdc_request_body = 'RQBY';
         const kuic::tag_t tag_protocol_version = 'PVNO';
         const kuic::tag_t tag_message_type = 'MTYP';
         const kuic::tag_t tag_padata = 'PADA';
         const kuic::tag_t tag_client_principal_name = 'CNAM';
         const kuic::tag_t tag_client_realm = 'CMAN';
         const kuic::tag_t tag_server_realm = 'SMAN';
+        const kuic::tag_t tag_authorization_data = 'AUDA';
 
         const kuic::tag_t tag_server_principal_name = 'SNAM';
         const kuic::tag_t tag_time_from = 'TFRM';
