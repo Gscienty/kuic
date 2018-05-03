@@ -9,10 +9,7 @@ kuic::handshake::kbr_kdc_request::kbr_kdc_request() {
 }
 
 kuic::handshake::kbr_kdc_request
-kuic::handshake::kbr_kdc_request::build_as_request(
-    kuic::handshake::kbr_principal_name client_name,
-    std::string realm,
-    unsigned int nonce) {
+kuic::handshake::kbr_kdc_request::build_as_request(kuic::handshake::kbr_principal_name client_name, std::string realm, unsigned int nonce) {
     
     kuic::handshake::kbr_kdc_request as_req;
 
@@ -49,6 +46,7 @@ kuic::handshake::kbr_kdc_request::__serialize() const {
         
         // client princpal
         std::tie(serialized_buffer_ptr, size) = this->client_name.serialize();
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(serialized_buffer_ptr);
         msg.insert(kuic::handshake::tag_client_principal_name, serialized_buffer.get(), size);
 
         // realm
@@ -73,16 +71,17 @@ kuic::handshake::kbr_kdc_request::__serialize() const {
 
         // nonce
         std::tie(serialized_buffer_ptr, size) = eys::bigendian_serializer<kuic::byte_t, unsigned int>::serialize(this->nonce);
+        serialized_buffer = std::unique_ptr<kuic::byte_t>(serialized_buffer_ptr);
         msg.insert(kuic::handshake::tag_nonce, serialized_buffer.get(), size);
 
         return msg;
     }
     else {
-
+        // TODO
         return kuic::handshake::handshake_message();
     }
 
-    return kuic::handshake::handshake_message();
+    return kuic::handshake::handshake_message(kuic::not_expect);
 }
 
 kuic::handshake::kbr_kdc_request

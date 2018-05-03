@@ -8,6 +8,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <iostream>
+
 kuic::handshake::kbr_kdc_response_part::kbr_kdc_response_part() { }
 
 kuic::handshake::kbr_kdc_response_part::kbr_kdc_response_part(
@@ -244,6 +246,9 @@ kuic::handshake::kbr_kdc_response_part::deserialize(kuic::byte_t *buffer, size_t
 
 kuic::handshake::kbr_kdc_response::kbr_kdc_response() { }
 
+kuic::handshake::kbr_kdc_response::kbr_kdc_response(kuic::error_t err)
+    : lawful_package(err) { }
+
 kuic::handshake::kbr_kdc_response
 kuic::handshake::kbr_kdc_response::build_as_response(
         std::string realm,
@@ -275,7 +280,8 @@ kuic::handshake::kbr_kdc_response::build_as_response(
 
 kuic::handshake::handshake_message
 kuic::handshake::kbr_kdc_response::__serialize() const {
-    kuic::handshake::handshake_message result;
+    // TODO consider tgs
+    kuic::handshake::handshake_message result(kuic::handshake::tag_kbr_tgt);
     // declare temporary var
     std::unique_ptr<kuic::byte_t> serialized_buffer;
     size_t serialized_size = 0;
@@ -294,7 +300,7 @@ kuic::handshake::kbr_kdc_response::__serialize() const {
     // serialize realm
     serialized_buffer = std::unique_ptr<kuic::byte_t>(new kuic::byte_t[this->realm.size()]);
     std::copy(this->realm.begin(), this->realm.end(), serialized_buffer.get());
-    result.insert(kuic::handshake::tag_message_type, serialized_buffer.get(), this->realm.size());
+    result.insert(kuic::handshake::tag_client_realm, serialized_buffer.get(), this->realm.size());
 
     // serialize client name
     std::tie(serialized_buffer_ptr, serialized_size) = this->client_name.serialize();
@@ -314,3 +320,86 @@ kuic::handshake::kbr_kdc_response::serialize() const {
     return this->__serialize().serialize();
 }
 
+kuic::handshake::kbr_kdc_response
+kuic::handshake::kbr_kdc_response::deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+    kuic::handshake::handshake_message msg = kuic::handshake::handshake_message::deserialize(buffer, len, seek);
+
+    if (msg.is_lawful() == false) {
+        return kuic::handshake::kbr_kdc_response(msg.get_error());
+    }
+    if (msg.get_tag() != kuic::handshake::tag_kbr_tgt) {
+        return kuic::handshake::kbr_kdc_response(kuic::not_expect);
+    }
+    
+    kuic::handshake::kbr_kdc_response result;
+    
+    // deserialize version
+    if (msg.exist(kuic::handshake::tag_protocol_version)) {
+        size_t seek = 0;
+        result.version = kuic::handshake::kbr_protocol_version_serializer::deserialize(
+                msg.get(kuic::handshake::tag_protocol_version).data(),
+                msg.get(kuic::handshake::tag_protocol_version).size(),
+                seek);
+    }
+
+    // deserialize message type
+    if (msg.exist(kuic::handshake::tag_message_type)) {
+        size_t seek = 0;
+        result.message_type = kuic::handshake::kbr_message_type_serializer::deserialize(
+                msg.get(kuic::handshake::tag_message_type).data(),
+                msg.get(kuic::handshake::tag_message_type).size(),
+                seek);
+    }
+
+    // deserialize realm
+    if (msg.exist(kuic::handshake::tag_client_realm)) {
+        result.realm = std::string(
+                msg.get(kuic::handshake::tag_client_realm).begin(),
+                msg.get(kuic::handshake::tag_client_realm).end());
+    }
+
+    // deserialize client name
+    if (msg.exist(kuic::handshake::tag_client_principal_name)) {
+        size_t seek = 0;
+        result.client_name = kuic::handshake::kbr_principal_name::deserialize(
+                msg.get(kuic::handshake::tag_client_principal_name).data(),
+                msg.get(kuic::handshake::tag_client_principal_name).size(),
+                seek);
+    }
+
+    // encrypted data
+    if (msg.exist(kuic::handshake::tag_encrypted_data)) {
+        size_t seek = 0;
+        result.encrypted_data = kuic::handshake::kbr_encrypted_data::deserialize(
+                msg.get(kuic::handshake::tag_encrypted_data).data(),
+                msg.get(kuic::handshake::tag_encrypted_data).size(),
+                seek);
+    }
+
+    return result;
+}
+
+kuic::kbr_protocol_version_t
+kuic::handshake::kbr_kdc_response::get_version() const {
+    return this->version;
+}
+
+kuic::kbr_message_type_t
+kuic::handshake::kbr_kdc_response::get_message_type() const {
+    return this->message_type;
+}
+
+std::string
+kuic::handshake::kbr_kdc_response::get_realm() const {
+    return this->realm;
+}
+
+kuic::handshake::kbr_principal_name
+kuic::handshake::kbr_kdc_response::get_client_name() const {
+    return this->client_name;
+}
+
+kuic::handshake::kbr_encrypted_data
+kuic::handshake::kbr_kdc_response::get_encryption_key() const {
+    return this->encrypted_data;
+}

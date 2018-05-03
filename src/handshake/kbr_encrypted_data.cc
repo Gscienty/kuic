@@ -19,11 +19,10 @@ void kuic::handshake::kbr_encrypted_data::set_plain_message(
         size_t plain_text_size,
         kuic::byte_t *secret_key,
         size_t secret_key_size) {
-    std::unique_ptr<kuic::crypt::crypter> _crypter = 
-        this->get_crypter();
-    std::unique_ptr<kuic::crypt::mode> mode = 
-        this->get_mode(_crypter.get());
-
+    // get current mode comb crypter
+    std::unique_ptr<kuic::crypt::mode> mode = this->get_mode(this->get_crypter());
+    
+    // declare temporary buffer
     kuic::byte_t *cipher_buffer = nullptr;
     size_t cipher_size = 0;
 
@@ -32,21 +31,17 @@ void kuic::handshake::kbr_encrypted_data::set_plain_message(
 
     std::tie(cipher_buffer, cipher_size) = mode->encrypt();
 
-    this->cipher.assign(
-            cipher_buffer,
-            cipher_buffer + cipher_size);
+    this->cipher.assign(cipher_buffer, cipher_buffer + cipher_size);
 }
 
-std::unique_ptr<kuic::crypt::crypter>
+kuic::crypt::crypter *
 kuic::handshake::kbr_encrypted_data::get_crypter() {
     switch (this->encryption_type & 0x0000FFFF) {
         case 0x00000001:    // sm4
-            return std::unique_ptr<kuic::crypt::crypter>(
-                    new kuic::crypt::sm4());
+            return new kuic::crypt::sm4();
 
         default:
-            return std::unique_ptr<kuic::crypt::crypter>(
-                    new kuic::crypt::sm4());
+            return new kuic::crypt::sm4();
     }
 }
 
@@ -54,12 +49,10 @@ std::unique_ptr<kuic::crypt::mode>
 kuic::handshake::kbr_encrypted_data::get_mode(
         kuic::crypt::crypter *_crypter) {
     switch (this->encryption_type & 0xFFFF0000) {
-        case 0x00010000:
-            return std::unique_ptr<kuic::crypt::mode>(
-                   new kuic::crypt::ecb_mode(_crypter));
+        case 0x00010000:    // ecb
+            return std::unique_ptr<kuic::crypt::mode>(new kuic::crypt::ecb_mode(_crypter));
         default:
-            return std::unique_ptr<kuic::crypt::mode>(
-                    new kuic::crypt::ecb_mode(_crypter));
+            return std::unique_ptr<kuic::crypt::mode>(new kuic::crypt::ecb_mode(_crypter));
     }
 }
 
@@ -67,26 +60,17 @@ std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kbr_encrypted_data::get_plain_message(
         kuic::byte_t *secret_key,
         size_t secret_key_size) {
-    std::unique_ptr<kuic::crypt::crypter> _crypter = 
-        this->get_crypter();
-    std::unique_ptr<kuic::crypt::mode> mode = this->get_mode(
-            _crypter.get());
+    std::unique_ptr<kuic::crypt::mode> mode = this->get_mode(this->get_crypter());
 
-    mode->set_message(
-            this->cipher.data(),
-            this->cipher.size());
-    mode->set_secret_key(
-            secret_key,
-            secret_key_size);
+    mode->set_message(this->cipher.data(), this->cipher.size());
+    mode->set_secret_key(secret_key, secret_key_size);
 
     return mode->decrypt();
 }
 
 std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kbr_encrypted_data::serialize() const {
-    size_t size = sizeof(kuic::kbr_key_version_t) +
-        sizeof(kuic::kbr_encryption_type_t) +
-        this->cipher.size() * sizeof(kuic::byte_t);
+    size_t size = sizeof(kuic::kbr_key_version_t) + sizeof(kuic::kbr_encryption_type_t) + this->cipher.size() * sizeof(kuic::byte_t);
 
     kuic::byte_t *result = new kuic::byte_t[size];
     

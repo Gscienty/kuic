@@ -114,20 +114,14 @@ TEST(handshake_message, sample_chelo_message) {
     EXPECT_TRUE(msg.exist('PAD\0'));
     EXPECT_EQ(1016, msg.get('PAD\0').size());
     EXPECT_TRUE(msg.exist('SNI\0'));
-
-    std::for_each(msg.get('PAD\0').begin(), msg.get('PAD\0').end(), [] (const kuic::byte_t &i) -> void {
-                std::cout << std::hex << (int) i << ' ';
-            });
-
-    std::cout << std::endl;
-
-    std::for_each(msg.get('SNI\0').begin(), msg.get('SNI\0').end(), [] (const kuic::byte_t &i) -> void {
-                std::cout << std::hex << (int) i << ' ';
-            });
-
-
+    
     std::string sni(msg.get('SNI\0').begin(), msg.get('SNI\0').end());
-    std::cout << sni << std::endl;
+    EXPECT_EQ(0, sni.compare("www.example.org"));
+
+    EXPECT_TRUE(msg.exist('CFCW'));
+    EXPECT_TRUE(msg.exist('PDMD'));
+    std::string pdmd(msg.get('PDMD').begin(), msg.get('PDMD').end());
+    EXPECT_EQ(0, pdmd.compare("X509"));
 }
 
 int main() {

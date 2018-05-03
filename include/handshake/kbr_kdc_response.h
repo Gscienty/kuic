@@ -4,6 +4,7 @@
 #include "type.h"
 #include "clock.h"
 #include "package_serializer.h"
+#include "lawful_package.h"
 #include "handshake/kbr_padata.h"
 #include "handshake/kbr_principal_name.h"
 #include "handshake/kbr_ticket.h"
@@ -59,7 +60,9 @@ namespace kuic {
         };
 
 
-        class kbr_kdc_response : public kuic::package_serializer {
+        class kbr_kdc_response
+            : public kuic::package_serializer
+            , public kuic::lawful_package {
         private:
             kuic::kbr_protocol_version_t version;
             kuic::kbr_message_type_t message_type;
@@ -71,6 +74,7 @@ namespace kuic {
             
             kuic::handshake::handshake_message __serialize() const;
             kbr_kdc_response();
+            kbr_kdc_response(kuic::error_t err);
         public:
             static kbr_kdc_response build_as_response(
                     std::string realm,
@@ -79,7 +83,14 @@ namespace kuic {
                     size_t secret_key_size,
                     kuic::handshake::kbr_kdc_response_part &part);
 
+            static kbr_kdc_response deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+
+            kuic::kbr_protocol_version_t get_version() const;
+            kuic::kbr_message_type_t get_message_type() const;
+            std::string get_realm() const;
+            kbr_principal_name get_client_name() const;
+            kbr_encrypted_data get_encryption_key() const;
         };
     }
 }
