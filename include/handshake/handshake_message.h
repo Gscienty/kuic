@@ -25,6 +25,7 @@ namespace kuic {
             handshake_message(kuic::tag_t tag);
 
             void insert(kuic::tag_t tag, kuic::byte_t *data, size_t size);
+            void set_tag(kuic::tag_t tag);
 
             static handshake_message parse_handshake_message(eys::in_buffer &reader);
             static handshake_message deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);

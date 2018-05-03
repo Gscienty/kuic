@@ -20,6 +20,10 @@ kuic::handshake::handshake_message::handshake_message() { }
 kuic::handshake::handshake_message::handshake_message(kuic::tag_t tag)
     : tag(tag) { }
 
+void kuic::handshake::handshake_message::set_tag(kuic::tag_t tag) {
+    this->tag = tag;
+}
+
 void kuic::handshake::handshake_message::insert(
     kuic::tag_t tag, kuic::byte_t *data, size_t size) {
     
