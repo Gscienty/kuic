@@ -23,6 +23,13 @@ kuic::handshake::not_expect_ad_item::get_type() const {
 
 // split (not_expect_ad_item | if_relevant_ad_item)
 
+kuic::handshake::if_relevant_ad_item::if_relevant_ad_item() { }
+
+kuic::handshake::if_relevant_ad_item::if_relevant_ad_item(
+        const kuic::byte_t *buffer, size_t len) {
+    this->data.assign(buffer, buffer + len);
+}
+
 kuic::kbr_authorization_data_item_type_t
 kuic::handshake::if_relevant_ad_item::get_type() const {
     return kuic::handshake::ad_type_if_relevant;
@@ -42,6 +49,11 @@ kuic::handshake::if_relevant_ad_item::deserialize(
     result.data.assign(buffer + seek, buffer + len);
     seek = len;
     return result;
+}
+
+std::vector<kuic::byte_t>
+kuic::handshake::if_relevant_ad_item::get_data() const {
+    return this->data;
 }
 
 // split (if_relevant_ad_item | kdc_issued_ad_item)
@@ -199,6 +211,18 @@ kuic::handshake::mandatory_ad_item::deserialize(const kuic::byte_t *buffer, size
 
 // split (mandatory_ad_item | kbr_authorization_data_item)
 
+kuic::handshake::kbr_authorization_data_item::kbr_authorization_data_item() { }
+
+kuic::handshake::kbr_authorization_data_item::kbr_authorization_data_item(ad_item *item)
+    : type(item->get_type()) {
+    kuic::byte_t *serialized_buffer_ptr = nullptr;
+    size_t serialized_buffer_size = 0;
+    std::tie(serialized_buffer_ptr, serialized_buffer_size) = item->serialize();
+
+    std::unique_ptr<kuic::byte_t []> serialized_buffer(serialized_buffer_ptr);
+    this->data.assign(serialized_buffer.get(), serialized_buffer.get() + serialized_buffer_size);
+}
+
 std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kbr_authorization_data_item::serialize() const {
     size_t size = sizeof(kuic::kbr_authorization_data_item_type_t) + this->data.size();
@@ -226,33 +250,42 @@ kuic::handshake::kbr_authorization_data_item
 kuic::handshake::kbr_authorization_data_item::deserialize(
         const kuic::byte_t *buffer, size_t len, size_t &seek) {
     kuic::handshake::kbr_authorization_data_item result;
-
     result.type = kuic::handshake::kbr_authorization_data_type_serializer::deserialize(buffer, len, seek);
     result.data.assign(buffer + seek, buffer + len);
     seek = len;
     return result;
 }
 
-kuic::handshake::ad_item 
-kuic::handshake::kbr_authorization_data_item::deserialize_item() const {
+// TODO 'get_item()' need alloc a memory block to store special ad_item, future should change it :)
+kuic::handshake::ad_item *
+kuic::handshake::kbr_authorization_data_item::get_item() const {
     size_t seek = 0;
 
     switch (this->type) {
     case kuic::handshake::ad_type_if_relevant:
-        return kuic::handshake::if_relevant_ad_item::deserialize(
-                this->data.data(), this->data.size(), seek);
+        return  new kuic::handshake::if_relevant_ad_item(
+                kuic::handshake::if_relevant_ad_item::deserialize(
+                    this->data.data(), this->data.size(), seek));
     case kuic::handshake::ad_type_kdc_issued:
-        return kuic::handshake::kdc_issued_ad_item::deserialize(
-                this->data.data(), this->data.size(), seek);
+        return new kuic::handshake::kdc_issued_ad_item(
+                kuic::handshake::kdc_issued_ad_item::deserialize(
+                    this->data.data(), this->data.size(), seek));
     case kuic::handshake::ad_type_and_or:
-        return kuic::handshake::and_or_ad_item::deserialize(
-                this->data.data(), this->data.size(), seek);
+        return new kuic::handshake::and_or_ad_item(
+                kuic::handshake::and_or_ad_item::deserialize(
+                    this->data.data(), this->data.size(), seek));
     case kuic::handshake::ad_type_mandatory_for_kdc:
-        return kuic::handshake::mandatory_ad_item::deserialize(
-                this->data.data(), this->data.size(), seek);
+        return new kuic::handshake::mandatory_ad_item(
+                kuic::handshake::mandatory_ad_item::deserialize(
+                    this->data.data(), this->data.size(), seek));
     default:
-        return kuic::handshake::not_expect_ad_item();
+        return new kuic::handshake::not_expect_ad_item();
     }
+}
+
+kuic::kbr_authorization_data_item_type_t
+kuic::handshake::kbr_authorization_data_item::get_type() const {
+    return this->type;
 }
 
 // split (item | data)
@@ -269,8 +302,7 @@ kuic::handshake::kbr_authorization_data::serialize() const {
 
     std::tie(serialized_buffer_ptr, serialized_size) = eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(this->elements.size());
     serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
-    result.insert(result.end(), serialized_buffer.get(), serialized_buffer.get() + this->elements.size());
-    
+    result.insert(result.begin(), serialized_buffer.get(), serialized_buffer.get() + sizeof(unsigned int));
     std::vector<kuic::byte_t> index;
     std::vector<kuic::byte_t> data;
     int offset = 0;
@@ -296,18 +328,29 @@ kuic::handshake::kbr_authorization_data::serialize() const {
 kuic::handshake::kbr_authorization_data
 kuic::handshake::kbr_authorization_data::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
     kuic::handshake::kbr_authorization_data result;
-    
     unsigned int elements_size = eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(buffer, len, seek);
     std::vector<int> offsets;
     for (unsigned int i = 0; i < elements_size; i++) {
         offsets.push_back(
                 eys::littleendian_serializer<kuic::byte_t, int>::deserialize(buffer, len, seek));
     }
+    size_t data_start_position = seek;
     for (unsigned int i = 0; i < elements_size; i++) {
         result.elements.push_back(
                 kuic::handshake::kbr_authorization_data_item::deserialize(
-                    buffer, size_t(offsets[i]), seek));
+                    buffer, data_start_position + size_t(offsets[i]), seek));
     }
 
     return result;
 }
+
+void kuic::handshake::kbr_authorization_data::add_element(
+        kuic::handshake::kbr_authorization_data_item element) {
+    this->elements.push_back(element);
+}
+
+std::vector<kuic::handshake::kbr_authorization_data_item>
+kuic::handshake::kbr_authorization_data::get_elements() const {
+    return this->elements;
+}
+
