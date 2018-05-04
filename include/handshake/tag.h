@@ -18,7 +18,7 @@ namespace kuic {
         const kuic::tag_t tag_authorization_data = 'AUDA';
         const kuic::tag_t tag_ad_issued = 'ADIS';
         const kuic::tag_t tag_checksum = 'CKSM';
-        const kuic::tag_t tag_issud_principal_name = 'INAM';
+        const kuic::tag_t tag_issue_principal_name = 'INAM';
         const kuic::tag_t tag_issue_realm = 'IMAN';
 
         const kuic::tag_t tag_server_principal_name = 'SNAM';
