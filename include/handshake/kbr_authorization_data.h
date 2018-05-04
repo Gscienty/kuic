@@ -24,43 +24,50 @@ namespace kuic {
             ad_item();
             ad_item(kuic::error_t err);
 
-            virtual kbr_authorization_data_item_type_t get_type() const = 0;
+            virtual kuic::kbr_authorization_data_item_type_t get_type() const = 0;
         };
         
+        // serialized ad_item
         class kbr_authorization_data_item : public kuic::package_serializer {
         protected:
             kuic::kbr_authorization_data_item_type_t type;
             std::vector<kuic::byte_t> data;
         public:
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
-            static kbr_authorization_data_item deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
-            std::shared_ptr<ad_item> deserialize_item() const;
+            static kbr_authorization_data_item deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
+            ad_item deserialize_item() const;
         };
         
         // authorization data
         class kbr_authorization_data : public package_serializer {
+        private:
+            std::vector<kbr_authorization_data_item> elements;
         public:
             kbr_authorization_data();
+            
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static kbr_authorization_data deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
         };
 
         // AD-item no expect
         class not_expect_ad_item : public ad_item {
         public:
             not_expect_ad_item();
-            virtual kbr_authorization_data_item_type_t get_type() const override;
+            virtual kuic::kbr_authorization_data_item_type_t get_type() const override;
         };
-
+        
+        // AD-if_relevant
         class if_relevant_ad_item : public ad_item {
         private:
             std::vector<kuic::byte_t> data;
         public:
-            virtual kbr_authorization_data_item_type_t get_type() const override;
+            virtual kuic::kbr_authorization_data_item_type_t get_type() const override;
 
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
             static if_relevant_ad_item deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
         };
 
-        // AD-item issued
+        // AD-issued
         class kdc_issued_ad_item : public ad_item {
         private:
             std::vector<kuic::byte_t> checksum;
@@ -68,11 +75,33 @@ namespace kuic {
             kbr_principal_name issue_name;
             kuic::handshake::kbr_authorization_data elements;
         public:
-            virtual kbr_authorization_data_item_type_t get_type() const override;
+            virtual kuic::kbr_authorization_data_item_type_t get_type() const override;
 
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
             static kdc_issued_ad_item deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
 
+        };
+
+        // AD-and_or 
+        class and_or_ad_item : public ad_item {
+        private:
+            int condition_count;
+            kuic::handshake::kbr_authorization_data elements;
+        public:
+            virtual kuic::kbr_authorization_data_item_type_t get_type() const override;
+
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static and_or_ad_item deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
+        };
+
+        // mandatory for kdc
+        class mandatory_ad_item : public ad_item {
+        private:
+            kuic::handshake::kbr_authorization_data elements;
+        public:
+            virtual kuic::kbr_authorization_data_item_type_t get_type() const override;
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static mandatory_ad_item deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
         };
     }
 }
