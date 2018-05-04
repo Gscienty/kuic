@@ -12,7 +12,7 @@ namespace kuic {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_protocol_version_t>::serialize(e);
             }
             
-            static kuic::kbr_protocol_version_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::kbr_protocol_version_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_protocol_version_t>::deserialize(buffer, len, seek);
             }
         };
@@ -22,7 +22,7 @@ namespace kuic {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_key_version_t>::serialize(e);
             }
 
-            static kuic::kbr_key_version_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::kbr_key_version_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_key_version_t>::deserialize(buffer, len, seek);
             }
         };
@@ -32,7 +32,7 @@ namespace kuic {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_message_type_t>::serialize(e);
             }
             
-            static kuic::kbr_message_type_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::kbr_message_type_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_message_type_t>::deserialize(buffer, len, seek);
             }
         };
@@ -42,7 +42,7 @@ namespace kuic {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_name_type_t>::serialize(e);
             }
             
-            static kuic::kbr_name_type_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::kbr_name_type_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_name_type_t>::deserialize(buffer, len, seek);
             }
         };
@@ -52,7 +52,7 @@ namespace kuic {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_type_t>::serialize(e);
             }
 
-            static kuic::kbr_name_type_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::kbr_name_type_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_type_t>::deserialize(buffer, len, seek);
             }
         };
@@ -62,7 +62,7 @@ namespace kuic {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_authorization_data_item_type_t>::serialize(e);
             }
 
-            static kuic::kbr_authorization_data_item_type_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::kbr_authorization_data_item_type_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_authorization_data_item_type_t>::deserialize(buffer, len, seek);
             }
         };
