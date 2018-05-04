@@ -22,6 +22,7 @@ namespace kuic {
     typedef unsigned int kbr_name_type_t;
     typedef unsigned int kbr_ticket_version_t;
     typedef unsigned int kbr_address_type_t;
+    typedef unsigned int kbr_authorization_data_item_type_t;
 }
 
 #endif

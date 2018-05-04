@@ -82,8 +82,7 @@ timespec kuic::current_clock::get() const {
 
 std::pair<kuic::byte_t *, size_t>
 kuic::clock::serialize() const {
-    return eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::serialize(
-            __inl_ttl(this->get()));
+    return eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::serialize(__inl_ttl(this->get()));
 }
 
 kuic::special_clock

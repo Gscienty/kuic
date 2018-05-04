@@ -19,10 +19,15 @@ kuic::handshake::kbr_principal_name::serialize() const {
 
     size_t inner_size;
     kuic::byte_t *name_type_buffer_ptr = nullptr;
+    std::unique_ptr<kuic::byte_t []> name_type_buffer;
+    
+    // serialize type
     std::tie(name_type_buffer_ptr, inner_size) = kuic::handshake::kbr_name_type_serializer::serialize(this->type);
-    std::unique_ptr<kuic::byte_t> name_type_buffer(name_type_buffer_ptr);
-
+    name_type_buffer = std::unique_ptr<kuic::byte_t []>(name_type_buffer_ptr);
+    // copy serialized type to buffer
     std::copy(name_type_buffer.get(), name_type_buffer.get() + inner_size, result);
+
+    // copy name to buffer
     std::copy(this->name.begin(), this->name.end(), result + inner_size);
 
     return std::pair<kuic::byte_t *, size_t>(result, size);

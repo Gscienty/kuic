@@ -35,8 +35,10 @@ kuic::handshake::kbr_encryption_key::serialize() const {
     // serialize key_type
     size_t serialized_size = 0;
     kuic::byte_t *serialized_buffer_ptr = nullptr;
+    std::unique_ptr<kuic::byte_t []> serialized_buffer;
+
     std::tie(serialized_buffer_ptr, serialized_size) = eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_key_t>::serialize(this->key_type);
-    std::unique_ptr<kuic::byte_t []> serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
+    serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
 
     // copy key_type from serialized_buffer to result
     std::copy_n(serialized_buffer.get(), serialized_size, result);

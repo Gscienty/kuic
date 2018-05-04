@@ -56,6 +56,16 @@ namespace kuic {
                 return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_type_t>::deserialize(buffer, len, seek);
             }
         };
+
+        struct kbr_authorization_data_type_serializer {
+            static std::pair<kuic::byte_t *, size_t> serialize(kuic::kbr_authorization_data_item_type_t e) {
+                return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_authorization_data_item_type_t>::serialize(e);
+            }
+
+            static kuic::kbr_authorization_data_item_type_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+                return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_authorization_data_item_type_t>::deserialize(buffer, len, seek);
+            }
+        };
     }
 }
 

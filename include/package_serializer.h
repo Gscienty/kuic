@@ -8,7 +8,7 @@
 namespace kuic {
     class package_serializer {
     public:
-        virtual std::pair<kuic::byte_t *, size_t> serialize() const = 0;
+        virtual std::pair<kuic::byte_t *, size_t> serialize() const;
     };
 }
 

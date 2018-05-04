@@ -28,7 +28,7 @@ namespace kuic {
             void set_tag(kuic::tag_t tag);
 
             static handshake_message parse_handshake_message(eys::in_buffer &reader);
-            static handshake_message deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
+            static handshake_message deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
 
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
             

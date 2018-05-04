@@ -16,6 +16,10 @@ namespace kuic {
         const kuic::tag_t tag_client_realm = 'CMAN';
         const kuic::tag_t tag_server_realm = 'SMAN';
         const kuic::tag_t tag_authorization_data = 'AUDA';
+        const kuic::tag_t tag_ad_issued = 'ADIS';
+        const kuic::tag_t tag_checksum = 'CKSM';
+        const kuic::tag_t tag_issud_principal_name = 'INAM';
+        const kuic::tag_t tag_issue_realm = 'IMAN';
 
         const kuic::tag_t tag_server_principal_name = 'SNAM';
         const kuic::tag_t tag_time_from = 'TFRM';
@@ -52,7 +56,7 @@ namespace kuic {
                 return std::pair<kuic::byte_t *, size_t>(buffer, 4);
             }
 
-            static kuic::tag_t deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static kuic::tag_t deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 if (seek + 4> len) {
                     return kuic::tag_t(0);
                 }

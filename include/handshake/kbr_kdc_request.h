@@ -40,11 +40,7 @@ namespace kuic {
             kbr_kdc_request_body(kuic::error_t err);
         public:
             kbr_kdc_request_body();
-            kbr_kdc_request_body(
-                    kuic::kbr_message_type_t message_type,
-                    kbr_principal_name name,
-                    std::string realm,
-                    unsigned int nonce);
+            kbr_kdc_request_body(kuic::kbr_message_type_t message_type, kbr_principal_name name, std::string realm, unsigned int nonce);
 
             unsigned int get_nonce() const;
             kbr_principal_name get_client_name() const;
