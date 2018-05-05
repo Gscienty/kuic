@@ -13,10 +13,13 @@ kuic::handshake::kbr_encryption_key::kbr_encryption_key(
 
 
 kuic::handshake::kbr_encryption_key
-kuic::handshake::kbr_encryption_key::deserialize(kuic::byte_t *buffer, size_t size, size_t &seek) {
+kuic::handshake::kbr_encryption_key::deserialize(
+        const kuic::byte_t *buffer, size_t size, size_t &seek) {
     kuic::handshake::kbr_encryption_key result;
 
-    result.key_type = eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_key_t>::deserialize(buffer, size, seek);
+    result.key_type = 
+        eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_key_t>::deserialize(buffer, size, seek);
+
     result.key_value.assign(buffer + seek, buffer + size);
     seek = size;
 
@@ -37,7 +40,9 @@ kuic::handshake::kbr_encryption_key::serialize() const {
     kuic::byte_t *serialized_buffer_ptr = nullptr;
     std::unique_ptr<kuic::byte_t []> serialized_buffer;
 
-    std::tie(serialized_buffer_ptr, serialized_size) = eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_key_t>::serialize(this->key_type);
+    std::tie(serialized_buffer_ptr, serialized_size) =
+        eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_key_t>::serialize(this->key_type);
+
     serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
 
     // copy key_type from serialized_buffer to result

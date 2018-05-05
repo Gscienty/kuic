@@ -45,7 +45,8 @@ namespace kuic {
     private:
         timespec special_time;
     public:
-        static special_clock deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
+        static special_clock deserialize(
+                const kuic::byte_t *buffer, size_t len, size_t &seek);
 
         special_clock();
         special_clock(const timespec &);

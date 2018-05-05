@@ -80,19 +80,19 @@ kuic::handshake::kbr_kdc_response_part::serialize() const {
     temporary_msg.insert<unsigned int, eys::bigendian_serializer<kuic::byte_t, unsigned int>>(
                 kuic::handshake::tag_nonce, this->nonce);
     // serialize auth time
-    temporary_msg.insert(kuic::handshake::tag_time_auth, this->auth_time);
+    temporary_msg.insert(kuic::handshake::tag_time_auth,                this->auth_time         );
     // serialize start time
-    temporary_msg.insert(kuic::handshake::tag_time_start, this->start_time);
+    temporary_msg.insert(kuic::handshake::tag_time_start,               this->start_time        );
     // serialize end time
-    temporary_msg.insert(kuic::handshake::tag_time_end, this->end_time);
+    temporary_msg.insert(kuic::handshake::tag_time_end,                 this->end_time          );
     // serialize time renew till
-    temporary_msg.insert(kuic::handshake::tag_renew_till_time, this->renew_till);
+    temporary_msg.insert(kuic::handshake::tag_renew_till_time,          this->renew_till        );
     // serialize key expiration
-    temporary_msg.insert(kuic::handshake::tag_time_key_expiration, this->key_expiration);
+    temporary_msg.insert(kuic::handshake::tag_time_key_expiration,      this->key_expiration    );
     // serialize server realm
-    temporary_msg.insert(kuic::handshake::tag_server_realm, this->server_realm);
+    temporary_msg.insert(kuic::handshake::tag_server_realm,             this->server_realm      );
     // serialize server name
-    temporary_msg.insert(kuic::handshake::tag_server_principal_name, this->server_name);
+    temporary_msg.insert(kuic::handshake::tag_server_principal_name,    this->server_name       );
 
     // serialize temporary handshake_message
     // you should encrypt the result
@@ -101,8 +101,10 @@ kuic::handshake::kbr_kdc_response_part::serialize() const {
 }
 
 kuic::handshake::kbr_kdc_response_part
-kuic::handshake::kbr_kdc_response_part::deserialize(kuic::byte_t *buffer, size_t size, size_t &seek) {
-    kuic::handshake::handshake_message temporary_msg = kuic::handshake::handshake_message::deserialize(buffer, size, seek);
+kuic::handshake::kbr_kdc_response_part::deserialize(
+        const kuic::byte_t *buffer, size_t size, size_t &seek) {
+    kuic::handshake::handshake_message temporary_msg =
+        kuic::handshake::handshake_message::deserialize(buffer, size, seek);
 
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_kdc_response_part(temporary_msg.get_error());
@@ -123,19 +125,19 @@ kuic::handshake::kbr_kdc_response_part::deserialize(kuic::byte_t *buffer, size_t
                 result.nonce, kuic::handshake::tag_nonce);
     
     // deserialize auth time
-    temporary_msg.assign(result.auth_time, kuic::handshake::tag_time_auth);
+    temporary_msg.assign(result.auth_time,      kuic::handshake::tag_time_auth              );
     // deserialize start time
-    temporary_msg.assign(result.start_time, kuic::handshake::tag_time_start);
+    temporary_msg.assign(result.start_time,     kuic::handshake::tag_time_start             );
     // deserialize end time
-    temporary_msg.assign(result.end_time, kuic::handshake::tag_time_end);
+    temporary_msg.assign(result.end_time,       kuic::handshake::tag_time_end               );
     // deserialize renew till
-    temporary_msg.assign(result.renew_till, kuic::handshake::tag_time_till);
+    temporary_msg.assign(result.renew_till,     kuic::handshake::tag_time_till              );
     // deserialize key expiration
-    temporary_msg.assign(result.key_expiration, kuic::handshake::tag_time_key_expiration);
+    temporary_msg.assign(result.key_expiration, kuic::handshake::tag_time_key_expiration    );
     // deserialize server realm
-    temporary_msg.assign(result.server_realm, kuic::handshake::tag_server_realm);
+    temporary_msg.assign(result.server_realm,   kuic::handshake::tag_server_realm           );
     // deserialize server name
-    temporary_msg.assign(result.server_name, kuic::handshake::tag_server_principal_name);
+    temporary_msg.assign(result.server_name,    kuic::handshake::tag_server_principal_name  );
 
     return result;
 }
@@ -190,13 +192,13 @@ kuic::handshake::kbr_kdc_response::__serialize() const {
             kuic::handshake::tag_protocol_version, this->version);
     // serialize message type
     result.insert<kuic::kbr_message_type_t, kuic::handshake::kbr_message_type_serializer>(
-            kuic::handshake::tag_message_type, this->message_type);
+            kuic::handshake::tag_message_type,                  this->message_type  );
     // serialize realm
-    result.insert(kuic::handshake::tag_client_realm, this->realm);
+    result.insert(kuic::handshake::tag_client_realm,            this->realm         );
     // serialize client name
-    result.insert(kuic::handshake::tag_client_principal_name, this->client_name);
+    result.insert(kuic::handshake::tag_client_principal_name,   this->client_name   );
     // serialize encrypted data
-    result.insert(kuic::handshake::tag_encrypted_data, this->encrypted_data);
+    result.insert(kuic::handshake::tag_encrypted_data,          this->encrypted_data);
 
     return result;
 }
@@ -207,8 +209,11 @@ kuic::handshake::kbr_kdc_response::serialize() const {
 }
 
 kuic::handshake::kbr_kdc_response
-kuic::handshake::kbr_kdc_response::deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
-    kuic::handshake::handshake_message temporary_msg = kuic::handshake::handshake_message::deserialize(buffer, len, seek);
+kuic::handshake::kbr_kdc_response::deserialize(
+        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+
+    kuic::handshake::handshake_message temporary_msg = 
+        kuic::handshake::handshake_message::deserialize(buffer, len, seek);
 
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_kdc_response(temporary_msg.get_error());
@@ -226,11 +231,11 @@ kuic::handshake::kbr_kdc_response::deserialize(kuic::byte_t *buffer, size_t len,
     temporary_msg.assign<kuic::kbr_message_type_t, kuic::handshake::kbr_message_type_serializer>(
             result.message_type, kuic::handshake::tag_message_type);
     // deserialize realm
-    temporary_msg.assign(result.realm, kuic::handshake::tag_client_realm);
+    temporary_msg.assign(result.realm,          kuic::handshake::tag_client_realm           );
     // deserialize client name
-    temporary_msg.assign(result.client_name, kuic::handshake::tag_client_principal_name);
+    temporary_msg.assign(result.client_name,    kuic::handshake::tag_client_principal_name  );
     // encrypted data
-    temporary_msg.assign(result.encrypted_data, kuic::handshake::tag_encrypted_data);
+    temporary_msg.assign(result.encrypted_data, kuic::handshake::tag_encrypted_data         );
 
     return result;
 }

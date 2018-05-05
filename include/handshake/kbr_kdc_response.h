@@ -17,7 +17,7 @@
 
 namespace kuic {
     namespace handshake {
-        const kuic::kbr_message_type_t kbr_kdc_as_response = 11;
+        const kuic::kbr_message_type_t kbr_kdc_as_response  = 11;
         const kuic::kbr_message_type_t kbr_kdc_tgs_response = 13;
 
         class kbr_kdc_last_request {
@@ -56,7 +56,8 @@ namespace kuic {
             kbr_principal_name get_server_name() const;
 
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
-            static kbr_kdc_response_part deserialize(kuic::byte_t *buffer, const size_t size, size_t &seek);
+            static kbr_kdc_response_part deserialize(
+                    const kuic::byte_t *buffer, const size_t size, size_t &seek);
         };
 
 
@@ -84,7 +85,8 @@ namespace kuic {
                     kuic::handshake::kbr_kdc_response_part &part,
                     kuic::handshake::kbr_ticket &ticket);
 
-            static kbr_kdc_response deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
+            static kbr_kdc_response deserialize(
+                    const kuic::byte_t *buffer, size_t len, size_t &seek);
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
 
             kuic::kbr_protocol_version_t get_version() const;

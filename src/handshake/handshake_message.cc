@@ -26,7 +26,8 @@ void kuic::handshake::handshake_message::set_tag(kuic::tag_t tag) {
 
 void kuic::handshake::handshake_message::insert(
     kuic::tag_t tag, kuic::byte_t *data, size_t size) {
-    this->data.insert(std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(tag, std::vector<kuic::byte_t>(data, data + size)));
+    this->data.insert(
+            std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(tag, std::vector<kuic::byte_t>(data, data + size)));
 }
 
 kuic::handshake::handshake_message
@@ -44,7 +45,10 @@ kuic::handshake::handshake_message::parse_handshake_message(eys::in_buffer &read
     // declare current message parameters count
     unsigned int parameters_count;
     // get main parameters count
-    reader.get<kuic::byte_t, unsigned int, eys::littleendian_serializer<kuic::byte_t, unsigned int>>(parameters_count);
+    reader.get<
+        kuic::byte_t,
+        unsigned int,
+        eys::littleendian_serializer<kuic::byte_t, unsigned int>>(parameters_count);
 
     // if current message parameters count too many
     // then return error
@@ -59,7 +63,8 @@ kuic::handshake::handshake_message::parse_handshake_message(eys::in_buffer &read
     // next 4 bytes store segment length
     kuic::byte_t *index = nullptr;
     size_t truth_size = 0;
-    std::tie<kuic::byte_t *, size_t>(index, truth_size) = reader.get_range<kuic::byte_t>(parameters_count * 8);
+    std::tie<kuic::byte_t *, size_t>(index, truth_size) =
+        reader.get_range<kuic::byte_t>(parameters_count * 8);
     std::unique_ptr<kuic::byte_t []> uni_index(index);
     
     // check current handshake message remain bytes is enough
@@ -72,9 +77,13 @@ kuic::handshake::handshake_message::parse_handshake_message(eys::in_buffer &read
     unsigned int seg_start = 0;
     for (size_t pos = 0; pos < parameters_count * 8; ) {
         // get current segment tag name
-        kuic::tag_t tag = kuic::handshake::tag_serializer::deserialize(uni_index.get(), parameters_count * 8, pos);
+        kuic::tag_t tag =
+            kuic::handshake::tag_serializer::deserialize(
+                    uni_index.get(), parameters_count * 8, pos);
         // get current segment end position
-        unsigned int seg_end = eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(uni_index.get(), parameters_count * 8, pos);
+        unsigned int seg_end =
+            eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(
+                        uni_index.get(), parameters_count * 8, pos);
 
         // calculate current segment length
         unsigned int seg_len = seg_end - seg_start;
@@ -95,7 +104,9 @@ kuic::handshake::handshake_message::parse_handshake_message(eys::in_buffer &read
         }
 
         // insert current segment to result_map
-        result_map.insert(std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(tag, std::vector<kuic::byte_t>(seg, seg + seg_truth_len)));
+        result_map.insert(
+                std::pair<kuic::tag_t, std::vector<kuic::byte_t>>(
+                    tag, std::vector<kuic::byte_t>(seg, seg + seg_truth_len)));
         
         seg_start = seg_end;
     }
@@ -120,16 +131,21 @@ kuic::handshake::handshake_message::serialize() const {
 
     // copy current ser_buffer to result (byte vector)
     temporary_serialized_buffer.insert(
-            temporary_serialized_buffer.begin(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
+            temporary_serialized_buffer.begin(),
+            serialized_buffer.get(),
+            serialized_buffer.get() + serialized_size);
     
     // reset ser_buffer to store segment count
-    std::tie(serialized_buffer_ptr, serialized_size) = eys::littleendian_serializer<kuic::byte_t, unsigned short>::serialize(
+    std::tie(serialized_buffer_ptr, serialized_size) =
+        eys::littleendian_serializer<kuic::byte_t, unsigned short>::serialize(
             static_cast<unsigned short>(this->data.size()));
     serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
     
     // copy current ser_buffer to result (only set short (max is 65535))
     temporary_serialized_buffer.insert(
-            temporary_serialized_buffer.end(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
+            temporary_serialized_buffer.end(),
+            serialized_buffer.get(),
+            serialized_buffer.get() + serialized_size);
     // fill zero (like int)
     temporary_serialized_buffer.push_back(kuic::byte_t(0));
     temporary_serialized_buffer.push_back(kuic::byte_t(0));
@@ -144,36 +160,47 @@ kuic::handshake::handshake_message::serialize() const {
 
     // enum each tag to stored index & data
     int i = 0;
-    std::for_each(tags_sorted.begin(), tags_sorted.end(), [&, this] (const kuic::tag_t &t) -> void {
-        // find the tag's data
-        auto t_ptr = this->data.find(t);
-        // copy segment data to data_buffer
-        data_buffer.insert(data_buffer.end(), t_ptr->second.begin(), t_ptr->second.end());
+    std::for_each(tags_sorted.begin(), tags_sorted.end(),
+            [&, this] (const kuic::tag_t &t) -> void {
+                // find the tag's data
+                auto t_ptr = this->data.find(t);
+                // copy segment data to data_buffer
+                data_buffer.insert(data_buffer.end(), t_ptr->second.begin(), t_ptr->second.end());
 
-        offset += (unsigned int) (t_ptr->second.size());
-        // declare inner size
-        size_t size = 0;
-        // declare inner serialized buffer
-        kuic::byte_t *inner_serialized_buffer_ptr = nullptr;
-        std::unique_ptr<kuic::byte_t []> inner_serialized_buffer;
+                offset += (unsigned int) (t_ptr->second.size());
+                // declare inner size
+                size_t size = 0;
+                // declare inner serialized buffer
+                kuic::byte_t *inner_serialized_buffer_ptr = nullptr;
+                std::unique_ptr<kuic::byte_t []> inner_serialized_buffer;
 
-        // serialize current tag
-        std::tie(inner_serialized_buffer_ptr, size) = kuic::handshake::tag_serializer::serialize(t);
-        inner_serialized_buffer = std::unique_ptr<kuic::byte_t []>(inner_serialized_buffer_ptr);
-        // copy serialized tag to serialized buffer
-        std::copy(inner_serialized_buffer.get(), inner_serialized_buffer.get() + size, serialized_buffer.get() + i * 8);
-        
-        // serialize current segment end position
-        std::tie(inner_serialized_buffer_ptr, size) = eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(offset);
-        inner_serialized_buffer = std::unique_ptr<kuic::byte_t []>(inner_serialized_buffer_ptr);
-        // copy serialized segment end position to serialized buffer
-        std::copy(inner_serialized_buffer.get(), inner_serialized_buffer.get() + size, serialized_buffer.get() + i * 8 + 4);
+                // serialize current tag
+                std::tie(inner_serialized_buffer_ptr, size) = kuic::handshake::tag_serializer::serialize(t);
+                inner_serialized_buffer = std::unique_ptr<kuic::byte_t []>(inner_serialized_buffer_ptr);
+                // copy serialized tag to serialized buffer
+                std::copy(
+                        inner_serialized_buffer.get(),
+                        inner_serialized_buffer.get() + size,
+                        serialized_buffer.get() + i * 8);
+                
+                // serialize current segment end position
+                std::tie(inner_serialized_buffer_ptr, size) =
+                    eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(offset);
 
-        i++;
-    });
+                inner_serialized_buffer = std::unique_ptr<kuic::byte_t []>(inner_serialized_buffer_ptr);
+                // copy serialized segment end position to serialized buffer
+                std::copy(
+                        inner_serialized_buffer.get(),
+                        inner_serialized_buffer.get() + size,
+                        serialized_buffer.get() + i * 8 + 4);
+
+                i++;
+            });
     // insert index area
     temporary_serialized_buffer.insert(
-            temporary_serialized_buffer.end(),serialized_buffer.get(), serialized_buffer.get() + this->data.size() * 8);
+            temporary_serialized_buffer.end(),
+            serialized_buffer.get(),
+            serialized_buffer.get() + this->data.size() * 8);
     // insert data area
     temporary_serialized_buffer.insert(
             temporary_serialized_buffer.end(), data_buffer.begin(), data_buffer.end());
@@ -200,7 +227,8 @@ kuic::handshake::handshake_message::deserialize(
     // index part's length is parameters count * 8
     // because tag occupy 4 bytes 
     // and content length occupy 4bytes
-    unsigned int parameters_count = eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(buffer, len, seek);
+    unsigned int parameters_count =
+        eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(buffer, len, seek);
     // if remain bytes have not enough 
     // or too many parameters count
     // then return them errors
@@ -224,7 +252,9 @@ kuic::handshake::handshake_message::deserialize(
         kuic::tag_t tag = kuic::handshake::tag_serializer::deserialize(
                 index, parameters_count * 8, pos);
         // get end of current segment
-        unsigned int seg_end = eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(index, parameters_count * 8, pos);
+        unsigned int seg_end = 
+            eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(
+                    index, parameters_count * 8, pos);
         // calculate current segment length
         unsigned int seg_len = seg_end - seg_start;
         
@@ -239,7 +269,8 @@ kuic::handshake::handshake_message::deserialize(
         }
         // insert current tag & value
         result_map.insert(
-                std::pair<kuic::tag_t, std::vector<kuic::byte_t> >(tag, std::vector<kuic::byte_t>(buffer + seek, buffer + seek + seg_len)));
+                std::pair<kuic::tag_t, std::vector<kuic::byte_t>>(
+                    tag, std::vector<kuic::byte_t>(buffer + seek, buffer + seek + seg_len)));
         
         // add seg_len to seek
         seek += seg_len;

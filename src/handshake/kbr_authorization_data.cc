@@ -69,13 +69,13 @@ kuic::handshake::kdc_issued_ad_item::serialize() const {
     kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_ad_issued);
 
     // serialize checksum
-    temporary_msg.insert(kuic::handshake::tag_checksum, this->checksum);
+    temporary_msg.insert(kuic::handshake::tag_checksum              ,   this->checksum      );
     // serialize issue realm
-    temporary_msg.insert(kuic::handshake::tag_issue_realm, this->issue_realm);
+    temporary_msg.insert(kuic::handshake::tag_issue_realm           ,   this->issue_realm   );
     // serialize issue name
-    temporary_msg.insert(kuic::handshake::tag_issue_principal_name, this->issue_name);
+    temporary_msg.insert(kuic::handshake::tag_issue_principal_name  ,   this->issue_name    );
     // serialize elements
-    temporary_msg.insert(kuic::handshake::tag_authorization_data, this->elements);
+    temporary_msg.insert(kuic::handshake::tag_authorization_data    ,   this->elements      );
 
     return temporary_msg.serialize();
 };
@@ -87,13 +87,13 @@ kuic::handshake::kdc_issued_ad_item::deserialize(const kuic::byte_t *buffer, siz
     kuic::handshake::handshake_message temporary_msg = kuic::handshake::handshake_message::deserialize(buffer, len, seek);
     
     // deserialize checksum
-    temporary_msg.assign(result.checksum, kuic::handshake::tag_checksum);
+    temporary_msg.assign(result.checksum    ,   kuic::handshake::tag_checksum               );
     // deserialize issue realm
-    temporary_msg.assign(result.issue_realm, kuic::handshake::tag_issue_realm);
+    temporary_msg.assign(result.issue_realm ,   kuic::handshake::tag_issue_realm            );
     // deserialize issue name
-    temporary_msg.assign(result.issue_name, kuic::handshake::tag_issue_principal_name);
+    temporary_msg.assign(result.issue_name  ,   kuic::handshake::tag_issue_principal_name   );
     // deserialize elements
-    temporary_msg.assign(result.elements, kuic::handshake::tag_authorization_data);
+    temporary_msg.assign(result.elements    ,   kuic::handshake::tag_authorization_data     );
     
     return result;
 }
@@ -121,7 +121,8 @@ kuic::handshake::and_or_ad_item::serialize() const {
     kuic::byte_t *condition_count_buffer_ptr = nullptr;
     
     // serialize condition count
-    std::tie(condition_count_buffer_ptr, condition_count_size) = eys::littleendian_serializer<kuic::byte_t, int>::serialize(this->condition_count);
+    std::tie(condition_count_buffer_ptr, condition_count_size) =
+        eys::littleendian_serializer<kuic::byte_t, int>::serialize(this->condition_count);
     std::unique_ptr<kuic::byte_t []> condition_count_buffer(condition_count_buffer_ptr);
     
     // copy condition count to result
@@ -145,7 +146,8 @@ kuic::handshake::and_or_ad_item::deserialize(
     kuic::handshake::and_or_ad_item result;
 
     // deserialize condition count
-    result.condition_count = eys::littleendian_serializer<kuic::byte_t, int>::deserialize(buffer, len, seek);
+    result.condition_count =
+        eys::littleendian_serializer<kuic::byte_t, int>::deserialize(buffer, len, seek);
     // deserialize elements
     result.elements = kuic::handshake::kbr_authorization_data::deserialize(buffer, len, seek);
    
@@ -165,7 +167,8 @@ kuic::handshake::mandatory_ad_item::serialize() const {
 }
 
 kuic::handshake::mandatory_ad_item
-kuic::handshake::mandatory_ad_item::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::handshake::mandatory_ad_item::deserialize(
+        const kuic::byte_t *buffer, size_t len, size_t &seek) {
     kuic::handshake::mandatory_ad_item result;
     result.elements = kuic::handshake::kbr_authorization_data::deserialize(buffer, len, seek);
     return result;
@@ -182,7 +185,8 @@ kuic::handshake::kbr_authorization_data_item::kbr_authorization_data_item(ad_ite
     std::tie(serialized_buffer_ptr, serialized_buffer_size) = item->serialize();
 
     std::unique_ptr<kuic::byte_t []> serialized_buffer(serialized_buffer_ptr);
-    this->data.assign(serialized_buffer.get(), serialized_buffer.get() + serialized_buffer_size);
+    this->data.assign(
+            serialized_buffer.get(), serialized_buffer.get() + serialized_buffer_size);
 }
 
 std::pair<kuic::byte_t *, size_t>
@@ -212,7 +216,8 @@ kuic::handshake::kbr_authorization_data_item
 kuic::handshake::kbr_authorization_data_item::deserialize(
         const kuic::byte_t *buffer, size_t len, size_t &seek) {
     kuic::handshake::kbr_authorization_data_item result;
-    result.type = kuic::handshake::kbr_authorization_data_type_serializer::deserialize(buffer, len, seek);
+    result.type = 
+        kuic::handshake::kbr_authorization_data_type_serializer::deserialize(buffer, len, seek);
     result.data.assign(buffer + seek, buffer + len);
     seek = len;
     return result;
@@ -264,10 +269,13 @@ kuic::handshake::kbr_authorization_data::serialize() const {
     std::unique_ptr<kuic::byte_t []> serialized_buffer;
 
     // serialize elements count
-    std::tie(serialized_buffer_ptr, serialized_size) = eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(this->elements.size());
+    std::tie(serialized_buffer_ptr, serialized_size) = 
+        eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(this->elements.size());
+
     serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
     // copy serialized elements count to result vector
-    result.insert(result.begin(), serialized_buffer.get(), serialized_buffer.get() + sizeof(unsigned int));
+    result.insert(
+            result.begin(), serialized_buffer.get(), serialized_buffer.get() + sizeof(unsigned int));
 
     // declare index area & data area
     std::vector<kuic::byte_t> index;
@@ -283,10 +291,13 @@ kuic::handshake::kbr_authorization_data::serialize() const {
                 // calculate offset (segment end position)
                 offset += serialized_size;
                 // serialize offset
-                std::tie(serialized_buffer_ptr, serialized_size) = eys::littleendian_serializer<kuic::byte_t, int>::serialize(offset);
+                std::tie(serialized_buffer_ptr, serialized_size) = 
+                    eys::littleendian_serializer<kuic::byte_t, int>::serialize(offset);
+
                 serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
                 // insert serialized offset to index area
-                index.insert(index.end(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
+                index.insert(
+                        index.end(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
             });
 
     // copy index to result vector
@@ -302,7 +313,9 @@ kuic::handshake::kbr_authorization_data::serialize() const {
 kuic::handshake::kbr_authorization_data
 kuic::handshake::kbr_authorization_data::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
     kuic::handshake::kbr_authorization_data result;
-    unsigned int elements_size = eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(buffer, len, seek);
+    unsigned int elements_size =
+        eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(buffer, len, seek);
+
     std::vector<int> offsets;
     for (unsigned int i = 0; i < elements_size; i++) {
         offsets.push_back(

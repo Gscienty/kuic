@@ -27,6 +27,8 @@ namespace kuic {
             kbr_host_address client_address;
         public:
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static kbr_ticket_body deserialize(
+                    const kuic::byte_t *buffer, size_t len, size_t &seek);
         };
 
         class kbr_ticket {
@@ -37,10 +39,6 @@ namespace kuic {
             kbr_encrypted_data encrypted_data;
         public:
             kbr_ticket() { }
-        };
-
-        class kbr_tickets {
-        
         };
     }
 }

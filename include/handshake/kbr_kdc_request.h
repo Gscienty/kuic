@@ -15,8 +15,8 @@
 
 namespace kuic {
     namespace handshake {
-        const kuic::kbr_message_type_t kbr_kdc_as_request = 10;
-        const kuic::kbr_message_type_t kbr_kdc_tgs_request = 12;
+        const kuic::kbr_message_type_t kbr_kdc_as_request   = 10;
+        const kuic::kbr_message_type_t kbr_kdc_tgs_request  = 12;
 
         class kbr_kdc_request_body
             : public package_serializable
@@ -40,7 +40,11 @@ namespace kuic {
             kbr_kdc_request_body(kuic::error_t err);
         public:
             kbr_kdc_request_body();
-            kbr_kdc_request_body(kuic::kbr_message_type_t message_type, kbr_principal_name name, std::string realm, unsigned int nonce);
+            kbr_kdc_request_body(
+                    kuic::kbr_message_type_t message_type,
+                    kbr_principal_name name,
+                    std::string realm,
+                    unsigned int nonce);
 
             unsigned int get_nonce() const;
             kbr_principal_name get_client_name() const;
@@ -52,7 +56,8 @@ namespace kuic {
             kbr_encrypted_data get_authorization_data() const;
             
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
-            static kbr_kdc_request_body deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
+            static kbr_kdc_request_body deserialize(
+                    const kuic::byte_t *buffer, size_t len, size_t &seek);
 
             void support_encrypt_type(kuic::kbr_encryption_type_t encryption_type);
         };
@@ -69,13 +74,21 @@ namespace kuic {
 
             kbr_kdc_request();
         public:
-            static kbr_kdc_request build_as_request(kbr_principal_name client_name, std::string realm, unsigned int nonce);
-            static kbr_kdc_request build_tgs_request(kbr_principal_name server_name, std::string realm, unsigned int nonce);
+            static kbr_kdc_request build_as_request(
+                    kbr_principal_name client_name,
+                    std::string realm,
+                    unsigned int nonce);
+
+            static kbr_kdc_request build_tgs_request(
+                    kbr_principal_name server_name,
+                    std::string realm,
+                    unsigned int nonce);
 
             kbr_kdc_request_body get_body() const;
             kuic::kbr_message_type_t get_message_type() const;
 
-            static kbr_kdc_request deserialize(kuic::byte_t *buffer, const size_t len, size_t &seek);
+            static kbr_kdc_request deserialize(
+                    const kuic::byte_t *buffer, const size_t len, size_t &seek);
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
         };
     }

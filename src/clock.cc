@@ -86,11 +86,13 @@ kuic::clock::serialize() const {
 }
 
 kuic::special_clock
-kuic::special_clock::deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::special_clock::deserialize(
+        const kuic::byte_t *buffer, size_t len, size_t &seek) {
     if (seek + sizeof(unsigned long) < len) {
         return kuic::special_clock();
     }
-    kuic::kuic_time_t kuic_time = eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::deserialize(buffer, len, seek);
+    kuic::kuic_time_t kuic_time =
+        eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::deserialize(buffer, len, seek);
     return kuic::special_clock(
             timespec({ kuic_time / kuic::clock_second, kuic_time % kuic::clock_second }));
 }

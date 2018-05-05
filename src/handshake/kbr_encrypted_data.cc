@@ -15,7 +15,11 @@ kuic::handshake::kbr_encrypted_data::kbr_encrypted_data(
     , encryption_type(encryption_type) { }
 
 void kuic::handshake::kbr_encrypted_data::set_plain_message(
-        kuic::byte_t *plain_text, size_t plain_text_size, kuic::byte_t *secret_key, size_t secret_key_size) {
+        kuic::byte_t *plain_text,
+        size_t plain_text_size,
+        kuic::byte_t *secret_key,
+        size_t secret_key_size) {
+
     // get current mode comb crypter
     std::unique_ptr<kuic::crypt::mode> mode = this->get_mode(this->get_crypter());
     
@@ -67,7 +71,10 @@ kuic::handshake::kbr_encrypted_data::get_plain_message(
 
 std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kbr_encrypted_data::serialize() const {
-    size_t size = sizeof(kuic::kbr_key_version_t) + sizeof(kuic::kbr_encryption_type_t) + this->cipher.size() * sizeof(kuic::byte_t);
+    size_t size = 
+        sizeof(kuic::kbr_key_version_t) +
+        sizeof(kuic::kbr_encryption_type_t) +
+        this->cipher.size() * sizeof(kuic::byte_t);
 
     kuic::byte_t *result = new kuic::byte_t[size];
     
@@ -76,29 +83,41 @@ kuic::handshake::kbr_encrypted_data::serialize() const {
     size_t serialized_size = 0;
 
     // serialize version
-    std::tie(serialized_buffer_ptr, serialized_size) = kuic::handshake::kbr_key_version_serializer::serialize(this->version);
+    std::tie(serialized_buffer_ptr, serialized_size) =
+        kuic::handshake::kbr_key_version_serializer::serialize(this->version);
+
     serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
     std::copy(serialized_buffer.get(), serialized_buffer.get() + serialized_size, result);
 
     // serialize encryption_type
-    std::tie(serialized_buffer_ptr, serialized_size) = kuic::handshake::kbr_key_version_serializer::serialize(this->encryption_type);
+    std::tie(serialized_buffer_ptr, serialized_size) =
+        kuic::handshake::kbr_key_version_serializer::serialize(this->encryption_type);
+
     serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
-    std::copy(serialized_buffer.get(), serialized_buffer.get() + serialized_size, result + sizeof(kuic::kbr_key_version_t));
+    std::copy(
+            serialized_buffer.get(),
+            serialized_buffer.get() + serialized_size,
+            result + sizeof(kuic::kbr_key_version_t));
 
     // copy cipher to result
-    std::copy(this->cipher.begin(), this->cipher.end(), result + sizeof(kuic::kbr_key_version_t) + sizeof(kuic::kbr_encryption_type_t));
+    std::copy(
+            this->cipher.begin(),
+            this->cipher.end(),
+            result + sizeof(kuic::kbr_key_version_t) + sizeof(kuic::kbr_encryption_type_t));
 
     return std::pair<kuic::byte_t *, size_t>(result, size);
 }
 
 kuic::handshake::kbr_encrypted_data
-kuic::handshake::kbr_encrypted_data::deserialize(kuic::byte_t *buffer, size_t size, size_t &seek) {
+kuic::handshake::kbr_encrypted_data::deserialize(const kuic::byte_t *buffer, size_t size, size_t &seek) {
     kuic::handshake::kbr_encrypted_data result;
     
     // version
-    result.version = kuic::handshake::kbr_key_version_serializer::deserialize(buffer + seek, size, seek);
+    result.version =
+        kuic::handshake::kbr_key_version_serializer::deserialize(buffer + seek, size, seek);
     // encryption type
-    result.encryption_type = kuic::handshake::kbr_encryption_type_serializer::deserialize(buffer + seek, size, seek);
+    result.encryption_type =
+        kuic::handshake::kbr_encryption_type_serializer::deserialize(buffer + seek, size, seek);
     // cipher
     result.cipher.assign(buffer + seek, buffer + size);
     seek = size;

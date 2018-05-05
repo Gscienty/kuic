@@ -107,7 +107,7 @@ kuic::handshake::kbr_kdc_request_body::serialize() const {
 }
 
 kuic::handshake::kbr_kdc_request_body
-kuic::handshake::kbr_kdc_request_body::deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::handshake::kbr_kdc_request_body::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
     kuic::handshake::handshake_message temporary_msg = 
         kuic::handshake::handshake_message::deserialize(buffer, len, seek);
     if (temporary_msg.is_lawful() == false) {
@@ -236,7 +236,9 @@ kuic::handshake::kbr_kdc_request::serialize() const {
 }
 
 kuic::handshake::kbr_kdc_request
-kuic::handshake::kbr_kdc_request::deserialize(kuic::byte_t *buffer, const size_t len, size_t &seek) {
+kuic::handshake::kbr_kdc_request::deserialize(
+        const kuic::byte_t *buffer, const size_t len, size_t &seek) {
+
     kuic::handshake::handshake_message msg =
         kuic::handshake::handshake_message::deserialize(buffer, len, seek);
     return kuic::handshake::kbr_kdc_request::__deserialize(msg);

@@ -15,23 +15,31 @@ namespace kuic {
 
     template <typename EntityType>
     struct package_serializer {
-        static std::pair<kuic::byte_t *, size_t> serialize(const EntityType &entity) {
+        static
+        std::pair<kuic::byte_t *, size_t>
+        serialize(const EntityType &entity) {
             return entity.serialize();
         }
 
-        static EntityType deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+        static
+        EntityType
+        deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
             return EntityType::deserialize(buffer, len, seek);
         }
     };
 
     template <>
     struct package_serializer<std::string> {
-        static std::pair<kuic::byte_t *, size_t> serialize(const std::string &entity) {
+        static
+        std::pair<kuic::byte_t *, size_t>
+        serialize(const std::string &entity) {
             kuic::byte_t *buffer = new kuic::byte_t[entity.length()];
             return std::pair<kuic::byte_t *, size_t>(buffer, entity.length());
         }
 
-        static std::string deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+        static
+        std::string
+        deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
             std::string result(buffer + seek, buffer + len);
             seek = len;
             return result;
@@ -40,13 +48,17 @@ namespace kuic {
 
     template <>
     struct package_serializer<std::vector<kuic::byte_t>> {
-        static std::pair<kuic::byte_t *, size_t> serialize(const std::vector<kuic::byte_t> &entity) {
+        static
+        std::pair<kuic::byte_t *, size_t>
+        serialize(const std::vector<kuic::byte_t> &entity) {
             kuic::byte_t *buffer = new kuic::byte_t[entity.size()];
             std::copy(entity.begin(), entity.end(), buffer);
             return std::pair<kuic::byte_t *, size_t>(buffer, entity.size());
         }
 
-        static std::vector<kuic::byte_t> deserialize(kuic::byte_t *buffer, size_t len, size_t &seek) {
+        static
+        std::vector<kuic::byte_t>
+        deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
             std::vector<kuic::byte_t> result;
             result.assign(buffer + seek, buffer + len);
             seek = len;
