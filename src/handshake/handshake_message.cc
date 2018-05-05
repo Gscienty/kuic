@@ -266,7 +266,7 @@ kuic::handshake::handshake_message::get_tags_sorted() const {
 }
 
 std::vector<kuic::byte_t> &
-kuic::handshake::handshake_message::get(kuic::tag_t tag) {
+kuic::handshake::handshake_message::get_serialized_buffer(kuic::tag_t tag) {
     return this->data[tag];
 }
 

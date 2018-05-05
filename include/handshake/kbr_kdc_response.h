@@ -24,7 +24,7 @@ namespace kuic {
         
         };
 
-        class kbr_kdc_response_part : public kuic::package_serializer {
+        class kbr_kdc_response_part : public kuic::package_serializable {
         private:
             kbr_encryption_key key;
             std::vector<kbr_kdc_last_request> last_req;    
@@ -61,7 +61,7 @@ namespace kuic {
 
 
         class kbr_kdc_response
-            : public kuic::package_serializer
+            : public kuic::package_serializable
             , public kuic::lawful_package {
         private:
             kuic::kbr_protocol_version_t version;
@@ -81,7 +81,8 @@ namespace kuic {
                     kuic::kbr_encryption_type_t encryption_type,
                     kuic::byte_t *secret_key,
                     size_t secret_key_size,
-                    kuic::handshake::kbr_kdc_response_part &part);
+                    kuic::handshake::kbr_kdc_response_part &part,
+                    kuic::handshake::kbr_ticket &ticket);
 
             static kbr_kdc_response deserialize(kuic::byte_t *buffer, size_t len, size_t &seek);
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;

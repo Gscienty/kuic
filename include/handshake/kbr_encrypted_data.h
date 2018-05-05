@@ -11,7 +11,7 @@
 
 namespace kuic {
     namespace handshake {
-        class kbr_encrypted_data : public kuic::package_serializer {
+        class kbr_encrypted_data : public kuic::package_serializable {
         private:
             kuic::kbr_key_version_t version;
             kuic::kbr_encryption_type_t encryption_type;

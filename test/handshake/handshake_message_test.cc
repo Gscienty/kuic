@@ -112,15 +112,15 @@ TEST(handshake_message, sample_chelo_message) {
     EXPECT_TRUE(msg.is_lawful());
 
     EXPECT_TRUE(msg.exist('PAD\0'));
-    EXPECT_EQ(1016, msg.get('PAD\0').size());
+    EXPECT_EQ(1016, msg.get_serialized_buffer('PAD\0').size());
     EXPECT_TRUE(msg.exist('SNI\0'));
     
-    std::string sni(msg.get('SNI\0').begin(), msg.get('SNI\0').end());
+    std::string sni(msg.get_serialized_buffer('SNI\0').begin(), msg.get_serialized_buffer('SNI\0').end());
     EXPECT_EQ(0, sni.compare("www.example.org"));
 
     EXPECT_TRUE(msg.exist('CFCW'));
     EXPECT_TRUE(msg.exist('PDMD'));
-    std::string pdmd(msg.get('PDMD').begin(), msg.get('PDMD').end());
+    std::string pdmd(msg.get_serialized_buffer('PDMD').begin(), msg.get_serialized_buffer('PDMD').end());
     EXPECT_EQ(0, pdmd.compare("X509"));
 }
 

@@ -3,6 +3,7 @@
 
 #include "type.h"
 #include "clock.h"
+#include "package_serializer.h"
 #include "handshake/kbr_principal_name.h"
 #include "handshake/kbr_encrypted_data.h"
 #include "handshake/kbr_encryption_key.h"
@@ -13,7 +14,7 @@
 namespace kuic {
     namespace handshake {
 
-        class kbr_ticket_body {
+        class kbr_ticket_body : public package_serializable {
         private:
             kuic::kbr_flag_t ticket_flags;
             kbr_encryption_key key;
@@ -24,6 +25,8 @@ namespace kuic {
             kuic::special_clock end_time;
             kuic::special_clock renew_till;
             kbr_host_address client_address;
+        public:
+            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
         };
 
         class kbr_ticket {
@@ -34,6 +37,10 @@ namespace kuic {
             kbr_encrypted_data encrypted_data;
         public:
             kbr_ticket() { }
+        };
+
+        class kbr_tickets {
+        
         };
     }
 }

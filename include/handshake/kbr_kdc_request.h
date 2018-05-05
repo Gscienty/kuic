@@ -19,7 +19,7 @@ namespace kuic {
         const kuic::kbr_message_type_t kbr_kdc_tgs_request = 12;
 
         class kbr_kdc_request_body
-            : public package_serializer
+            : public package_serializable
             , public lawful_package {
         private:
             kuic::kbr_message_type_t message_type;
@@ -57,7 +57,7 @@ namespace kuic {
             void support_encrypt_type(kuic::kbr_encryption_type_t encryption_type);
         };
 
-        class kbr_kdc_request : public package_serializer {
+        class kbr_kdc_request : public package_serializable {
         private:
             kuic::kbr_protocol_version_t version;
             kuic::kbr_message_type_t message_type;
@@ -70,6 +70,7 @@ namespace kuic {
             kbr_kdc_request();
         public:
             static kbr_kdc_request build_as_request(kbr_principal_name client_name, std::string realm, unsigned int nonce);
+            static kbr_kdc_request build_tgs_request(kbr_principal_name server_name, std::string realm, unsigned int nonce);
 
             kbr_kdc_request_body get_body() const;
             kuic::kbr_message_type_t get_message_type() const;

@@ -18,7 +18,7 @@ namespace kuic {
         const kbr_authorization_data_item_type_t ad_type_mandatory_for_kdc = 8;
 
         class ad_item
-            : public kuic::package_serializer
+            : public kuic::package_serializable
             , public kuic::lawful_package {
         public:
             ad_item();
@@ -28,7 +28,7 @@ namespace kuic {
         };
         
         // serialized ad_item
-        class kbr_authorization_data_item : public kuic::package_serializer {
+        class kbr_authorization_data_item : public kuic::package_serializable {
         protected:
             kuic::kbr_authorization_data_item_type_t type;
             std::vector<kuic::byte_t> data;
@@ -43,7 +43,7 @@ namespace kuic {
         };
         
         // authorization data
-        class kbr_authorization_data : public package_serializer {
+        class kbr_authorization_data : public package_serializable {
         private:
             std::vector<kbr_authorization_data_item> elements;
         public:

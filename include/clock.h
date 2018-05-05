@@ -8,7 +8,7 @@
 #include <sys/types.h> 
 
 namespace kuic {
-    class clock : public package_serializer {
+    class clock : public package_serializable {
     public:
         virtual timespec get() const = 0;
 

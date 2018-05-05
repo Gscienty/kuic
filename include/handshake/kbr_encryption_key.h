@@ -9,7 +9,7 @@
 
 namespace kuic {
     namespace handshake {
-        class kbr_encryption_key : public package_serializer {
+        class kbr_encryption_key : public package_serializable {
         private:
             kuic::kbr_encryption_key_t key_type;
             std::vector<kuic::byte_t> key_value;

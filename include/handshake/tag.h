@@ -20,6 +20,8 @@ namespace kuic {
         const kuic::tag_t tag_checksum = 'CKSM';
         const kuic::tag_t tag_issue_principal_name = 'INAM';
         const kuic::tag_t tag_issue_realm = 'IMAN';
+    
+        const kuic::tag_t tag_ticket = 'TICK';
 
         const kuic::tag_t tag_server_principal_name = 'SNAM';
         const kuic::tag_t tag_time_from = 'TFRM';
@@ -30,6 +32,8 @@ namespace kuic {
         const kuic::tag_t tag_address = 'CADR';
         const kuic::tag_t tag_encrypted_data = 'EDAT';
         const kuic::tag_t tag_additional_tickets = 'ADTK';
+
+        const kuic::tag_t tag_key = 'KEY\0';
 
         const kuic::tag_t tag_kbr_tgt = 'TGT\0';
         const kuic::tag_t tag_tgt_key = 'TGTK';

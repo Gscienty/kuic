@@ -97,10 +97,8 @@ kuic::handshake::kbr_encrypted_data::deserialize(kuic::byte_t *buffer, size_t si
     
     // version
     result.version = kuic::handshake::kbr_key_version_serializer::deserialize(buffer + seek, size, seek);
-
     // encryption type
     result.encryption_type = kuic::handshake::kbr_encryption_type_serializer::deserialize(buffer + seek, size, seek);
-
     // cipher
     result.cipher.assign(buffer + seek, buffer + size);
     seek = size;

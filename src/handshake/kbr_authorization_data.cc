@@ -68,29 +68,14 @@ std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kdc_issued_ad_item::serialize() const {
     kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_ad_issued);
 
-    kuic::byte_t *serialized_buffer_ptr = nullptr;
-    std::unique_ptr<kuic::byte_t []> serialized_buffer;
-    size_t size = 0;
-
     // serialize checksum
-    serialized_buffer = std::unique_ptr<kuic::byte_t []>(new kuic::byte_t[this->checksum.size()]);
-    std::copy(this->checksum.begin(), this->checksum.end(), serialized_buffer.get());
-    temporary_msg.insert(kuic::handshake::tag_checksum, serialized_buffer.get(), this->checksum.size());
-
+    temporary_msg.insert(kuic::handshake::tag_checksum, this->checksum);
     // serialize issue realm
-    serialized_buffer = std::unique_ptr<kuic::byte_t []>(new kuic::byte_t[this->issue_realm.size()]);
-    std::copy(this->issue_realm.begin(), this->issue_realm.end(), serialized_buffer.get());
-    temporary_msg.insert(kuic::handshake::tag_issue_realm, serialized_buffer.get(), this->issue_realm.size());
-
+    temporary_msg.insert(kuic::handshake::tag_issue_realm, this->issue_realm);
     // serialize issue name
-    std::tie(serialized_buffer_ptr, size) = this->issue_name.serialize();
-    serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
-    temporary_msg.insert(kuic::handshake::tag_issue_principal_name, serialized_buffer.get(), size);
-    
+    temporary_msg.insert(kuic::handshake::tag_issue_principal_name, this->issue_name);
     // serialize elements
-    std::tie(serialized_buffer_ptr, size) = this->elements.serialize();
-    serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
-    temporary_msg.insert(kuic::handshake::tag_authorization_data, serialized_buffer.get(), size);
+    temporary_msg.insert(kuic::handshake::tag_authorization_data, this->elements);
 
     return temporary_msg.serialize();
 };
@@ -102,36 +87,13 @@ kuic::handshake::kdc_issued_ad_item::deserialize(const kuic::byte_t *buffer, siz
     kuic::handshake::handshake_message temporary_msg = kuic::handshake::handshake_message::deserialize(buffer, len, seek);
     
     // deserialize checksum
-    if (temporary_msg.exist(kuic::handshake::tag_checksum)) {
-        result.checksum.assign(
-                temporary_msg.get(kuic::handshake::tag_checksum).begin(),
-                temporary_msg.get(kuic::handshake::tag_checksum).end());
-    }
-
+    temporary_msg.assign(result.checksum, kuic::handshake::tag_checksum);
     // deserialize issue realm
-    if (temporary_msg.exist(kuic::handshake::tag_issue_realm)) {
-        result.issue_realm.assign(
-                temporary_msg.get(kuic::handshake::tag_issue_realm).begin(),
-                temporary_msg.get(kuic::handshake::tag_issue_realm).end());
-    }
-
+    temporary_msg.assign(result.issue_realm, kuic::handshake::tag_issue_realm);
     // deserialize issue name
-    if (temporary_msg.exist(kuic::handshake::tag_issue_principal_name)) {
-        size_t seek = 0;
-        result.issue_name = kuic::handshake::kbr_principal_name::deserialize(
-                temporary_msg.get(kuic::handshake::tag_issue_principal_name).data(),
-                temporary_msg.get(kuic::handshake::tag_issue_principal_name).size(),
-                seek);
-    }
-
+    temporary_msg.assign(result.issue_name, kuic::handshake::tag_issue_principal_name);
     // deserialize elements
-    if (temporary_msg.exist(kuic::handshake::tag_authorization_data)) {
-        size_t seek = 0;
-        result.elements = kuic::handshake::kbr_authorization_data::deserialize(
-                temporary_msg.get(kuic::handshake::tag_authorization_data).data(),
-                temporary_msg.get(kuic::handshake::tag_authorization_data).size(),
-                seek);
-    }
+    temporary_msg.assign(result.elements, kuic::handshake::tag_authorization_data);
     
     return result;
 }
@@ -296,28 +258,40 @@ std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kbr_authorization_data::serialize() const {
     std::vector<kuic::byte_t> result;
 
+    // declare temporary buffer
     kuic::byte_t *serialized_buffer_ptr = nullptr;
     size_t serialized_size = 0;
     std::unique_ptr<kuic::byte_t []> serialized_buffer;
 
+    // serialize elements count
     std::tie(serialized_buffer_ptr, serialized_size) = eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(this->elements.size());
     serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
+    // copy serialized elements count to result vector
     result.insert(result.begin(), serialized_buffer.get(), serialized_buffer.get() + sizeof(unsigned int));
+
+    // declare index area & data area
     std::vector<kuic::byte_t> index;
     std::vector<kuic::byte_t> data;
     int offset = 0;
     std::for_each(this->elements.begin(), this->elements.end(),
             [&] (const kuic::handshake::kbr_authorization_data_item &item) -> void {
+                // serialize current element
                 std::tie(serialized_buffer_ptr, serialized_size) = item.serialize();
                 serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
+                // insert serialized current element to data area
                 data.insert(data.end(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
+                // calculate offset (segment end position)
                 offset += serialized_size;
+                // serialize offset
                 std::tie(serialized_buffer_ptr, serialized_size) = eys::littleendian_serializer<kuic::byte_t, int>::serialize(offset);
                 serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
+                // insert serialized offset to index area
                 index.insert(index.end(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
             });
 
+    // copy index to result vector
     result.insert(result.end(), index.begin(), index.end());
+    // copy data to result vector
     result.insert(result.end(), data.begin(), data.end());
 
     kuic::byte_t *result_buffer = new kuic::byte_t[result.size()];

@@ -7,7 +7,7 @@
 
 namespace kuic {
     namespace handshake {
-        class kbr_principal_name : public package_serializer {
+        class kbr_principal_name : public package_serializable {
         private:
             kuic::kbr_name_type_t type;
             std::string name;
