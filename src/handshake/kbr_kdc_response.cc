@@ -8,9 +8,10 @@
 #include <vector>
 #include <algorithm>
 
-#include <iostream>
-
 kuic::handshake::kbr_kdc_response_part::kbr_kdc_response_part() { }
+
+kuic::handshake::kbr_kdc_response_part::kbr_kdc_response_part(kuic::error_t err)
+    : lawful_package(err) { }
 
 kuic::handshake::kbr_kdc_response_part::kbr_kdc_response_part(unsigned int nonce)
     : nonce(nonce)
@@ -72,7 +73,7 @@ std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kbr_kdc_response_part::serialize() const {
     // declare temporary handshake_message 
     // machine will encrypte it & embedded kdc response package
-    kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_kbr_tgt);
+    kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_kbr_response_body);
 
     // serialize key
     temporary_msg.insert(kuic::handshake::tag_key, this->key);
@@ -109,9 +110,8 @@ kuic::handshake::kbr_kdc_response_part::deserialize(
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_kdc_response_part(temporary_msg.get_error());
     }
-    if (temporary_msg.get_tag() != kuic::handshake::tag_kbr_tgt) {
-        // TODO it is not tag_kbr_tgt 
-        return kuic::handshake::kbr_kdc_response_part();
+    if (temporary_msg.get_tag() != kuic::handshake::tag_kbr_response_body) {
+        return kuic::handshake::kbr_kdc_response_part(kuic::not_expect);
     }
 
     // declare result
@@ -184,8 +184,18 @@ kuic::handshake::kbr_kdc_response::build_as_response(
 
 kuic::handshake::handshake_message
 kuic::handshake::kbr_kdc_response::__serialize() const {
-    // TODO consider tgs
-    kuic::handshake::handshake_message result(kuic::handshake::tag_kbr_tgt);
+    kuic::handshake::handshake_message result;
+
+    if (this->message_type == kuic::handshake::kbr_kdc_as_response) {
+        result.set_tag(kuic::handshake::tag_kbr_tgt);
+    }
+    else if (this->message_type == kuic::handshake::kbr_kdc_tgs_response) {
+        result.set_tag(kuic::handshake::tag_kbr_tgs);
+    }
+    else {
+        result.set_error(not_expect);
+        return result;
+    }
 
     // serialize version
     result.insert<kuic::kbr_protocol_version_t, kuic::handshake::kbr_protocol_version_serializer>(
@@ -218,7 +228,8 @@ kuic::handshake::kbr_kdc_response::deserialize(
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_kdc_response(temporary_msg.get_error());
     }
-    if (temporary_msg.get_tag() != kuic::handshake::tag_kbr_tgt) {
+    if (temporary_msg.get_tag() != kuic::handshake::tag_kbr_tgt &&
+            temporary_msg.get_tag() != kuic::handshake::tag_kbr_tgs) {
         return kuic::handshake::kbr_kdc_response(kuic::not_expect);
     }
     

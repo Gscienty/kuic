@@ -60,6 +60,7 @@ namespace kuic {
                     const kuic::byte_t *buffer, size_t len, size_t &seek);
 
             void support_encrypt_type(kuic::kbr_encryption_type_t encryption_type);
+            void add_ticket(kbr_ticket &ticket);
         };
 
         class kbr_kdc_request : public package_serializable {
@@ -89,7 +90,10 @@ namespace kuic {
 
             static kbr_kdc_request deserialize(
                     const kuic::byte_t *buffer, const size_t len, size_t &seek);
+
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+
+            void add_ticket(kbr_ticket &ticket);
         };
     }
 }

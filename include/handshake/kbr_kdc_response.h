@@ -24,7 +24,9 @@ namespace kuic {
         
         };
 
-        class kbr_kdc_response_part : public kuic::package_serializable {
+        class kbr_kdc_response_part
+            : public kuic::package_serializable
+            , public kuic::lawful_package {
         private:
             kbr_encryption_key key;
             std::vector<kbr_kdc_last_request> last_req;    
@@ -40,6 +42,7 @@ namespace kuic {
             kbr_host_address client_address;
             
             kbr_kdc_response_part();
+            kbr_kdc_response_part(kuic::error_t err);
         public:
             kbr_kdc_response_part(unsigned int nonce);
 

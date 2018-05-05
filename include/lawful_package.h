@@ -13,6 +13,7 @@ namespace kuic {
 
         bool is_lawful() const;
         kuic::error_t get_error() const;
+        void set_error(kuic::error_t err);
     };
 }
 

@@ -22,6 +22,7 @@ namespace kuic {
         const kuic::tag_t tag_issue_realm           = 'IMAN';
     
         const kuic::tag_t tag_ticket                = 'TICK';
+        const kuic::tag_t tag_ticket_body           = 'TKBD';
 
         const kuic::tag_t tag_server_principal_name = 'SNAM';
         const kuic::tag_t tag_time_from             = 'TFRM';
@@ -35,12 +36,14 @@ namespace kuic {
 
         const kuic::tag_t tag_key                   = 'KEY\0';
 
+        const kuic::tag_t tag_kbr_response_body     = 'KRPB';
         const kuic::tag_t tag_kbr_tgt               = 'TGT\0';
-        const kuic::tag_t tag_tgt_key               = 'TGTK';
         const kuic::tag_t tag_time_auth             = 'TAUT';
         const kuic::tag_t tag_time_start            = 'TSTR';
         const kuic::tag_t tag_time_end              = 'TEND';
         const kuic::tag_t tag_time_key_expiration   = 'TKEP';
+
+        const kuic::tag_t tag_kbr_tgs               = 'TGS\0';
 
         struct tag_serializer {
             static std::pair<kuic::byte_t *, size_t> serialize(kuic::tag_t e) {

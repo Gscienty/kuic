@@ -23,6 +23,10 @@ kuic::handshake::kbr_kdc_request_body::kbr_kdc_request_body(
     , till(kuic::special_clock(kuic::current_clock()) + kuic::clock_second)
     , nonce(nonce) { }
 
+void kuic::handshake::kbr_kdc_request_body::add_ticket(kuic::handshake::kbr_ticket &ticket) {
+    this->tickets.push_back(ticket);
+}
+
 void kuic::handshake::kbr_kdc_request_body::support_encrypt_type(
         kuic::kbr_encryption_type_t encryption_type) {
     this->encrypt_types.push_back(encryption_type);
@@ -85,7 +89,9 @@ kuic::handshake::kbr_kdc_request_body::serialize() const {
     temporary_msg.insert_elements<
         kuic::kbr_encryption_type_t, kuic::handshake::kbr_encryption_type_serializer>(
             kuic::handshake::tag_encrypt_type, this->encrypt_types);
-    
+    // serialize tickets
+    temporary_msg.insert_elements(kuic::handshake::tag_additional_tickets, this->tickets);
+
     // AS request
     if (this->message_type == kuic::handshake::kbr_kdc_as_request) {
         // serialize client principal
@@ -107,7 +113,9 @@ kuic::handshake::kbr_kdc_request_body::serialize() const {
 }
 
 kuic::handshake::kbr_kdc_request_body
-kuic::handshake::kbr_kdc_request_body::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::handshake::kbr_kdc_request_body::deserialize(
+        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+
     kuic::handshake::handshake_message temporary_msg = 
         kuic::handshake::handshake_message::deserialize(buffer, len, seek);
     if (temporary_msg.is_lawful() == false) {
@@ -121,7 +129,8 @@ kuic::handshake::kbr_kdc_request_body::deserialize(const kuic::byte_t *buffer, s
     kuic::handshake::kbr_kdc_request_body result;
 
     // deserialize nonce
-    temporary_msg.assign<unsigned int, eys::bigendian_serializer<kuic::byte_t, unsigned int>>(
+    temporary_msg.assign<
+        unsigned int, eys::bigendian_serializer<kuic::byte_t, unsigned int>>(
             result.nonce, kuic::handshake::tag_nonce);
     // deserialize from
     temporary_msg.assign(result.from, kuic::handshake::tag_time_from);
@@ -142,6 +151,8 @@ kuic::handshake::kbr_kdc_request_body::deserialize(const kuic::byte_t *buffer, s
     temporary_msg.assign(result.realm, kuic::handshake::tag_client_realm);
     // deserialize authorization data
     temporary_msg.assign(result.authorization_data, kuic::handshake::tag_authorization_data);
+    // deserialize tickets
+    temporary_msg.assign_elements(result.tickets, kuic::handshake::tag_additional_tickets);
 
     return result;
 }
@@ -214,7 +225,8 @@ kuic::handshake::kbr_kdc_request
 kuic::handshake::kbr_kdc_request::__deserialize(kuic::handshake::handshake_message &msg) { 
     kuic::handshake::kbr_kdc_request result;
     // check msg tag (AS | TGS)
-    if (msg.get_tag() != kuic::handshake::tag_kbr_as_request) {
+    if (msg.get_tag() != kuic::handshake::tag_kbr_as_request && 
+            msg.get_tag() != kuic::handshake::tag_kbr_tgs_request) {
         return result;
     }
 
@@ -252,4 +264,8 @@ kuic::handshake::kbr_kdc_request::get_body() const {
 kuic::kbr_message_type_t
 kuic::handshake::kbr_kdc_request::get_message_type() const {
     return this->message_type;
+}
+
+void kuic::handshake::kbr_kdc_request::add_ticket(kuic::handshake::kbr_ticket &ticket) {
+    this->body.add_ticket(ticket);
 }
