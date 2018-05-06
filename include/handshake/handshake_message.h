@@ -86,7 +86,7 @@ namespace kuic {
             }
             
             template <typename ResultType, typename Deserialize = kuic::package_serializer<ResultType>>
-            void assign(ResultType &result, kuic::tag_t tag) {
+            void assign(ResultType &result, kuic::tag_t tag) const {
                 if (this->exist(tag) == false) {
                     return ;
                 }
@@ -94,7 +94,7 @@ namespace kuic {
             }
             
             template <typename ElementType, typename Deserialize = kuic::package_serializer<ElementType>>
-            void assign_elements(std::vector<ElementType> &result, kuic::tag_t tag) {
+            void assign_elements(std::vector<ElementType> &result, kuic::tag_t tag) const {
                 if (this->exist(tag) == false) {
                     return ;
                 }
@@ -103,7 +103,7 @@ namespace kuic {
             }
 
             template <typename ResultType, typename Deserialize>
-            ResultType get(kuic::tag_t tag) {
+            ResultType get(kuic::tag_t tag) const {
                 std::vector<kuic::byte_t> &temporary_buffer = this->get_serialized_buffer(tag);
                 size_t seek = 0;
                 return Deserialize::deserialize(
@@ -111,7 +111,7 @@ namespace kuic {
             }
 
             template <typename ElementType, typename Deserialize>
-            std::vector<ElementType> get_elements(kuic::tag_t tag) {
+            std::vector<ElementType> get_elements(kuic::tag_t tag) const {
                 // declare result
                 std::vector<ElementType> result;
                 // get serialized buffer

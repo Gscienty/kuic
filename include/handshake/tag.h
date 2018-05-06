@@ -45,6 +45,12 @@ namespace kuic {
 
         const kuic::tag_t tag_kbr_tgs               = 'TGS\0';
 
+        const kuic::tag_t tag_error                 = 'ERR\0';
+        const kuic::tag_t tag_current_clock         = 'CURT';
+        const kuic::tag_t tag_server_clock          = 'SCLK';
+        const kuic::tag_t tag_error_code            = 'ERRC';
+        const kuic::tag_t tag_error_string          = 'ERRS';
+
         struct tag_serializer {
             static std::pair<kuic::byte_t *, size_t> serialize(kuic::tag_t e) {
                 kuic::byte_t *buffer(new kuic::byte_t[4]);

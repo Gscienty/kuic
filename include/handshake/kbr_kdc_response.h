@@ -88,8 +88,7 @@ namespace kuic {
                     kuic::handshake::kbr_kdc_response_part &part,
                     kuic::handshake::kbr_ticket &ticket);
 
-            static kbr_kdc_response deserialize(
-                    const kuic::byte_t *buffer, size_t len, size_t &seek);
+            static kbr_kdc_response deserialize(handshake_message &msg);
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
 
             kuic::kbr_protocol_version_t get_version() const;

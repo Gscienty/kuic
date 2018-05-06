@@ -219,34 +219,30 @@ kuic::handshake::kbr_kdc_response::serialize() const {
 }
 
 kuic::handshake::kbr_kdc_response
-kuic::handshake::kbr_kdc_response::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::handshake::kbr_kdc_response::deserialize(kuic::handshake::handshake_message &msg) {
 
-    kuic::handshake::handshake_message temporary_msg = 
-        kuic::handshake::handshake_message::deserialize(buffer, len, seek);
-
-    if (temporary_msg.is_lawful() == false) {
-        return kuic::handshake::kbr_kdc_response(temporary_msg.get_error());
+    if (msg.is_lawful() == false) {
+        return kuic::handshake::kbr_kdc_response(msg.get_error());
     }
-    if (temporary_msg.get_tag() != kuic::handshake::tag_kbr_tgt &&
-            temporary_msg.get_tag() != kuic::handshake::tag_kbr_tgs) {
+    if (msg.get_tag() != kuic::handshake::tag_kbr_tgt &&
+            msg.get_tag() != kuic::handshake::tag_kbr_tgs) {
         return kuic::handshake::kbr_kdc_response(kuic::not_expect);
     }
     
     kuic::handshake::kbr_kdc_response result;
     
     // deserialize version
-    temporary_msg.assign<kuic::kbr_protocol_version_t, kuic::handshake::kbr_protocol_version_serializer>(
+    msg.assign<kuic::kbr_protocol_version_t, kuic::handshake::kbr_protocol_version_serializer>(
             result.version, kuic::handshake::tag_protocol_version);
     // deserialize message type
-    temporary_msg.assign<kuic::kbr_message_type_t, kuic::handshake::kbr_message_type_serializer>(
+    msg.assign<kuic::kbr_message_type_t, kuic::handshake::kbr_message_type_serializer>(
             result.message_type, kuic::handshake::tag_message_type);
     // deserialize realm
-    temporary_msg.assign(result.realm,          kuic::handshake::tag_client_realm           );
+    msg.assign(result.realm,          kuic::handshake::tag_client_realm           );
     // deserialize client name
-    temporary_msg.assign(result.client_name,    kuic::handshake::tag_client_principal_name  );
+    msg.assign(result.client_name,    kuic::handshake::tag_client_principal_name  );
     // encrypted data
-    temporary_msg.assign(result.encrypted_data, kuic::handshake::tag_encrypted_data         );
+    msg.assign(result.encrypted_data, kuic::handshake::tag_encrypted_data         );
 
     return result;
 }

@@ -7,6 +7,22 @@
 
 namespace kuic {
     namespace handshake {
+        struct kbr_error_code_serializer {
+            static
+            std::pair<kuic::byte_t *, size_t>
+            serialize(kuic::error_t e) {
+                return eys::bigendian_serializer<
+                    kuic::byte_t, kuic::error_t>::serialize(e);
+            }
+
+            static
+            kuic::error_t
+            deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+                return eys::bigendian_serializer<
+                    kuic::byte_t, kuic::error_t>::deserialize(buffer, len, seek);
+            }
+        };
+
         struct kbr_protocol_version_serializer {
             static
             std::pair<kuic::byte_t *, size_t>
@@ -19,7 +35,8 @@ namespace kuic {
             kuic::kbr_protocol_version_t
             deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
                 return eys::bigendian_serializer<
-                    kuic::byte_t, kuic::kbr_protocol_version_t>::deserialize(buffer, len, seek);
+                    kuic::byte_t, kuic::kbr_protocol_version_t>::deserialize(
+                            buffer, len, seek);
             }
         };
 

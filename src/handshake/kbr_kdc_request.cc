@@ -222,7 +222,7 @@ kuic::handshake::kbr_kdc_request::__serialize() const {
 }
 
 kuic::handshake::kbr_kdc_request
-kuic::handshake::kbr_kdc_request::__deserialize(kuic::handshake::handshake_message &msg) { 
+kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message &msg) { 
     kuic::handshake::kbr_kdc_request result;
     // check msg tag (AS | TGS)
     if (msg.get_tag() != kuic::handshake::tag_kbr_as_request && 
@@ -245,15 +245,6 @@ kuic::handshake::kbr_kdc_request::__deserialize(kuic::handshake::handshake_messa
 std::pair<kuic::byte_t *, size_t>
 kuic::handshake::kbr_kdc_request::serialize() const {
     return this->__serialize().serialize();
-}
-
-kuic::handshake::kbr_kdc_request
-kuic::handshake::kbr_kdc_request::deserialize(
-        const kuic::byte_t *buffer, const size_t len, size_t &seek) {
-
-    kuic::handshake::handshake_message msg =
-        kuic::handshake::handshake_message::deserialize(buffer, len, seek);
-    return kuic::handshake::kbr_kdc_request::__deserialize(msg);
 }
 
 kuic::handshake::kbr_kdc_request_body

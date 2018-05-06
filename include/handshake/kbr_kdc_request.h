@@ -70,7 +70,6 @@ namespace kuic {
             std::vector<kbr_padata> padatas;
             kbr_kdc_request_body body;
 
-            static kbr_kdc_request __deserialize(handshake_message &msg);
             handshake_message __serialize() const;
 
             kbr_kdc_request();
@@ -85,11 +84,10 @@ namespace kuic {
                     std::string realm,
                     unsigned int nonce);
 
+            static kbr_kdc_request deserialize(handshake_message &msg);
             kbr_kdc_request_body get_body() const;
             kuic::kbr_message_type_t get_message_type() const;
 
-            static kbr_kdc_request deserialize(
-                    const kuic::byte_t *buffer, const size_t len, size_t &seek);
 
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
 
