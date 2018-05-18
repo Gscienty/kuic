@@ -101,6 +101,8 @@ kuic::handshake::kbr_kdc_request_body::serialize() const {
     }
     // TGS request
     else if (this->message_type == kuic::handshake::kbr_kdc_tgs_request) {
+         // serialzie authorization data
+        temporary_msg.insert(kuic::handshake::tag_authorization_data, this->authorization_data);
         // serialize server principal
         temporary_msg.insert(kuic::handshake::tag_server_principal_name, this->server_name);
         // serialize realm (server realm)
