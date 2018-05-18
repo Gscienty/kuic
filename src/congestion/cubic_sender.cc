@@ -7,26 +7,26 @@ kuic::congestion::cubic_sender::cubic_sender(
     kuic::packet_number_t initial_congestion_window,
     kuic::packet_number_t initial_max_congestion_window)
         : _rtt(rtt_stat)
+        , _cubic(kuic::congestion::cubic(clock))
+        , congestion_window(initial_congestion_window)
+        , _slowstart_threshold(initial_max_congestion_window)
+        , min_congestion_window(kuic::congestion::default_minimum_congestion_window)
+        , max_congestion_window(initial_max_congestion_window)
         , initial_congestion_window(initial_congestion_window)
         , initial_max_congestion_window(initial_max_congestion_window)
-        , congestion_window(initial_congestion_window)
-        , min_congestion_window(kuic::congestion::default_minimum_congestion_window)
-        , _slowstart_threshold(initial_max_congestion_window)
-        , max_tcp_congestion_window(initial_max_congestion_window)
-        , connections_count(kuic::congestion::default_connections_count)
-        , _cubic(clock) { }
+        , connections_count(kuic::congestion::default_connections_count) { }
+    
 
 kuic::kuic_time_t
 kuic::congestion::cubic_sender::time_until_send(kuic::packet_number_t bytes_in_flight) {
-    if (this->in_recovery() && 
-        this->_prr.time_until_send(
-            this->get_congestion_window(), bytes_in_flight, this->get_slowstart_threshold()) == 0) {
-    
-        return 0;
+    if (this->in_recovery()) {
+        if (this->_prr.can_send(this->get_congestion_window(), bytes_in_flight, this->get_slowstart_threshold())) {
+            return 0;
+        }
     }
 
     kuic::kuic_time_t delay = this->_rtt.get_smoothed_rtt() / 
-        kuic::kuic_time_t(2 * this->get_congestion_window() / kuic::default_tcp_mss);
+        kuic::kuic_time_t(2 * this->get_congestion_window());
     
     if (this->in_slowstart() == false) {
         delay = delay * 8 / 5;
@@ -34,24 +34,20 @@ kuic::congestion::cubic_sender::time_until_send(kuic::packet_number_t bytes_in_f
     return delay;
 }
 
-bool kuic::congestion::cubic_sender::on_packet_sent(
-    kuic::clock &clock,
-    kuic::bytes_count_t bytes_in_flight,
+void kuic::congestion::cubic_sender::on_packet_sent(
     kuic::packet_number_t packet_number,
     kuic::bytes_count_t bytes,
     bool is_retransmittable) {
     
     if (is_retransmittable == false) {
-        return false;
+        return;
     }
 
     if (this->in_recovery()) {
-        this->_prr.on_packet_sent(packet_number);
+        this->_prr.on_packet_sent(bytes);
     }
     this->largest_sent_packet_number = packet_number;
     this->slowstart.on_packet_sent(packet_number);
-    
-    return true;
 }
 
 bool kuic::congestion::cubic_sender::in_recovery() {
@@ -65,12 +61,12 @@ bool kuic::congestion::cubic_sender::in_slowstart() {
 
 kuic::bytes_count_t
 kuic::congestion::cubic_sender::get_congestion_window() {
-    return kuic::bytes_count_t(this->congestion_window) * kuic::default_tcp_mss;
+    return this->congestion_window; 
 }
 
 kuic::bytes_count_t
 kuic::congestion::cubic_sender::get_slowstart_threshold() {
-    return kuic::bytes_count_t(this->_slowstart_threshold) * kuic::default_tcp_mss;
+    return this->_slowstart_threshold;
 }
 
 kuic::packet_number_t
@@ -96,17 +92,17 @@ void kuic::congestion::cubic_sender::try_exit_slowstart() {
 void kuic::congestion::cubic_sender::on_packet_acked(
     kuic::packet_number_t acked_packet_number,
     kuic::bytes_count_t acked_bytes,
-    kuic::bytes_count_t bytes_in_flight) {
+    kuic::bytes_count_t prior_in_flight,
+    kuic::special_clock &event_time) {
     
-    this->largest_acked_packet_number = std::max<kuic::packet_number_t>(
-        this->largest_acked_packet_number, acked_packet_number);
+    this->largest_acked_packet_number = std::max(this->largest_acked_packet_number, acked_packet_number);
     
     if (this->in_recovery()) {
         this->_prr.on_packet_acked(acked_bytes);
         return;
     }
 
-    this->try_increase_cwnd(acked_packet_number, acked_bytes, bytes_in_flight);
+    this->try_increase_cwnd(acked_bytes, prior_in_flight, event_time);
 
     if (this->in_slowstart()) {
         this->slowstart.on_packet_acked(acked_packet_number);
@@ -116,20 +112,15 @@ void kuic::congestion::cubic_sender::on_packet_acked(
 void kuic::congestion::cubic_sender::on_packet_lost(
     kuic::packet_number_t packet_number,
     kuic::bytes_count_t lost_bytes,
-    kuic::bytes_count_t bytes_in_flight) {
+    kuic::bytes_count_t prior_in_flight) {
     
     if (packet_number <= this->largest_sent_at_last_cutback) {
         if (this->last_cutback_exited_slowstart) {
             this->stats.slowstart_packets_lost++;
             this->stats.slowstart_bytes_lost += lost_bytes;
             if (this->slowstart_large_reduction) {
-                if (this->stats.slowstart_packets_lost == 1 ||
-                    (this->stats.slowstart_bytes_lost / kuic::default_tcp_mss) >
-                        ((this->stats.slowstart_bytes_lost - lost_bytes) / kuic::default_tcp_mss)) {
-                    
-                    this->congestion_window = std::max<kuic::packet_number_t>(
-                        this->congestion_window - 1, this->min_congestion_window);
-                }
+                this->congestion_window = std::max<kuic::packet_number_t>(
+                    this->congestion_window - 1, this->min_congestion_window);
                 this->_slowstart_threshold = this->congestion_window;
             }
         }
@@ -140,46 +131,48 @@ void kuic::congestion::cubic_sender::on_packet_lost(
         this->stats.slowstart_packets_lost++;
     }
 
-    this->_prr.on_packet_lost(bytes_in_flight);
+    this->_prr.on_packet_lost(prior_in_flight);
 
     if (this->slowstart_large_reduction && this->in_slowstart()) {
-        this->congestion_window--;
+        if (this->congestion_window >= 2 * this->initial_congestion_window) {
+            this->min_slowstart_exit_window = this->congestion_window / 2;
+        }
+        this->congestion_window = this->congestion_window - kuic::default_tcp_mss;
     }
     else {
         this->congestion_window = this->_cubic.congestion_window_after_packet_loss(this->congestion_window);
     }
 
-    this->congestion_window = std::max<kuic::packet_number_t>(
-        this->congestion_window, this->min_congestion_window);
+    this->congestion_window = std::max<kuic::packet_number_t>(this->congestion_window, this->min_congestion_window);
     
     this->_slowstart_threshold = this->congestion_window;
     this->largest_sent_at_last_cutback = this->largest_sent_packet_number;
-    this->congestion_window_count = 0;
+    this->ack_packets_count = 0;
 }
 
 void kuic::congestion::cubic_sender::try_increase_cwnd(
-    kuic::packet_number_t acked_packet_number,
     kuic::bytes_count_t acked_bytes,
-    kuic::bytes_count_t bytes_in_flight) {
+    kuic::bytes_count_t prior_in_flight,
+    kuic::special_clock &event_time) {
     
-    if (this->is_cwnd_limited(bytes_in_flight) == false) {
+    if (this->is_cwnd_limited(prior_in_flight) == false) {
         this->_cubic.on_application_limited();
         return;
     }
 
-    if (this->congestion_window >= this->max_tcp_congestion_window) {
+    if (this->congestion_window >= this->max_congestion_window) {
         return;
     }
 
     if (this->in_slowstart()) {
-        this->congestion_window++;
+        this->congestion_window += kuic::default_tcp_mss;
         return;
     }
 
     this->congestion_window = std::min<kuic::packet_number_t>(
-        this->max_tcp_congestion_window,
+        this->max_congestion_window,
         this->_cubic.congestion_window_after_ack(
-            this->congestion_window, this->_rtt.get_min_rtt()));
+            acked_bytes, this->congestion_window, this->_rtt.get_min_rtt(), event_time));
 }
 
 bool kuic::congestion::cubic_sender::is_cwnd_limited(kuic::bytes_count_t bytes_in_flight) {
@@ -233,10 +226,10 @@ void kuic::congestion::cubic_sender::on_connection_migration() {
     this->largest_sent_at_last_cutback = 0;
     this->last_cutback_exited_slowstart = false;
     this->_cubic.reset();
-    this->congestion_window_count = 0;
+    this->ack_packets_count = 0;
     this->congestion_window = this->initial_congestion_window;
     this->_slowstart_threshold = this->initial_max_congestion_window;
-    this->max_tcp_congestion_window = this->initial_max_congestion_window;
+    this->max_congestion_window = this->initial_max_congestion_window;
 }
 
 void kuic::congestion::cubic_sender::set_slowstart_large_reduction(bool enabled) {

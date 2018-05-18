@@ -26,7 +26,6 @@ bool kuic::congestion::slow_start::should_exist_slow_start(
     this->rtt_samples_count++;
     if (this->rtt_samples_count <= kuic::congestion::slow_start_min_samples && 
         (this->current_min_rtt == 0 || this->current_min_rtt > latest_rtt)) {
-        
         this->current_min_rtt = latest_rtt;
     }
 
@@ -39,9 +38,8 @@ bool kuic::congestion::slow_start::should_exist_slow_start(
         if (this->current_min_rtt > min_rtt + min_rtt_increase_threshold) {
             this->hystart_found = true;
         }
-
-        return congestion_window >= kuic::congestion::slow_start_low_window && this->hystart_found;
     }
+    return congestion_window >= kuic::congestion::slow_start_low_window && this->hystart_found;
 }
 
 void kuic::congestion::slow_start::on_packet_sent(kuic::packet_number_t packet_number) {

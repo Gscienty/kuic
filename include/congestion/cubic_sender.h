@@ -23,28 +23,34 @@ namespace kuic {
         private:
             slow_start slowstart;
             prr _prr;
-            rtt _rtt;
+            rtt &_rtt;
             connection_stats stats;
             cubic _cubic;
 
             kuic::packet_number_t largest_sent_packet_number;
             kuic::packet_number_t largest_acked_packet_number;
             kuic::packet_number_t largest_sent_at_last_cutback;
-            kuic::packet_number_t congestion_window;
-            kuic::packet_number_t _slowstart_threshold;
-            kuic::packet_number_t min_congestion_window;
-            kuic::packet_number_t max_tcp_congestion_window;
-            kuic::packet_number_t initial_congestion_window;
-            kuic::packet_number_t initial_max_congestion_window;
+            
+            kuic::bytes_count_t congestion_window;
+            kuic::bytes_count_t _slowstart_threshold;
+            kuic::bytes_count_t min_congestion_window;
+            kuic::bytes_count_t max_congestion_window;
+            kuic::bytes_count_t initial_congestion_window;
+            kuic::bytes_count_t initial_max_congestion_window;
+            kuic::bytes_count_t min_slowstart_exit_window;
+            
             bool last_cutback_exited_slowstart;
             bool slowstart_large_reduction;
+            
             size_t connections_count;
-            kuic::bytes_count_t congestion_window_count;
+
+            unsigned long ack_packets_count;
+
 
             void try_increase_cwnd(
-                kuic::packet_number_t acked_packet_number,
                 kuic::bytes_count_t acked_bytes,
-                kuic::bytes_count_t bytes_in_flight);
+                kuic::bytes_count_t prior_in_flight,
+                kuic::special_clock &event_time);
             bool is_cwnd_limited(kuic::bytes_count_t bytes_in_flight);
         public:
             cubic_sender(
@@ -54,9 +60,7 @@ namespace kuic {
                 kuic::packet_number_t initial_max_congestion_window);
             
             kuic::kuic_time_t time_until_send(kuic::packet_number_t bytes_in_flight);
-            bool on_packet_sent(
-                kuic::clock &t,
-                kuic::bytes_count_t bytes_in_flight,
+            void on_packet_sent(
                 kuic::packet_number_t packet_number,
                 kuic::bytes_count_t bytes,
                 bool is_retransmittable);
@@ -72,7 +76,8 @@ namespace kuic {
             void on_packet_acked(
                 kuic::packet_number_t acked_packet_number,
                 kuic::bytes_count_t acked_bytes,
-                kuic::bytes_count_t bytes_in_flight);
+                kuic::bytes_count_t prior_in_flight,
+                kuic::special_clock &event_time);
             void on_packet_lost(
                 kuic::packet_number_t packet_number,
                 kuic::bytes_count_t lost_bytes,
