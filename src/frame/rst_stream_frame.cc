@@ -23,6 +23,7 @@ kuic::frame::rst_stream_frame::serialize() const {
     size_t size = this->length();
     size_t seek = 0;
     kuic::byte_t *result = new kuic::byte_t[size];
+    result[seek++] = this->type();
     
     // serialize stream id
     kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->stream_id));
@@ -36,7 +37,7 @@ kuic::frame::rst_stream_frame::serialize() const {
 }
 
 size_t kuic::frame::rst_stream_frame::length() const {
-    return 2 + kuic::variable_integer::length(this->stream_id) + kuic::variable_integer::length(this->offset);
+    return 1 + 2 + kuic::variable_integer::length(this->stream_id) + kuic::variable_integer::length(this->offset);
 }
 
 kuic::frame_type_t kuic::frame::rst_stream_frame::type() const {

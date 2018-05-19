@@ -20,6 +20,7 @@ kuic::frame::connection_close_frame::serialize() const {
     size_t size = this->length();
     size_t seek = 0;
     kuic::byte_t *result = new kuic::byte_t[size];
+    result[seek++] = this->type();
 
     kuic::frame::frame::fill(result, size, seek, eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::serialize(this->error_code));
     kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->reason_phrase.length()));
@@ -29,7 +30,7 @@ kuic::frame::connection_close_frame::serialize() const {
 }
 
 size_t kuic::frame::connection_close_frame::length() const {
-    return 2 + kuic::variable_integer::length(this->reason_phrase.length()) + this->reason_phrase.size();
+    return 1 + 2 + kuic::variable_integer::length(this->reason_phrase.length()) + this->reason_phrase.size();
 }
 
 kuic::frame_type_t
