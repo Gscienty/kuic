@@ -54,7 +54,6 @@ namespace kuic {
             bool is_cwnd_limited(kuic::bytes_count_t bytes_in_flight);
         public:
             cubic_sender(
-                kuic::clock &clock,
                 rtt &rtt_stat,
                 kuic::packet_number_t initial_congestion_window,
                 kuic::packet_number_t initial_max_congestion_window);
@@ -69,7 +68,6 @@ namespace kuic {
             bool in_slowstart();
             kuic::bytes_count_t get_congestion_window();
             kuic::bytes_count_t get_slowstart_threshold();
-            kuic::packet_number_t slowstart_threshold();
 
             void exit_slowstart();
             void try_exit_slowstart();

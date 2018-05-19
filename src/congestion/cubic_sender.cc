@@ -2,12 +2,10 @@
 #include <algorithm>
 
 kuic::congestion::cubic_sender::cubic_sender(
-    kuic::clock &clock,
     rtt &rtt_stat,
     kuic::packet_number_t initial_congestion_window,
     kuic::packet_number_t initial_max_congestion_window)
         : _rtt(rtt_stat)
-        , _cubic(kuic::congestion::cubic(clock))
         , congestion_window(initial_congestion_window)
         , _slowstart_threshold(initial_max_congestion_window)
         , min_congestion_window(kuic::congestion::default_minimum_congestion_window)
@@ -66,11 +64,6 @@ kuic::congestion::cubic_sender::get_congestion_window() {
 
 kuic::bytes_count_t
 kuic::congestion::cubic_sender::get_slowstart_threshold() {
-    return this->_slowstart_threshold;
-}
-
-kuic::packet_number_t
-kuic::congestion::cubic_sender::slowstart_threshold() {
     return this->_slowstart_threshold;
 }
 

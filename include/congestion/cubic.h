@@ -17,7 +17,6 @@ namespace kuic {
 
         class cubic {
         private:
-            kuic::clock &clock;
             size_t connections_count;
             kuic::special_clock epoch;
             
@@ -30,7 +29,7 @@ namespace kuic {
             unsigned int time_to_origin_point;
 
         public:
-            cubic(kuic::clock &);
+            cubic();
 
             float beta_last_max() const;
             void reset();
@@ -38,7 +37,7 @@ namespace kuic {
             float beta() const;
             void on_application_limited();
             kuic::bytes_count_t congestion_window_after_packet_loss(kuic::bytes_count_t current_congestion_window);
-            kuic::packet_number_t congestion_window_after_ack(
+            kuic::bytes_count_t congestion_window_after_ack(
                     kuic::bytes_count_t acked_bytes,
                     kuic::bytes_count_t current_congestion_window,
                     kuic::kuic_time_t delay_min,
