@@ -5,15 +5,15 @@ kuic::flowcontrol::base_flow_controller::base_flow_controller(
     kuic::bytes_count_t receive_window_size,
     kuic::bytes_count_t max_receive_window_size,
     kuic::bytes_count_t initial_send_window)
-        : _rtt(rtt)
-        , rw_m(false)
-        , bytes_sent(0)
+        : bytes_sent(0)
         , send_window(initial_send_window)
+        , rw_m(false)
         , bytes_read(0)
         , highest_received(0)
         , receive_window(receive_window_size)
         , receive_window_size(receive_window_size)
-        , max_receive_window_size(max_receive_window_size) { }
+        , max_receive_window_size(max_receive_window_size)
+        ,_rtt(rtt) { }
 
 void kuic::flowcontrol::base_flow_controller::add_bytes_sent(
     kuic::bytes_count_t n) {

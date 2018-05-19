@@ -14,8 +14,8 @@ kuic::flowcontrol::stream_flow_controller::stream_flow_controller(
             max_receive_window,
             initial_send_window)
         , stream_id(stream_id)
-        , contributes_to_connection(contributes_to_connection)
-        , conn_ctrl(conn_ctrl) { }
+        , conn_ctrl(conn_ctrl)
+        , contributes_to_connection(contributes_to_connection) { }
 
 kuic::error_t
 kuic::flowcontrol::stream_flow_controller::update_highest_received(
