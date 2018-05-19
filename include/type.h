@@ -5,12 +5,17 @@ namespace kuic {
     typedef int             error_t;
     typedef long            kuic_time_t;
     typedef unsigned long   packet_number_t;
+    typedef unsigned char   packet_type_t;
     typedef unsigned long   bytes_count_t;
     typedef unsigned long   band_width_t;
     typedef unsigned long   stream_id_t;
     typedef unsigned int    tag_t;
     typedef unsigned char   byte_t;
     typedef unsigned int    word_t;
+    typedef unsigned int    version_t;
+    typedef unsigned char   send_mode_t;
+    typedef unsigned char   frame_type_t;
+    typedef unsigned short  application_error_code_t;
 
     typedef unsigned int    kbr_protocol_version_t;
     typedef unsigned int    kbr_message_type_t;
