@@ -20,6 +20,11 @@ namespace kuic {
     inline band_width_t __inl_bandwidth_from_delta(bytes_count_t bytes, kuic_time_t delta) {
         return band_width_t(bytes) * band_width_t(clock_second) * band_width_t(delta) * bytes_per_second;
     }
+
+    const int default_max_congestion_window_packets = 1000;
+    const bytes_count_t initial_congestion_window = 32 * default_tcp_mss;
+    const bytes_count_t default_max_congestion_window = default_max_congestion_window_packets * default_tcp_mss;
+    const int max_tracked_skipped_packets = 10;
     
     const frame_type_t frame_type_padding           = 0x00;
     const frame_type_t frame_type_rst_stream        = 0x01;
