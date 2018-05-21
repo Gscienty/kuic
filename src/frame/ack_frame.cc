@@ -159,3 +159,7 @@ bool kuic::frame::ack_frame::acks_packet(kuic::packet_number_t p) const {
 unsigned long kuic::frame::ack_frame::encode_ack_delay(kuic::kuic_time_t delay) const {
     return (unsigned long)(delay / (1000 * (1 << kuic::frame::ack_delay_exponent)));
 }
+
+kuic::kuic_time_t kuic::frame::ack_frame::get_delay_time() const {
+    return this->delay_time;
+}

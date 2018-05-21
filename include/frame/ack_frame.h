@@ -32,6 +32,8 @@ namespace kuic {
             kuic::packet_number_t largest_acked() const;
             kuic::packet_number_t lowest_acked() const;
             bool acks_packet(kuic::packet_number_t p) const;
+
+            kuic::kuic_time_t get_delay_time() const;
         };
     }
 }
