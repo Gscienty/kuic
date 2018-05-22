@@ -163,3 +163,8 @@ unsigned long kuic::frame::ack_frame::encode_ack_delay(kuic::kuic_time_t delay) 
 kuic::kuic_time_t kuic::frame::ack_frame::get_delay_time() const {
     return this->delay_time;
 }
+
+std::vector<std::pair<kuic::packet_number_t, kuic::packet_number_t>> &
+kuic::frame::ack_frame::get_ranges() {
+    return this->ranges;
+}
