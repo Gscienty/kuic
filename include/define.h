@@ -2,6 +2,7 @@
 #define _KUIC_DEFINE_
 
 #include "type.h"
+#include <unistd.h>
 
 namespace kuic {
     const kuic_time_t clock_second      = 1000 * 1000 * 1000;
@@ -25,6 +26,27 @@ namespace kuic {
     const bytes_count_t initial_congestion_window = 32 * default_tcp_mss;
     const bytes_count_t default_max_congestion_window = default_max_congestion_window_packets * default_tcp_mss;
     const int max_tracked_skipped_packets = 10;
+
+    inline size_t __inl_packet_number_length_for_header(kuic::packet_number_t packet_number, kuic::packet_number_t least_unacked) {
+        size_t diff = packet_number - least_unacked;
+        if (diff < (1 << (2 * 8 - 1))) {
+            return 2;
+        }
+        return 4;
+    }
+
+    inline size_t __inl_packet_number_length(kuic::packet_number_t packet_number) {
+        if (packet_number < (1UL << (1 * 8))) {
+            return 1;
+        }
+        if (packet_number < (1UL << (2 * 8))) {
+            return 2;
+        }
+        if (packet_number < (1UL << (4 * 8))) {
+            return 4;
+        }
+        return 6;
+    }
     
     const frame_type_t frame_type_padding           = 0x00;
     const frame_type_t frame_type_rst_stream        = 0x01;
