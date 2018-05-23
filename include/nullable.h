@@ -2,6 +2,7 @@
 #define _KUIC_NULLABLE_
 
 #include <cstddef>
+#include <iostream>
 
 namespace kuic {
     template <typename ClassType> class nullable {
@@ -13,9 +14,14 @@ namespace kuic {
         template<typename ClassType_1> nullable(ClassType_1 *p = nullptr) noexcept : is_reference(false), ptr(p) { }
         template<typename ClassType_1> nullable(ClassType_1 &instance) noexcept : is_reference(true), ptr(&instance) { }
         template<typename ClassType_1> nullable(nullable<ClassType_1> &nullable_instance) 
-            : is_reference(nullable_instance.is_reference), ptr(nullable_instance.ptr) { };
-        
-        ~nullable() { 
+            : is_reference(nullable_instance.is_reference), ptr(nullable_instance.ptr) {
+            nullable_instance.is_reference = true;
+        };
+
+        template<typename ClassType_1> nullable(nullable<ClassType_1> &&nullable_instance)
+            : is_reference(nullable_instance.is_reference), ptr(nullable_instance.ptr)  { }
+
+        ~nullable() {
             if (this->is_reference == false && this->ptr != nullptr) {
                 delete ptr;
             }
