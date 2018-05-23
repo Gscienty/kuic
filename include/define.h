@@ -26,6 +26,9 @@ namespace kuic {
     const bytes_count_t initial_congestion_window = 32 * default_tcp_mss;
     const bytes_count_t default_max_congestion_window = default_max_congestion_window_packets * default_tcp_mss;
     const int max_tracked_skipped_packets = 10;
+    const int max_outstanding_sent_packets = 2 * default_max_congestion_window_packets;
+    const int max_tracked_sent_packets = max_outstanding_sent_packets * 5 / 4;
+    const kuic::kuic_time_t min_pacing_delay = 100 * clock_microsecond;
 
     inline size_t __inl_packet_number_length_for_header(kuic::packet_number_t packet_number, kuic::packet_number_t least_unacked) {
         size_t diff = packet_number - least_unacked;
