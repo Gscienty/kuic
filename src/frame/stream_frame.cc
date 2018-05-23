@@ -1,5 +1,6 @@
 #include "frame/stream_frame.h"
 #include "variable_integer.h"
+#include "define.h"
 #include <algorithm>
 
 kuic::frame::stream_frame
@@ -134,4 +135,16 @@ kuic::frame::stream_frame::maybe_split_offset_frame(kuic::bytes_count_t max_size
     this->offset += n;
 
     return new_frame;
+}
+
+std::vector<kuic::byte_t> &kuic::frame::stream_frame::get_data() {
+    return this->data;
+}
+
+kuic::stream_id_t &kuic::frame::stream_frame::get_stream_id() {
+    return this->stream_id;
+}
+
+kuic::frame_type_t kuic::frame::stream_frame::type() const {
+    return kuic::frame_type_stream;
 }

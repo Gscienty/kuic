@@ -18,12 +18,12 @@ namespace kuic {
             std::vector<std::pair<kuic::packet_number_t, kuic::packet_number_t>> ranges;
 
             ack_frame(kuic::error_t error) : frame(error) { }
-            ack_frame() { }
 
             std::pair<unsigned long, unsigned long> encode_ack_range(int index) const;
             int encodable_ack_ranges_count() const;
             unsigned long encode_ack_delay(kuic::kuic_time_t delay) const;
         public:
+            ack_frame() { }
             static ack_frame deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
             virtual size_t length() const override;

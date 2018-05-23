@@ -16,14 +16,17 @@ namespace kuic {
             kuic::bytes_count_t offset;
             std::vector<kuic::byte_t> data;
 
-            stream_frame() : data(nullptr) { }
-            stream_frame(kuic::error_t error) : lawful_package(error) { }
+            stream_frame() { }
+            stream_frame(kuic::error_t error) : frame(error) { }
         public:
             static stream_frame deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
 
             virtual size_t length() const override;
             virtual kuic::frame_type_t type() const override;
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+
+            std::vector<kuic::byte_t> &get_data();
+            kuic::stream_id_t &get_stream_id();
 
             kuic::bytes_count_t max_data_length(kuic::bytes_count_t max_size) const;
             stream_frame maybe_split_offset_frame(kuic::bytes_count_t max_size);

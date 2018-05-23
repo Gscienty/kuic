@@ -147,12 +147,13 @@ bool kuic::frame::ack_frame::acks_packet(kuic::packet_number_t p) const {
         return false;
     }
 
-    auto index =std::find_if(
+    auto index = std::find_if(
             this->ranges.begin(),
             this->ranges.end(),
             [&](const std::pair<kuic::packet_number_t, kuic::packet_number_t> &range) -> bool {
                 return p >= range.first;
             });
+
     return p <= index->second;
 }
 
