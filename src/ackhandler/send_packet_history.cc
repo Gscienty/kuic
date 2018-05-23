@@ -10,15 +10,13 @@ kuic::ackhandler::send_packet_history::send_packet_implement(const kuic::ackhand
     packet_iterator--;
 
     this->packet_map[packet.packet_number] = packet_iterator;
-    
+
     if (this->first_outstanding == 0) {
         this->first_outstanding = packet.packet_number;
     }
 
     return packet_iterator;
 }
-
-#include <iostream>
 
 void kuic::ackhandler::send_packet_history::send_packet(const kuic::ackhandler::packet &packet) {
     this->send_packet_implement(packet);
@@ -38,10 +36,10 @@ kuic::ackhandler::send_packet_history::get_first_outstanding() const {
     if (this->first_outstanding == 0) {
         return kuic::nullable<kuic::ackhandler::packet>(nullptr);
     }
-
-    return kuic::nullable<kuic::ackhandler::packet>(
-            new kuic::ackhandler::packet(
-                *(this->packet_map.find(this->first_outstanding)->second)));
+    
+    kuic::nullable<kuic::ackhandler::packet> result(
+            new kuic::ackhandler::packet(*(this->packet_map.find(this->first_outstanding)->second)));
+    return result;
 }
 
 void kuic::ackhandler::send_packet_history::mark_cannot_be_retransmitted(kuic::packet_number_t packet_number) {
@@ -61,13 +59,17 @@ void kuic::ackhandler::send_packet_history::readjust_first_outstanding() {
         return;
     }
 
-    std::list<kuic::ackhandler::packet>::iterator iterator = this->packet_map[this->first_outstanding];
-    iterator++;
-    while (iterator != this->packet_list.end() && iterator->can_be_retransmitted) {
-        iterator++;
+    std::list<kuic::ackhandler::packet>::iterator iter = this->packet_map[this->first_outstanding];
+    iter++;
+    while (iter != this->packet_list.end() && iter->can_be_retransmitted) {
+        iter++;
     }
-
-    this->first_outstanding = iterator->packet_number;
+    if (iter != this->packet_list.end()) {
+        this->first_outstanding = iter->packet_number;
+    }
+    else {
+        this->first_outstanding = 0;
+    }
 }
 
 size_t
