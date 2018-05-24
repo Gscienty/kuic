@@ -20,6 +20,8 @@ namespace kuic {
         public:
             virtual size_t length() const = 0;
             virtual kuic::frame_type_t type() const = 0;
+
+            virtual ~frame() { }
         };
 
     }

@@ -161,7 +161,7 @@ unsigned long kuic::frame::ack_frame::encode_ack_delay(kuic::kuic_time_t delay) 
     return (unsigned long)(delay / (1000 * (1 << kuic::frame::ack_delay_exponent)));
 }
 
-kuic::kuic_time_t kuic::frame::ack_frame::get_delay_time() const {
+kuic::kuic_time_t &kuic::frame::ack_frame::get_delay_time() {
     return this->delay_time;
 }
 
