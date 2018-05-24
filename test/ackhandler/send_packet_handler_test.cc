@@ -298,8 +298,6 @@ TEST(send_packet_handler, ack_handling_2) {
     EXPECT_NE(0, handler.get_largest_acked());
 }
 
-#include <iostream>
-
 int main() {
     return RUN_ALL_TESTS();
 }
