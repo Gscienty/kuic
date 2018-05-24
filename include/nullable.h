@@ -76,7 +76,7 @@ namespace kuic {
             return this->ptr;
         }
 
-        ClassType *release() const noexcept {
+        ClassType *release() noexcept {
             ClassType *tmp = this->ptr;
             this->ptr = nullptr;
             return tmp;
