@@ -16,8 +16,9 @@ namespace kuic {
             frame(kuic::error_t error) : kuic::lawful_package(error)  { }
             frame() { }
 
-            static void fill(kuic::byte_t *buffer, size_t size, size_t &seek, std::pair<kuic::byte_t *, size_t> value);
         public:
+            static void fill(kuic::byte_t *buffer, size_t size, size_t &seek, std::pair<kuic::byte_t *, size_t> value);
+
             virtual size_t length() const = 0;
             virtual kuic::frame_type_t type() const = 0;
 
