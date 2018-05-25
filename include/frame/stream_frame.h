@@ -25,8 +25,11 @@ namespace kuic {
             virtual kuic::frame_type_t type() const override;
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
 
-            std::vector<kuic::byte_t> &get_data();
             kuic::stream_id_t &get_stream_id();
+            bool &get_fin_bit();
+            kuic::bytes_count_t &get_offset();
+            std::vector<kuic::byte_t> &get_data();
+
 
             kuic::bytes_count_t max_data_length(kuic::bytes_count_t max_size) const;
             stream_frame maybe_split_offset_frame(kuic::bytes_count_t max_size);

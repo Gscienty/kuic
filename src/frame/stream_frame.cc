@@ -148,3 +148,11 @@ kuic::stream_id_t &kuic::frame::stream_frame::get_stream_id() {
 kuic::frame_type_t kuic::frame::stream_frame::type() const {
     return kuic::frame_type_stream;
 }
+
+bool &kuic::frame::stream_frame::get_fin_bit() {
+    return this->fin_bit;
+}
+
+kuic::bytes_count_t &kuic::frame::stream_frame::get_offset() {
+    return this->offset;
+}
