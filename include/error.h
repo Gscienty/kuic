@@ -9,6 +9,7 @@ namespace kuic {
     const error_t stream_data_after_termination = 2001;
     const error_t reader_buffer_remain_not_enough = 3001;
     const error_t invalid_value = 3002;
+    const error_t deadline_timeout = 3003;
     const error_t handshake_too_many_entries = 4001;
     const error_t handshake_invalid_value_length = 4002;
 
