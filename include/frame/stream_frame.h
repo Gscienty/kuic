@@ -16,9 +16,9 @@ namespace kuic {
             kuic::bytes_count_t offset;
             std::vector<kuic::byte_t> data;
 
-            stream_frame() { }
             stream_frame(kuic::error_t error) : frame(error) { }
         public:
+            stream_frame() { }
             static stream_frame deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
 
             virtual size_t length() const override;
@@ -29,7 +29,7 @@ namespace kuic {
             bool &get_fin_bit();
             kuic::bytes_count_t &get_offset();
             std::vector<kuic::byte_t> &get_data();
-
+            bool &get_data_length_present(); 
 
             kuic::bytes_count_t max_data_length(kuic::bytes_count_t max_size) const;
             stream_frame maybe_split_offset_frame(kuic::bytes_count_t max_size);

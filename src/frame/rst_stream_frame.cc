@@ -44,3 +44,17 @@ kuic::frame_type_t kuic::frame::rst_stream_frame::type() const {
     return kuic::frame_type_rst_stream;
 }
 
+kuic::stream_id_t &
+kuic::frame::rst_stream_frame::get_stream_id() {
+    return this->stream_id;
+}
+
+kuic::application_error_code_t &
+kuic::frame::rst_stream_frame::get_error_code() {
+    return this->error_code;
+}
+
+kuic::bytes_count_t &
+kuic::frame::rst_stream_frame::get_offset() {
+    return this->offset;
+}

@@ -7,7 +7,7 @@ kuic::frame::stream_frame
 kuic::frame::stream_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
     kuic::frame::stream_frame frame;
 
-    kuic::byte_t type_byte = buffer[seek++]; // ignore type
+    kuic::byte_t type_byte = buffer[seek++];
     if (seek >= len) {
         return kuic::frame::stream_frame(kuic::reader_buffer_remain_not_enough);
     }
@@ -155,4 +155,8 @@ bool &kuic::frame::stream_frame::get_fin_bit() {
 
 kuic::bytes_count_t &kuic::frame::stream_frame::get_offset() {
     return this->offset;
+}
+
+bool &kuic::frame::stream_frame::get_data_length_present() {
+    return this->data_length_present;
 }
