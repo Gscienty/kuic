@@ -33,6 +33,7 @@ bool kuic::packet_number_generator::generate_new_skip() {
         (this->average_period - 1) / 
         (std::numeric_limits<unsigned short>::max() / 2);
     this->next_to_skip = this->next + 2 + skip;
+    return true;
 }
 
 unsigned short kuic::packet_number_generator::get_random_number() {
