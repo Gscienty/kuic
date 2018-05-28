@@ -1,5 +1,5 @@
-#ifndef _KUIC_FLOWCONTROL_STREAM_FLOW_CONTROLLER
-#define _KUIC_FLOWCONTROL_STREAM_FLOW_CONTROLLER
+#ifndef _KUIC_FLOWCONTROL_STREAM_FLOW_CONTROLLER_
+#define _KUIC_FLOWCONTROL_STREAM_FLOW_CONTROLLER_
 
 #include "flowcontrol/base_flow_controller.h"
 #include "flowcontrol/connection_flow_controller.h"
