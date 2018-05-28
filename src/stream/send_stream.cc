@@ -205,3 +205,14 @@ void kuic::stream::send_stream::handle_stop_sending_frame(kuic::frame::stop_send
 void kuic::stream::send_stream::signal_write() {
     this->write_cond.notify_all();
 }
+
+bool kuic::stream::send_stream::close() {
+    std::lock_guard<std::mutex> lock(this->mutex);
+    if (this->_cancel_write) {
+        return false;
+    }
+
+    this->finished_writing = true;
+    this->sender.on_has_stream_data(this->stream_id);
+    return true;
+}
