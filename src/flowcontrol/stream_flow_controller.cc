@@ -7,6 +7,7 @@ kuic::flowcontrol::stream_flow_controller::stream_flow_controller(
     kuic::bytes_count_t receive_window,
     kuic::bytes_count_t max_receive_window,
     kuic::bytes_count_t initial_send_window,
+    std::function<void ()> &queue_window_update,
     kuic::congestion::rtt &rtt)
         : kuic::flowcontrol::base_flow_controller(
             rtt,
@@ -15,7 +16,8 @@ kuic::flowcontrol::stream_flow_controller::stream_flow_controller(
             initial_send_window)
         , stream_id(stream_id)
         , conn_ctrl(conn_ctrl)
-        , contributes_to_connection(contributes_to_connection) { }
+        , contributes_to_connection(contributes_to_connection)
+        , queue_window_update(queue_window_update) { }
 
 kuic::error_t
 kuic::flowcontrol::stream_flow_controller::update_highest_received(
@@ -110,4 +112,18 @@ kuic::flowcontrol::stream_flow_controller::get_window_update() {
     }
 
     return offset;
+}
+
+void kuic::flowcontrol::stream_flow_controller::try_queue_window_update() {
+    bool has_window_update = false;
+    {
+        kuic::reader_lock_guard lock(this->rw_m);
+        has_window_update = this->received_final_offset == false && this->has_window_update();
+    }
+    if (has_window_update) {
+        this->queue_window_update();
+    }
+    if (this->contributes_to_connection) {
+        this->conn_ctrl.try_queue_window_update();
+    }
 }

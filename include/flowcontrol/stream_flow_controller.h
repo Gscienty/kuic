@@ -6,6 +6,7 @@
 #include "type.h"
 #include "error.h"
 #include <utility>
+#include <functional>
 
 namespace kuic {
     namespace flowcontrol {
@@ -15,6 +16,8 @@ namespace kuic {
             connection_flow_controller &conn_ctrl;
             bool contributes_to_connection;
             bool received_final_offset;
+
+            std::function<void ()> &queue_window_update;
         public:
             stream_flow_controller(
                 kuic::stream_id_t stream_id,
@@ -23,6 +26,7 @@ namespace kuic {
                 kuic::bytes_count_t receive_window,
                 kuic::bytes_count_t max_receive_window,
                 kuic::bytes_count_t initial_send_window,
+                std::function<void ()> &queue_window_update,
                 kuic::congestion::rtt &rtt);
 
             kuic::error_t update_highest_received(kuic::bytes_count_t byte_offset, bool is_final);
@@ -32,6 +36,7 @@ namespace kuic {
             std::pair<bool, kuic::bytes_count_t> is_blocked() const;
             bool has_window_update();
             kuic::bytes_count_t get_window_update();
+            void try_queue_window_update();
         };
     }
 }
