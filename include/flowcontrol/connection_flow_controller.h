@@ -25,7 +25,7 @@ namespace kuic {
             std::pair<bool, kuic::bytes_count_t> is_newly_blocked();
             kuic::error_t increment_highest_received(kuic::bytes_count_t increment);
             kuic::bytes_count_t get_window_update();
-            kuic::bytes_count_t ensure_minimum_window_size(kuic::bytes_count_t inc);
+            void ensure_minimum_window_size(kuic::bytes_count_t inc);
             void try_queue_window_update();
         };
     }

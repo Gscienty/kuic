@@ -53,8 +53,8 @@ kuic::flowcontrol::connection_flow_controller::get_window_update() {
     return offset;
 }
 
-kuic::bytes_count_t
-kuic::flowcontrol::connection_flow_controller::ensure_minimum_window_size(
+
+void kuic::flowcontrol::connection_flow_controller::ensure_minimum_window_size(
     kuic::bytes_count_t inc) {
     kuic::writer_lock_guard locker(this->rw_m);
 
