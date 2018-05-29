@@ -6,22 +6,22 @@ kuic::stream::stream::stream(
         kuic::stream::stream_sender &sender,
         kuic::flowcontrol::stream_flow_controller &flow_controller)
     : sender(sender)
-    , send_sender(kuic::stream::unicast_stream_sender(
+    , send_sender(new kuic::stream::unicast_stream_sender(
                 sender,
                 [this] () -> void {
                     std::lock_guard<std::mutex> lock(this->completed_mutex);
                     this->send_stream_completed = true;
                     this->check_if_completed();
                 }))
-    , receive_sender(kuic::stream::unicast_stream_sender(
+    , receive_sender(new kuic::stream::unicast_stream_sender(
                 sender,
                 [this] () -> void {
                     std::lock_guard<std::mutex> lock(this->completed_mutex);
                     this->receive_stream_completed = true;
                     this->check_if_completed();
                 }))
-    , send_stream(kuic::stream::send_stream(stream_id, this->send_sender, flow_controller))
-    , receive_stream(kuic::stream::receive_stream(stream_id, this->receive_sender, flow_controller))
+    , send_stream(stream_id, *this->send_sender, flow_controller)
+    , receive_stream(stream_id, *this->receive_sender, flow_controller)
     , receive_stream_completed(false)
     , send_stream_completed(false) { }
 
@@ -60,3 +60,32 @@ void kuic::stream::stream::check_if_completed() {
     }
 }
 
+kuic::bytes_count_t &kuic::stream::stream::get_write_offset() {
+    return this->send_stream.get_write_offset();
+}
+
+void kuic::stream::stream::cancel_read(kuic::application_error_code_t error) {
+    this->receive_stream.cancel_read(error);
+}
+
+kuic::bytes_count_t kuic::stream::stream::write(const kuic::byte_t *p, const kuic::bytes_count_t size) {
+    return this->send_stream.write(p, size);
+}
+
+kuic::bytes_count_t kuic::stream::stream::read(kuic::byte_t *p, const kuic::bytes_count_t size) {
+    return this->receive_stream.read(p, size);
+}
+
+bool kuic::stream::stream::handle_stream_frame(kuic::frame::stream_frame &frame) {
+    return this->receive_stream.handle_stream_frame(frame);
+}
+
+kuic::stream::stream_frame_sorter &
+kuic::stream::stream::get_frame_queue() {
+    return this->receive_stream.get_frame_queue();
+}
+
+void kuic::stream::crypto_stream::set_read_offset(kuic::bytes_count_t offset) {
+    this->receive_stream.get_read_offset() = offset;
+    this->receive_stream.get_frame_queue().get_read_position() = offset;
+}
