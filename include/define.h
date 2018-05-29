@@ -32,6 +32,7 @@ namespace kuic {
     const kuic::kuic_time_t min_pacing_delay = 100 * clock_microsecond;
     const int max_tracked_received_ack_ranges = default_max_congestion_window_packets;
     const int max_stream_frame_sorter_gaps = 1000;
+    const kuic::bytes_count_t min_stream_frame_size = 128;
 
     inline size_t __inl_packet_number_length_for_header(kuic::packet_number_t packet_number, kuic::packet_number_t least_unacked) {
         size_t diff = packet_number - least_unacked;
