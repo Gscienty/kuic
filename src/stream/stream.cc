@@ -80,6 +80,12 @@ bool kuic::stream::stream::handle_stream_frame(kuic::frame::stream_frame &frame)
     return this->receive_stream.handle_stream_frame(frame);
 }
 
+std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>
+kuic::stream::stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
+    return this->send_stream.pop_stream_frame(max_bytes);
+}
+
+
 kuic::stream::stream_frame_sorter &
 kuic::stream::stream::get_frame_queue() {
     return this->receive_stream.get_frame_queue();

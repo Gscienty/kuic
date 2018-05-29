@@ -44,7 +44,8 @@ namespace kuic {
             bool handle_rst_stream_frame(kuic::frame::rst_stream_frame &frame);
             bool handle_stream_frame(kuic::frame::stream_frame &frame);
             void cancel_read(kuic::application_error_code_t error);
-            stream_frame_sorter &get_frame_queue();
+            std::pair<kuic::nullable<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes);
+           stream_frame_sorter &get_frame_queue();
         };
 
         class crypto_stream 
