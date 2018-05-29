@@ -24,7 +24,7 @@ kuic::stream_id_t kuic::stream::send_stream::get_stream_id() const {
     return this->stream_id;
 }
 
-size_t kuic::stream::send_stream::write(const kuic::byte_t *p, const size_t size) {
+kuic::bytes_count_t kuic::stream::send_stream::write(const kuic::byte_t *p, const kuic::bytes_count_t size) {
     std::unique_lock<std::mutex> lock(this->mutex);
 
     if (size == 0) { return 0; }
@@ -159,6 +159,8 @@ bool kuic::stream::send_stream::cancel_write(kuic::application_error_code_t erro
     rst_frame.get_offset() = this->write_offset;
     this->sender.queue_control_frame(rst_frame);
     this->sender.on_stream_completed(this->stream_id);
+
+    return true;
 }
 
 void kuic::stream::send_stream::handle_max_stream_data_frame(kuic::frame::max_stream_data_frame &frame) {
@@ -192,7 +194,7 @@ void kuic::stream::send_stream::close_for_shutdown(kuic::error_t error) {
     this->signal_write();
 }
 
-kuic::bytes_count_t kuic::stream::send_stream::get_write_offset() {
+kuic::bytes_count_t &kuic::stream::send_stream::get_write_offset() {
     return this->write_offset;
 }
 
@@ -216,3 +218,5 @@ bool kuic::stream::send_stream::close() {
     this->sender.on_has_stream_data(this->stream_id);
     return true;
 }
+
+

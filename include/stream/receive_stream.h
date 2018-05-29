@@ -42,8 +42,10 @@ namespace kuic {
                     stream_sender &sender,
                     kuic::flowcontrol::stream_flow_controller &flow_controller);
 
+            kuic::bytes_count_t &get_read_offset();
+
             kuic::stream_id_t get_stream_id();
-            kuic::bytes_count_t read(kuic::byte_t *buffer, size_t size);
+            kuic::bytes_count_t read(kuic::byte_t *buffer, const kuic::bytes_count_t size);
             void cancel_read(kuic::application_error_code_t error);
             void signal_read();
             bool handle_stream_frame(kuic::frame::stream_frame &frame);
@@ -52,6 +54,7 @@ namespace kuic {
             void set_read_deadline(kuic::special_clock clock);
             void close_for_shutdown(kuic::error_t error);
             kuic::bytes_count_t get_window_update();
+            stream_frame_sorter &get_frame_queue();
         };
     }
 }

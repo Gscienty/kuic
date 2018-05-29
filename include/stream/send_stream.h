@@ -41,8 +41,10 @@ namespace kuic {
                     stream_sender &sender,
                     kuic::flowcontrol::stream_flow_controller &flow_controller);
 
+            kuic::bytes_count_t &get_write_offset();
+
             kuic::stream_id_t get_stream_id() const;
-            size_t write(const kuic::byte_t *p, const size_t size);
+            kuic::bytes_count_t write(const kuic::byte_t *p, const kuic::bytes_count_t size);
             std::pair<kuic::nullable<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes);
             void signal_write();
             bool close();
@@ -50,7 +52,6 @@ namespace kuic {
             void handle_max_stream_data_frame(kuic::frame::max_stream_data_frame &frame);
             void set_write_deadline(kuic::special_clock clock);
             void close_for_shutdown(kuic::error_t error);
-            kuic::bytes_count_t get_write_offset();
             void handle_stop_sending_frame(kuic::frame::stop_sending_frame &frame);
         };
     }

@@ -27,7 +27,7 @@ kuic::stream::receive_stream::get_stream_id() {
     return this->stream_id;
 }
 
-kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, size_t size) {
+kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, const kuic::bytes_count_t size) {
     std::unique_lock<std::mutex> lock(this->mutex);
 
     if (this->fin_read) {
@@ -219,4 +219,12 @@ kuic::bytes_count_t kuic::stream::receive_stream::get_window_update() {
 
 void kuic::stream::receive_stream::signal_read() {
     this->read_cond.notify_all();
+}
+
+kuic::bytes_count_t &kuic::stream::receive_stream::get_read_offset() {
+    return this->read_offset;
+}
+
+kuic::stream::stream_frame_sorter &kuic::stream::receive_stream::get_frame_queue() {
+    return this->frame_queue;
 }
