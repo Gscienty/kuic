@@ -18,6 +18,8 @@ namespace kuic {
         public:
             stream_frame_sorter();
 
+            kuic::bytes_count_t &get_read_position();
+
             bool push(kuic::frame::stream_frame &frame);
             kuic::nullable<kuic::frame::stream_frame> pop();
             kuic::nullable<kuic::frame::stream_frame> head();

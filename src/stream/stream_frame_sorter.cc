@@ -10,7 +10,9 @@ kuic::stream::stream_frame_sorter::stream_frame_sorter()
 bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
     if (frame.get_data().empty()) {
         if (frame.get_fin_bit()) {
-            this->queued_frames[frame.get_offset()] = frame;
+            this->queued_frames.insert(
+                    std::pair<kuic::bytes_count_t, kuic::frame::stream_frame &>(
+                        frame.get_offset(), frame));
             return true;
         }
         return false;
@@ -19,7 +21,7 @@ bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
     bool was_cut = false;
 
     if (this->queued_frames.find(frame.get_offset()) != this->queued_frames.end()) {
-        kuic::frame::stream_frame &old_frame = this->queued_frames[frame.get_offset()];
+        kuic::frame::stream_frame &old_frame = this->queued_frames.find(frame.get_offset())->second;
         if (frame.get_data().size() <= old_frame.get_data().size()) {
             return false;
         }
@@ -108,7 +110,9 @@ bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
         return false;
     }
 
-    this->queued_frames[frame.get_offset()] = frame;
+    this->queued_frames.insert(
+            std::pair<kuic::bytes_count_t, kuic::frame::stream_frame &>(
+                frame.get_offset(), frame));
     return true;
 }
 
@@ -125,7 +129,12 @@ kuic::stream::stream_frame_sorter::pop() {
 kuic::nullable<kuic::frame::stream_frame>
 kuic::stream::stream_frame_sorter::head() {
     if (this->queued_frames.find(this->read_position) != this->queued_frames.end()) {
-        return kuic::nullable<kuic::frame::stream_frame>(this->queued_frames[this->read_position]);
+        return kuic::nullable<kuic::frame::stream_frame>(
+                this->queued_frames.find(this->read_position)->second);
     }
     return kuic::nullable<kuic::frame::stream_frame>(nullptr);
+}
+
+kuic::bytes_count_t &kuic::stream::stream_frame_sorter::get_read_position() {
+    return this->read_position;
 }
