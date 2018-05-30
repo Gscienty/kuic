@@ -28,7 +28,7 @@ namespace kuic {
             stream(
                     kuic::stream_id_t stream_id,
                     kuic::stream::stream_sender &sender,
-                    kuic::flowcontrol::stream_flow_controller &flow_controller);
+                    std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller);
             
             kuic::bytes_count_t &get_write_offset();
             kuic::bytes_count_t write(const kuic::byte_t *p, const kuic::bytes_count_t size);
@@ -46,6 +46,7 @@ namespace kuic {
             void cancel_read(kuic::application_error_code_t error);
             std::pair<kuic::nullable<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes);
            stream_frame_sorter &get_frame_queue();
+           kuic::bytes_count_t get_window_update();
         };
 
         class crypto_stream 

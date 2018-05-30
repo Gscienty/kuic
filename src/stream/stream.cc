@@ -4,7 +4,7 @@
 kuic::stream::stream::stream(
         kuic::stream_id_t stream_id,
         kuic::stream::stream_sender &sender,
-        kuic::flowcontrol::stream_flow_controller &flow_controller)
+        std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller)
     : sender(sender)
     , send_sender(new kuic::stream::unicast_stream_sender(
                 sender,
@@ -89,6 +89,11 @@ kuic::stream::stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
 kuic::stream::stream_frame_sorter &
 kuic::stream::stream::get_frame_queue() {
     return this->receive_stream.get_frame_queue();
+}
+
+kuic::bytes_count_t
+kuic::stream::stream::get_window_update() {
+    return this->receive_stream.get_window_update();
 }
 
 void kuic::stream::crypto_stream::set_read_offset(kuic::bytes_count_t offset) {
