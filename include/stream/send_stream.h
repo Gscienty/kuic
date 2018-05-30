@@ -34,12 +34,12 @@ namespace kuic {
             std::vector<kuic::byte_t> data_for_waiting;
             kuic::special_clock write_deadline;
             std::condition_variable write_cond;
-            std::unique_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller;
+            std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller;
         public:
             send_stream(
                     kuic::stream_id_t stream_id,
                     stream_sender &sender,
-                    kuic::flowcontrol::stream_flow_controller *flow_controller);
+                    std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller);
 
             kuic::bytes_count_t &get_write_offset();
 

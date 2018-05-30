@@ -7,7 +7,7 @@
 kuic::stream::send_stream::send_stream(
     kuic::stream_id_t stream_id,
     stream_sender &sender,
-    kuic::flowcontrol::stream_flow_controller *flow_controller)
+    std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller)
     : sender(sender)
     , stream_id(stream_id)
     , write_offset(0)
@@ -89,7 +89,7 @@ kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
         frame->get_fin_bit() = this->finished_writing && this->fin_sent == false;
     }
 
-    max_bytes = std::min(max_bytes, this->flow_controller.send_window_size());
+    max_bytes = std::min(max_bytes, this->flow_controller->send_window_size());
 
     if (max_bytes == 0) {
         frame->get_fin_bit() = false;
@@ -106,7 +106,7 @@ kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
     }
 
     this->write_offset += frame->get_data().size();
-    this->flow_controller.add_bytes_sent(frame->get_data().size());
+    this->flow_controller->add_bytes_sent(frame->get_data().size());
     frame->get_fin_bit() = this->finished_writing && this->data_for_waiting.empty() && this->fin_sent == false;
 
     if (frame->get_data().empty() && frame->get_fin_bit() == false) {
@@ -116,7 +116,7 @@ kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
                     kuic::nullable<kuic::frame::stream_frame>(nullptr), false);
         }
         return std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>(
-                kuic::nullable<kuic::frame::stream_frame>(nullptr), this->flow_controller.is_blocked().first == false);
+                kuic::nullable<kuic::frame::stream_frame>(nullptr), this->flow_controller->is_blocked().first == false);
     }
     if (frame->get_fin_bit()) {
         this->fin_sent = true;
@@ -125,7 +125,7 @@ kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
     else {
         bool is_blocked;
         kuic::bytes_count_t offset;
-        std::tie(is_blocked, offset) = this->flow_controller.is_blocked();
+        std::tie(is_blocked, offset) = this->flow_controller->is_blocked();
         if (is_blocked) {
 
             kuic::frame::stream_blocked_frame blocked;
@@ -164,7 +164,7 @@ bool kuic::stream::send_stream::cancel_write(kuic::application_error_code_t erro
 }
 
 void kuic::stream::send_stream::handle_max_stream_data_frame(kuic::frame::max_stream_data_frame &frame) {
-    this->flow_controller.update_send_window(frame.get_byte_offset());
+    this->flow_controller->update_send_window(frame.get_byte_offset());
 
     std::lock_guard<std::mutex> lock(this->mutex);
     if (this->data_for_waiting.empty() == false) {

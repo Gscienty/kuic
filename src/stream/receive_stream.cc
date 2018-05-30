@@ -7,7 +7,7 @@
 kuic::stream::receive_stream::receive_stream(
         kuic::stream_id_t stream_id,
         kuic::stream::stream_sender &sender,
-        kuic::flowcontrol::stream_flow_controller *flow_controller)
+        std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller)
     : stream_id(stream_id)
     , sender(sender)
     , read_position_in_frame(0)

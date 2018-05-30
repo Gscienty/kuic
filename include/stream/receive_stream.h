@@ -34,13 +34,13 @@ namespace kuic {
             std::condition_variable read_cond;
             kuic::special_clock read_deadline;
 
-            std::unique_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller;
+            std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller;
             
         public:
             receive_stream(
                     kuic::stream_id_t stream_id,
                     stream_sender &sender,
-                    kuic::flowcontrol::stream_flow_controller *flow_controller);
+                    std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller);
 
             kuic::bytes_count_t &get_read_offset();
 
