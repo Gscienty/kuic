@@ -79,3 +79,7 @@ kuic::writer_lock_guard::writer_lock_guard(kuic::rw_lock &locker)
 kuic::writer_lock_guard::~writer_lock_guard() {
     this->locker.write_release();
 }
+
+std::mutex &kuic::rw_lock::get_inner_mutex() {
+    return this->inner_mutex;
+}

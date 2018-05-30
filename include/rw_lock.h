@@ -24,6 +24,8 @@ namespace kuic {
         void write_lock();
         void read_release();
         void write_release();
+
+        std::mutex &get_inner_mutex();
     };
 
     class reader_lock_guard {
