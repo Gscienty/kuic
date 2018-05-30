@@ -100,8 +100,8 @@ void kuic::stream::in_unicast_stream::close_with_error(kuic::error_t error) {
         this->error = error;
         std::for_each(
                 this->streams.begin(), this->streams.end(),
-                [&] (std::unique_ptr<kuic::stream::receive_stream> &stream) -> void {
-                    stream->close_for_shutdown(error);
+                [&] (std::pair<kuic::stream_id_t, std::unique_ptr<kuic::stream::receive_stream>> &stream) -> void {
+                    stream.second->close_for_shutdown(error);
                 });
     }
     this->cond.notify_all();

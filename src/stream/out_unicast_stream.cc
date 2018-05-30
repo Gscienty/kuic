@@ -74,7 +74,7 @@ void kuic::stream::out_unicast_stream::close_with_error(kuic::error_t error) {
     this->close_error = error;
     std::for_each(
             this->streams.begin(), this->streams.end(),
-            [&] (std::unique_ptr<kuic::stream::send_stream> &stream) -> void {
-                stream->close_for_shutdown(error);
+            [&] (std::pair<kuic::stream_id_t, std::unique_ptr<kuic::stream::send_stream>> &stream) -> void {
+                stream.second->close_for_shutdown(error);
             });
 }
