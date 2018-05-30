@@ -7,7 +7,7 @@
 kuic::stream::receive_stream::receive_stream(
         kuic::stream_id_t stream_id,
         kuic::stream::stream_sender &sender,
-        kuic::flowcontrol::stream_flow_controller &flow_controller)
+        kuic::flowcontrol::stream_flow_controller *flow_controller)
     : stream_id(stream_id)
     , sender(sender)
     , read_position_in_frame(0)
@@ -104,10 +104,10 @@ kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, con
         lock.lock();
         
         if (this->reset_remotely == false) {
-            this->flow_controller.add_bytes_read(middle_value);
+            this->flow_controller->add_bytes_read(middle_value);
         }
         
-        this->flow_controller.try_queue_window_update();
+        this->flow_controller->try_queue_window_update();
 
         if (this->read_position_in_frame >= int(frame->get_data().size())) {
             this->frame_queue.pop();
@@ -142,7 +142,7 @@ void kuic::stream::receive_stream::cancel_read(kuic::application_error_code_t er
 
 bool kuic::stream::receive_stream::handle_stream_frame(kuic::frame::stream_frame &frame) {
     kuic::bytes_count_t max_offset = frame.get_offset() + frame.get_data().size();
-    if (this->flow_controller.update_highest_received(max_offset, frame.get_fin_bit()) != kuic::no_error) {
+    if (this->flow_controller->update_highest_received(max_offset, frame.get_fin_bit()) != kuic::no_error) {
         return false;
     }
 
@@ -163,7 +163,7 @@ bool kuic::stream::receive_stream::handle_rst_stream_frame(kuic::frame::rst_stre
         return true;
     }
 
-    if (this->flow_controller.update_highest_received(frame.get_offset(), true) != kuic::no_error) {
+    if (this->flow_controller->update_highest_received(frame.get_offset(), true) != kuic::no_error) {
         return false;
     }
 
@@ -214,7 +214,7 @@ void kuic::stream::receive_stream::close_for_shutdown(kuic::error_t error) {
 }
 
 kuic::bytes_count_t kuic::stream::receive_stream::get_window_update() {
-    return this->flow_controller.get_window_update();
+    return this->flow_controller->get_window_update();
 }
 
 void kuic::stream::receive_stream::signal_read() {

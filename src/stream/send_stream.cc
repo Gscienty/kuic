@@ -7,7 +7,7 @@
 kuic::stream::send_stream::send_stream(
     kuic::stream_id_t stream_id,
     stream_sender &sender,
-    kuic::flowcontrol::stream_flow_controller &flow_controller)
+    kuic::flowcontrol::stream_flow_controller *flow_controller)
     : sender(sender)
     , stream_id(stream_id)
     , write_offset(0)
