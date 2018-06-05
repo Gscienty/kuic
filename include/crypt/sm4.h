@@ -64,13 +64,15 @@ namespace kuic {
                 kuic::word_t x_3,
                 kuic::word_t rk);
 
-            static kuic::byte_t *cipher(kuic::byte_t *m, kuic::word_t *rk);
+            static kuic::byte_t *cipher(const kuic::byte_t *m, kuic::word_t *rk);
 
         public:
-            static std::unique_ptr<kuic::word_t[]> extend_key(kuic::byte_t *key);
+            static std::unique_ptr<kuic::word_t[]> extend_key(const kuic::byte_t *key);
 
-            virtual kuic::byte_t *encrypt(kuic::byte_t *m, kuic::byte_t *key) override;
-            virtual kuic::byte_t *decrypt(kuic::byte_t *m, kuic::byte_t *key) override;
+            virtual kuic::byte_t *encrypt(
+                    const kuic::byte_t *m, const kuic::byte_t *key) override;
+            virtual kuic::byte_t *decrypt(
+                    const kuic::byte_t *m, const kuic::byte_t *key) override;
 
             static kuic::byte_t *encrypt_rk(kuic::byte_t *m, kuic::word_t *rk);
             static kuic::byte_t *decrypt_rk(kuic::byte_t *m, kuic::word_t *rk);

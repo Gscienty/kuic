@@ -67,7 +67,7 @@ kuic::word_t kuic::crypt::sm4::k_gen(
 }
 
 kuic::byte_t *
-kuic::crypt::sm4::cipher(kuic::byte_t *m, kuic::word_t *rk) {
+kuic::crypt::sm4::cipher(const kuic::byte_t *m, kuic::word_t *rk) {
     kuic::word_t m_group[5];
     std::copy(m, m + 16, reinterpret_cast<kuic::byte_t *>(m_group));
 
@@ -90,13 +90,13 @@ kuic::crypt::sm4::cipher(kuic::byte_t *m, kuic::word_t *rk) {
 }
 
 kuic::byte_t *
-kuic::crypt::sm4::encrypt(kuic::byte_t *m, kuic::byte_t *key) {
+kuic::crypt::sm4::encrypt(const kuic::byte_t *m, const kuic::byte_t *key) {
     std::unique_ptr<kuic::word_t[]> k_group = kuic::crypt::sm4::extend_key(key);
     return kuic::crypt::sm4::cipher(m, k_group.get() + 4);
 }
 
 kuic::byte_t *
-kuic::crypt::sm4::decrypt(kuic::byte_t *m, kuic::byte_t *key) {
+kuic::crypt::sm4::decrypt(const kuic::byte_t *m, const kuic::byte_t *key) {
     std::unique_ptr<kuic::word_t[]> k_group(kuic::crypt::sm4::extend_key(key));
     std::unique_ptr<kuic::word_t[]> r_k_group(new kuic::word_t[32]);
     for (int i = 0; i < 32; i++) {
@@ -116,10 +116,10 @@ kuic::crypt::sm4::decrypt_rk(kuic::byte_t *m, kuic::word_t *rk) {
 }
 
 std::unique_ptr<kuic::word_t[]>
-kuic::crypt::sm4::extend_key(kuic::byte_t *key) {
+kuic::crypt::sm4::extend_key(const kuic::byte_t *key) {
     std::unique_ptr<kuic::word_t[]> k_group(new kuic::word_t[32 + 4]);
     for (int i = 0; i < 4; i++) {
-        k_group[i] = reinterpret_cast<kuic::word_t *>(key)[i] ^ kuic::crypt::sm4_fk[i];
+        k_group[i] = reinterpret_cast<kuic::word_t *>(const_cast<kuic::byte_t *>(key))[i] ^ kuic::crypt::sm4_fk[i];
     }
     for (int i = 0; i < 32; i++) {
         k_group[i + 4] = kuic::crypt::sm4::k_gen(i, k_group[i], k_group[i + 1], k_group[i + 2], k_group[i + 3]);

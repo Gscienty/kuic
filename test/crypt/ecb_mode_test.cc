@@ -5,7 +5,7 @@
 #include <iomanip>
 
 TEST(ecb_mode, encrypt) {
-    kuic::crypt::ecb_mode mode(new kuic::crypt::sm4());
+    kuic::crypt::ecb_mode<kuic::crypt::sm4> mode;
     kuic::byte_t plain[] = {
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10 };
      kuic::byte_t secret[] = {
@@ -26,7 +26,7 @@ TEST(ecb_mode, encrypt) {
 }
 
 TEST(ecb_mode, encrypt_2) {
-    kuic::crypt::ecb_mode mode(new kuic::crypt::sm4());
+    kuic::crypt::ecb_mode<kuic::crypt::sm4> mode;
     kuic::byte_t plain[] = {
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32 };
      kuic::byte_t secret[] = {
@@ -47,7 +47,7 @@ TEST(ecb_mode, encrypt_2) {
 }
 
 TEST(ecb_mode, encrypt_3) {
-    kuic::crypt::ecb_mode mode(new kuic::crypt::sm4());
+    kuic::crypt::ecb_mode<kuic::crypt::sm4> mode;
     kuic::byte_t plain[] = {
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0x01 };
      kuic::byte_t secret[] = {
@@ -69,7 +69,7 @@ TEST(ecb_mode, encrypt_3) {
 
 
 TEST(ecb_mode, decrypt) {
-    kuic::crypt::ecb_mode mode(new kuic::crypt::sm4());
+    kuic::crypt::ecb_mode<kuic::crypt::sm4> mode;
     kuic::byte_t plain[] = {
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10 };
      kuic::byte_t secret[] = {
@@ -96,7 +96,7 @@ TEST(ecb_mode, decrypt) {
 }
 
 TEST(ecb_mode, decrypt_2) {
-    kuic::crypt::ecb_mode mode(new kuic::crypt::sm4());
+    kuic::crypt::ecb_mode<kuic::crypt::sm4> mode;
     kuic::byte_t plain[] = {
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32 };
      kuic::byte_t secret[] = {
@@ -124,7 +124,7 @@ TEST(ecb_mode, decrypt_2) {
 
 
 TEST(ecb_mode, decrypt_3) {
-    kuic::crypt::ecb_mode mode(new kuic::crypt::sm4());
+    kuic::crypt::ecb_mode<kuic::crypt::sm4> mode;
     kuic::byte_t plain[] = {
         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0x01 };
      kuic::byte_t secret[] = {
