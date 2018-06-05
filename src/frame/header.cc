@@ -165,3 +165,15 @@ kuic::frame::header::length() const {
         8 +     // connection id
         this->packet_number_length; // packet number
 }
+
+kuic::packet_number_t &
+kuic::frame::header::get_packet_number() {
+    return this->packet_number;
+}
+
+kuic::packet_type_t &
+kuic::frame::header::get_packet_type() {
+    return this->packet_type;
+}
+
+
