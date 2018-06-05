@@ -34,7 +34,7 @@ namespace kuic {
             virtual std::pair<kuic::byte_t *, size_t> serialize() const override {
                 size_t size = this->length();
                 size_t seek = 0;
-                kuic::byte *result = new kuic::byte_t[size];
+                kuic::byte_t *result = new kuic::byte_t[size];
                 result[seek++] = 0x06;
                 kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->stream_id));
                 return std::pair<kuic::byte_t *, size_t>(result, size);
