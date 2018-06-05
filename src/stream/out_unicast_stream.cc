@@ -4,8 +4,8 @@
 
 kuic::stream::out_unicast_stream::out_unicast_stream(
         kuic::stream_id_t stream_id,
-        std::function<kuic::stream::send_stream *(kuic::stream_id_t)> new_stream,
-        std::function<void (kuic::frame::stream_id_blocked_frame &)> queue_stream_id_blocked)
+        std::function<void (kuic::frame::stream_id_blocked_frame &)> queue_stream_id_blocked,
+        std::function<send_stream *(kuic::stream_id_t)> new_stream)
     : next_stream(stream_id)
     , max_stream(0)
     , hightst_blocked(0)
@@ -74,7 +74,7 @@ void kuic::stream::out_unicast_stream::close_with_error(kuic::error_t error) {
     this->close_error = error;
     std::for_each(
             this->streams.begin(), this->streams.end(),
-            [&] (std::pair<kuic::stream_id_t, std::unique_ptr<kuic::stream::send_stream>> &stream) -> void {
+            [&] (std::map<kuic::stream_id_t, std::unique_ptr<kuic::stream::send_stream>>::reference stream) -> void {
                 stream.second->close_for_shutdown(error);
             });
 }

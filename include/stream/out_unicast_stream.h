@@ -31,8 +31,8 @@ namespace kuic {
         public:
             out_unicast_stream(
                     kuic::stream_id_t stream_id,
-                    std::function<send_stream *(kuic::stream_id_t)> new_stream,
-                    std::function<void (kuic::frame::stream_id_blocked_frame &)> queue_stream_id_blocked);
+                    std::function<void (kuic::frame::stream_id_blocked_frame &)> queue_stream_id_blocked,
+                    std::function<send_stream *(kuic::stream_id_t)> new_stream);
             kuic::nullable<send_stream> open_stream();
             kuic::nullable<send_stream> open_stream_implement();
             kuic::nullable<send_stream> get_stream(kuic::stream_id_t stream_id);
