@@ -33,6 +33,12 @@ namespace kuic {
     const int max_tracked_received_ack_ranges = default_max_congestion_window_packets;
     const int max_stream_frame_sorter_gaps = 1000;
     const kuic::bytes_count_t min_stream_frame_size = 128;
+    const kuic::bytes_count_t max_ack_frame_size = 1000;
+    
+    const kbr_name_type_t kbr_name_default_type = 0x00000000;
+    const kbr_protocol_version_t kbr_current_protocol_version = 0x00000001;
+    const kbr_encryption_type_t kbr_encryption_type_sm4_ecb = 0x00010001;
+
 
     inline size_t __inl_packet_number_length_for_header(kuic::packet_number_t packet_number, kuic::packet_number_t least_unacked) {
         size_t diff = packet_number - least_unacked;
@@ -73,8 +79,6 @@ namespace kuic {
     const frame_type_t frame_type_path_response     = 0x0F;
     const frame_type_t frame_type_stream            = 0x10;
     
-
-
     const send_mode_t send_mode_none            = 0x00;
     const send_mode_t send_mode_ack             = 0x01;
     const send_mode_t send_mode_retransmission  = 0x02;
@@ -99,13 +103,9 @@ namespace kuic {
     const kbr_flag_t kbr_flag_renew                     = 0x00000001 << (30 - 1);
     const kbr_flag_t kbr_flag_validate                  = 0x00000001 << (31 - 1);
 
-    const kbr_name_type_t kbr_name_default_type = 0x00000000;
-
-    const kbr_protocol_version_t kbr_current_protocol_version = 0x00000001;
-
-    const kbr_encryption_type_t kbr_encryption_type_sm4_ecb = 0x00010001;
-
-    const kuic::bytes_count_t max_ack_frame_size = 1000;
+    const stream_type_t stream_type_unknow = 0;
+    const stream_type_t stream_type_in_unicast  = 2;
+    const stream_type_t stream_type_out_unicast = 3;
 }
 
 #endif

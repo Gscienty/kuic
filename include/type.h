@@ -17,6 +17,8 @@ namespace kuic {
     typedef unsigned char   frame_type_t;
     typedef unsigned short  application_error_code_t;
 
+    typedef unsigned char   stream_type_t;
+
     typedef unsigned int    kbr_protocol_version_t;
     typedef unsigned int    kbr_message_type_t;
     typedef unsigned int    kbr_flag_t;
