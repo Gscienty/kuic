@@ -1,4 +1,5 @@
 #include "crypt/aead_sm4_gcm.h"
+#include "eys.h"
 #include <cryptopp/gcm.h>
 #include <cryptopp/sm4.h>
 #include <cryptopp/filters.h>
@@ -81,5 +82,15 @@ std::string kuic::crypt::aead_sm4_gcm::open(
 }
 
 std::string kuic::crypt::aead_sm4_gcm::make_nonce(const kuic::packet_number_t packet_number) {
+    std::pair<kuic::byte_t *, size_t> serialized_packet_number =
+        eys::bigendian_serializer<kuic::byte_t, kuic::packet_number_t>::serialize(packet_number);
+    size_t zero_count = this->iv.size() - 8;
+    std::string result(zero_count, 0x00);
+    result.insert(result.end(), serialized_packet_number.first, serialized_packet_number.first + serialized_packet_number.second);
+
+    for (size_t i = 0; i < this->iv.size(); i++) {
+        result[i] ^= this->iv[i];
+    }
+    
     return this->iv;
 }
