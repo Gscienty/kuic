@@ -32,10 +32,21 @@ namespace kuic {
             std::pair<kuic::byte_t *, size_t> serialize_long_header() const;
             std::pair<kuic::byte_t *, size_t> serialize_short_header() const;
         public:
-            header() { }
+            header()
+                : omit_connection_id(false)
+                , packet_number_length(0)
+                , packet_number(0)
+                , packet_type(0)
+                , is_long(false)
+                , payload_length(0) { }
 
+            kuic::connection_id &get_dest_conn_id();
+            kuic::connection_id &get_src_conn_id();
             kuic::packet_number_t &get_packet_number();
+            int &get_packet_number_length();
             kuic::packet_type_t &get_packet_type();
+            bool &get_is_long();
+            kuic::bytes_count_t &get_payload_length();
 
             static header deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
             std::pair<kuic::byte_t *, size_t> serialize() const;

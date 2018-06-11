@@ -166,6 +166,16 @@ kuic::frame::header::length() const {
         this->packet_number_length; // packet number
 }
 
+kuic::connection_id &
+kuic::frame::header::get_dest_conn_id() {
+    return this->dest_conn_id;
+}
+
+kuic::connection_id &
+kuic::frame::header::get_src_conn_id() {
+    return this->src_conn_id;
+}
+
 kuic::packet_number_t &
 kuic::frame::header::get_packet_number() {
     return this->packet_number;
@@ -176,4 +186,17 @@ kuic::frame::header::get_packet_type() {
     return this->packet_type;
 }
 
+int &
+kuic::frame::header::get_packet_number_length() {
+    return this->packet_number_length;
+}
 
+bool &
+kuic::frame::header::get_is_long() {
+    return this->is_long;
+}
+
+kuic::bytes_count_t &
+kuic::frame::header::get_payload_length() {
+    return this->payload_length;
+}
