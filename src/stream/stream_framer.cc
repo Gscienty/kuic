@@ -40,10 +40,10 @@ kuic::stream::stream_framer::pop_crypto_stream_frame(kuic::bytes_count_t max_len
     return *result.first;
 }
 
-std::list<kuic::frame::stream_frame &>
+std::list<kuic::nullable<kuic::frame::stream_frame>>
 kuic::stream::stream_framer::pop_stream_frames(kuic::bytes_count_t max_total_len) {
     kuic::bytes_count_t current_length = 0;
-    std::list<kuic::frame::stream_frame &> frames;
+    std::list<kuic::nullable<kuic::frame::stream_frame>> frames;
 
     std::lock_guard<std::mutex> lock(this->mutex);
     

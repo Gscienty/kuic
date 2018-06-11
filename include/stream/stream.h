@@ -52,7 +52,7 @@ namespace kuic {
         class crypto_stream 
             : public stream {
         public:
-            crypto_stream(kuic::stream::stream_sender &sender, kuic::flowcontrol::stream_flow_controller &flow_controller)
+            crypto_stream(kuic::stream::stream_sender &sender, std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller)
                 : stream(0, sender, flow_controller) { }
 
             void set_read_offset(kuic::bytes_count_t offset);
