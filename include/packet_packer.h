@@ -33,7 +33,7 @@ namespace kuic {
         std::mutex control_frame_mutex;
         std::vector<std::shared_ptr<kuic::frame::frame>> control_frames;
 
-        kuic::nullable<kuic::frame::ack_frame> ack_frame;
+        std::shared_ptr<kuic::frame::ack_frame> ack_frame;
         bool omit_connection_id;
         kuic::bytes_count_t max_packet_size;
         bool has_sent_packet;
@@ -50,7 +50,11 @@ namespace kuic {
         
         kuic::frame::header *get_header(bool is_handshake);
 
-        kuic::nullable<kuic::packed_packet> pack_connection_close(std::shared_ptr<kuic::frame::connection_close_frame> frame);
+        std::unique_ptr<kuic::packed_packet> pack_connection_close(std::shared_ptr<kuic::frame::connection_close_frame> frame);
+        std::unique_ptr<kuic::packed_packet> pack_ack_packet();
+        std::unique_ptr<kuic::packed_packet> pack_handshake_retransmission(kuic::ackhandler::packet &packet);
+        std::vector<std::unique_ptr<kuic::packed_packet>> pack_retransmission(kuic::ackhandler::packet &ack_packet);
+
         std::string write_and_seal_packet(
                 kuic::frame::header &header,
                 std::vector<std::shared_ptr<kuic::frame::frame>> &payload_frames,
