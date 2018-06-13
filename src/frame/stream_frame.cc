@@ -113,23 +113,23 @@ kuic::frame::stream_frame::max_data_length(kuic::bytes_count_t max_size) const {
     return max_data_length;
 }
 
-kuic::frame::stream_frame
+std::shared_ptr<kuic::frame::stream_frame>
 kuic::frame::stream_frame::maybe_split_offset_frame(kuic::bytes_count_t max_size) {
     if (max_size >= this->length()) {
-        return kuic::frame::stream_frame(kuic::not_expect);
+        return std::shared_ptr<kuic::frame::stream_frame>();
     }
 
     kuic::bytes_count_t n = this->max_data_length(max_size);
     if (n == 0) {
-        return kuic::frame::stream_frame(kuic::not_expect);
+        return std::shared_ptr<kuic::frame::stream_frame>();
     }
 
-    kuic::frame::stream_frame new_frame;
-    new_frame.fin_bit = false;
-    new_frame.stream_id = this->stream_id;
-    new_frame.offset = this->offset;
-    new_frame.data.assign(this->data.begin(), this->data.begin() + n);
-    new_frame.data_length_present = this->data_length_present;
+    std::shared_ptr<kuic::frame::stream_frame> new_frame(new kuic::frame::stream_frame());
+    new_frame->fin_bit = false;
+    new_frame->stream_id = this->stream_id;
+    new_frame->offset = this->offset;
+    new_frame->data.assign(this->data.begin(), this->data.begin() + n);
+    new_frame->data_length_present = this->data_length_present;
 
     this->data.assign(this->data.begin() + n, this->data.end());
     this->offset += n;

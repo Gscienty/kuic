@@ -4,6 +4,7 @@
 #include "frame/frame.h"
 #include "type.h"
 #include <vector>
+#include <memory>
 
 namespace kuic {
     namespace frame {
@@ -32,7 +33,7 @@ namespace kuic {
             bool &get_data_length_present(); 
 
             kuic::bytes_count_t max_data_length(kuic::bytes_count_t max_size) const;
-            stream_frame maybe_split_offset_frame(kuic::bytes_count_t max_size);
+            std::shared_ptr<stream_frame> maybe_split_offset_frame(kuic::bytes_count_t max_size);
         };
     }
 }
