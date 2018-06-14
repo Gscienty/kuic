@@ -6,6 +6,7 @@
 #include "lawful_package.h"
 #include <vector>
 #include <utility>
+#include <string>
 
 namespace kuic {
     namespace frame {
@@ -49,7 +50,7 @@ namespace kuic {
             kuic::bytes_count_t &get_payload_length();
 
             static header deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
-            std::pair<kuic::byte_t *, size_t> serialize() const;
+            std::string serialize() const;
             size_t length() const;
         };
     }

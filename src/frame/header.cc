@@ -81,6 +81,20 @@ int kuic::frame::header::decode_single_connection_id_length(kuic::byte_t enc) {
     return int(enc) + 3;
 }
 
+std::string
+kuic::frame::header::serialize() const {
+    if (this->is_long) {
+        std::pair<kuic::byte_t *, size_t> serialized_header = this->serialize_long_header();
+        std::string result(serialized_header.first, serialized_header.first + serialized_header.second);
+        return result;
+    }
+    else {
+        std::pair<kuic::byte_t *, size_t> serialized_header = this->serialize_short_header();
+        std::string result(serialized_header.first, serialized_header.first + serialized_header.second);
+        return result;
+    }
+}
+
 std::pair<kuic::byte_t *, size_t>
 kuic::frame::header::serialize_long_header() const {
     size_t size = this->length();
