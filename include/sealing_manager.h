@@ -6,7 +6,7 @@
 namespace kuic {
     class sealing_manager {
     public:
-        kuic::crypt::aead &get_sealer();
+        virtual kuic::crypt::aead &get_sealer() = 0;
     };
 }
 
