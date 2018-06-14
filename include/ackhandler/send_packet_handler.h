@@ -35,7 +35,7 @@ namespace kuic {
 
             send_packet_history packet_history;
             
-            std::list<packet> retransmission_queue;
+            std::list<std::shared_ptr<packet>> retransmission_queue;
 
             kuic::bytes_count_t bytes_in_flight;
 
@@ -102,7 +102,7 @@ namespace kuic {
             void verify_rto(kuic::packet_number_t packet_number);
 
             bool stop_retransmission_for(const packet &p);
-            kuic::nullable<packet> dequeue_packet_for_retransmission();
+            std::shared_ptr<packet> dequeue_packet_for_retransmission();
             size_t get_packet_number_length(kuic::packet_number_t p);
             kuic::send_mode_t get_send_mode();
             kuic::special_clock time_until_send();

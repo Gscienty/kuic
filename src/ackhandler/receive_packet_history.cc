@@ -28,7 +28,8 @@ bool kuic::ackhandler::receive_packet_history::received_packet(kuic::packet_numb
         }
 
         if (range_extended) {
-            auto prev = element_iter + 1;
+            auto prev = element_iter;
+            prev++;
             if (prev != this->ranges.rend() && prev->second + 1 == element_iter->first) {
                 prev->second = element_iter->second;
                 this->ranges.erase(

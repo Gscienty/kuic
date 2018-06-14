@@ -10,8 +10,7 @@ kuic::ackhandler::received_packet_handler::received_packet_handler(kuic::congest
     , packets_received_since_last_ack(0)
     , retransmittable_packets_received_since_last_ack(0)
     , ack_queued(false)
-    , ack_alarm(kuic::special_clock({ 0, 0 }))
-    , last_ack(kuic::nullable<kuic::frame::ack_frame>(nullptr)) { }
+    , ack_alarm(kuic::special_clock({ 0, 0 })) { }
 
 bool kuic::ackhandler::received_packet_handler::received_packet(
         kuic::packet_number_t packet_number, kuic::special_clock rcv_time, bool should_instigate_ack) {
@@ -44,14 +43,14 @@ void kuic::ackhandler::received_packet_handler::ignore_below(kuic::packet_number
 }
 
 bool kuic::ackhandler::received_packet_handler::is_missing(kuic::packet_number_t packet_number) {
-    if (this->last_ack.is_null() || packet_number < this->_ignore_below) {
+    if (bool(this->last_ack) == false || packet_number < this->_ignore_below) {
         return false;
     }
     return packet_number < this->last_ack->largest_acked() && this->last_ack->acks_packet(packet_number) == false;
 }
 
 bool kuic::ackhandler::received_packet_handler::has_new_missing_packets() {
-    if (this->last_ack.is_null()) {
+    if (bool(this->last_ack) == false) {
         return false;
     }
     auto highest_range = this->packet_history.get_highest_ack_range();
@@ -63,7 +62,7 @@ void kuic::ackhandler::received_packet_handler::try_queue_ack(
         kuic::packet_number_t packet_number, kuic::special_clock rcv_time, bool should_instigate_ack, bool was_missing) {
     this->packets_received_since_last_ack++;
 
-    if (this->last_ack.is_null()) {
+    if (bool(this->last_ack) == false) {
         this->ack_queued = true;
         return; 
     }
@@ -109,22 +108,22 @@ void kuic::ackhandler::received_packet_handler::try_queue_ack(
     }
 }
 
-kuic::nullable<kuic::frame::ack_frame>
+std::shared_ptr<kuic::frame::ack_frame>
 kuic::ackhandler::received_packet_handler::get_ack_frame() {
     kuic::current_clock current_clock;
     kuic::special_clock now(current_clock);
 
     if (this->ack_queued == false && (this->ack_alarm.is_zero() || this->ack_alarm > now)) {
-        return kuic::nullable<kuic::frame::ack_frame>(nullptr);
+        return std::shared_ptr<kuic::frame::ack_frame>();
     }
 
-    kuic::nullable<kuic::frame::ack_frame> frame(*(new kuic::frame::ack_frame()));
+    std::shared_ptr<kuic::frame::ack_frame> frame(new kuic::frame::ack_frame());
 
     frame->get_ranges() = this->packet_history.get_ack_ranges();
     frame->get_delay_time() = now - this->largest_observed_received_time;
     
-    if (this->last_ack.is_null() == false) {
-        delete this->last_ack.release();
+    if (bool(this->last_ack)) {
+        this->last_ack.reset();
     }
 
     this->last_ack = frame;
@@ -141,7 +140,4 @@ kuic::special_clock kuic::ackhandler::received_packet_handler::get_alarm_timeout
 }
 
 kuic::ackhandler::received_packet_handler::~received_packet_handler() {
-    if (this->last_ack.is_null() == false) {
-        delete this->last_ack.release();
-    }
 }

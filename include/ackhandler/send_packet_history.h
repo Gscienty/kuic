@@ -2,7 +2,6 @@
 #define _KUIC_ACKHANDLER_SEND_PACKET_HISTORY_
 
 #include "ackhandler/packet.h"
-#include "nullable.h"
 #include <list>
 #include <map>
 #include <algorithm>
@@ -19,7 +18,7 @@ namespace kuic {
         public:
             send_packet_history();
             void send_packet(const packet &p);
-            kuic::nullable<packet> get_packet(kuic::packet_number_t packet_number);
+            const packet *get_packet(kuic::packet_number_t packet_number);
 
             template <typename InputIterator>
             void send_packets_as_retrainsmission(InputIterator begin, InputIterator end, size_t size, kuic::packet_number_t retransmission_of) {
@@ -54,7 +53,7 @@ namespace kuic {
                 }
             }
 
-            kuic::nullable<packet> get_first_outstanding() const;
+            const packet *get_first_outstanding() const;
             void mark_cannot_be_retransmitted(kuic::packet_number_t packet_number);
 
             void readjust_first_outstanding();

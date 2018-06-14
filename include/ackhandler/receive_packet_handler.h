@@ -4,10 +4,10 @@
 #include "congestion/rtt.h"
 #include "ackhandler/receive_packet_history.h"
 #include "frame/ack_frame.h"
-#include "nullable.h"
 #include "clock.h"
 #include "type.h"
 #include "define.h"
+#include <memory>
 
 namespace kuic {
     namespace ackhandler {
@@ -36,7 +36,7 @@ namespace kuic {
             int retransmittable_packets_received_since_last_ack;
             bool ack_queued;
             kuic::special_clock ack_alarm;
-            kuic::nullable<kuic::frame::ack_frame> last_ack;
+            std::shared_ptr<kuic::frame::ack_frame> last_ack;
         
         public:
             received_packet_handler(kuic::congestion::rtt &rtt);
@@ -48,7 +48,7 @@ namespace kuic {
                     kuic::packet_number_t packet_number, kuic::special_clock rcv_time, bool should_instigate_ack, bool was_missing);
             void ignore_below(kuic::packet_number_t packet_number);
             bool has_new_missing_packets();
-            kuic::nullable<kuic::frame::ack_frame> get_ack_frame();
+            std::shared_ptr<kuic::frame::ack_frame> get_ack_frame();
             kuic::special_clock get_alarm_timeout();
             virtual ~received_packet_handler();
         };

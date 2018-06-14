@@ -22,24 +22,24 @@ void kuic::ackhandler::send_packet_history::send_packet(const kuic::ackhandler::
     this->send_packet_implement(packet);
 }
 
-kuic::nullable<kuic::ackhandler::packet>
+const kuic::ackhandler::packet *
 kuic::ackhandler::send_packet_history::get_packet(kuic::packet_number_t packet_number) {
     auto iter = this->packet_map.find(packet_number);
     if (iter != this->packet_map.end()) {
-        return kuic::nullable<kuic::ackhandler::packet>(*iter->second);
+        return &*iter->second;
     }
-    return kuic::nullable<kuic::ackhandler::packet>(nullptr);
+    return nullptr;
 }
 
-kuic::nullable<kuic::ackhandler::packet>
+const kuic::ackhandler::packet *
 kuic::ackhandler::send_packet_history::get_first_outstanding() const {
     if (this->first_outstanding == 0) {
-        return kuic::nullable<kuic::ackhandler::packet>(nullptr);
+        return nullptr;
     }
     
-    kuic::nullable<kuic::ackhandler::packet> result(
+    std::shared_ptr<kuic::ackhandler::packet> result(
             new kuic::ackhandler::packet(*(this->packet_map.find(this->first_outstanding)->second)));
-    return result;
+    return &*this->packet_map.find(this->first_outstanding)->second;
 }
 
 void kuic::ackhandler::send_packet_history::mark_cannot_be_retransmitted(kuic::packet_number_t packet_number) {

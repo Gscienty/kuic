@@ -1,7 +1,6 @@
 #include "ackhandler/packet.h"
 #include "ackhandler/send_packet_handler.h"
 #include "frame/ack_frame.h"
-#include "nullable.h"
 #include <algorithm>
 
 kuic::ackhandler::send_packet_handler::send_packet_handler(kuic::congestion::rtt &_rtt)
@@ -32,19 +31,19 @@ kuic::ackhandler::send_packet_handler::send_packet_handler(kuic::congestion::rtt
 
 kuic::packet_number_t
 kuic::ackhandler::send_packet_handler::lowest_unacked() const {
-    kuic::nullable<kuic::ackhandler::packet> packet = this->packet_history.get_first_outstanding(); 
-    if (packet.is_null() == false) {
+    const kuic::ackhandler::packet *packet = this->packet_history.get_first_outstanding(); 
+    if (packet != nullptr) {
         return packet->packet_number;
     }
     return this->largest_acked + 1;
 }
 
 void kuic::ackhandler::send_packet_handler::set_handshake_complete() {
-    std::list<kuic::ackhandler::packet> queue;
+    std::list<std::shared_ptr<kuic::ackhandler::packet>> queue;
 
     std::for_each(this->retransmission_queue.begin(), this->retransmission_queue.end(),
-            [&] (const kuic::ackhandler::packet &packet) -> void {
-                if (packet.is_handshake == false) {
+            [&] (const std::shared_ptr<kuic::ackhandler::packet> &packet) -> void {
+                if (packet->is_handshake == false) {
                     queue.push_back(packet);
                 }
             });
@@ -216,7 +215,7 @@ kuic::ackhandler::send_packet_handler::determine_newly_acked_packets(kuic::frame
 bool kuic::ackhandler::send_packet_handler::maybe_update_rtt(
         kuic::packet_number_t largest_acked, kuic::kuic_time_t ack_delay, kuic::special_clock rcv_time) {
     auto p = this->packet_history.get_packet(largest_acked);
-    if (p.is_null() == false) {
+    if (p == nullptr) {
         this->_rtt.update_rtt(rcv_time - p->send_time, ack_delay);
         return true;
     }
@@ -320,16 +319,16 @@ kuic::ackhandler::send_packet_handler::get_alarm_timeout() {
 
 bool kuic::ackhandler::send_packet_handler::on_packet_acked(kuic::ackhandler::packet &p) {
     
-    kuic::nullable<kuic::ackhandler::packet> packet = this->packet_history.get_packet(p.packet_number);
-    if (packet.is_null()) {
+    const kuic::ackhandler::packet *packet = this->packet_history.get_packet(p.packet_number);
+    if (packet == nullptr) {
         return true;
     }
 
     if (p.is_retransmission) {
-        kuic::nullable<kuic::ackhandler::packet> parent = this->packet_history.get_packet(p.retransmission_of);
-        if (parent.is_null() == false) {
+        const kuic::ackhandler::packet *parent = this->packet_history.get_packet(p.retransmission_of);
+        if (parent != nullptr) {
             if (parent->retransmitted_as.size() == 1) {
-                parent->retransmitted_as.clear();
+                const_cast<kuic::ackhandler::packet *>(parent)->retransmitted_as.clear();
             }
             else {
                 std::vector<kuic::packet_number_t> retransmitted_as;
@@ -340,7 +339,7 @@ bool kuic::ackhandler::send_packet_handler::on_packet_acked(kuic::ackhandler::pa
                             }
                         });
 
-                parent->retransmitted_as = retransmitted_as;
+                const_cast<kuic::ackhandler::packet *>(parent)->retransmitted_as = retransmitted_as;
             }
         }
     }
@@ -370,8 +369,8 @@ bool kuic::ackhandler::send_packet_handler::stop_retransmission_for(
     this->packet_history.mark_cannot_be_retransmitted(packet.packet_number);
     std::for_each(packet.retransmitted_as.begin(), packet.retransmitted_as.end(),
             [&] (const kuic::packet_number_t &packet_number) -> void {
-                kuic::nullable<kuic::ackhandler::packet> packet = this->packet_history.get_packet(packet_number);
-                if (packet.is_null()) {
+                const kuic::ackhandler::packet *packet = this->packet_history.get_packet(packet_number);
+                if (packet == nullptr) {
                     return;
                 }
 
@@ -390,12 +389,12 @@ void kuic::ackhandler::send_packet_handler::verify_rto(kuic::packet_number_t pac
     this->congestion.on_retransmission_timeout(true);
 }
 
-kuic::nullable<kuic::ackhandler::packet>
+std::shared_ptr<kuic::ackhandler::packet>
 kuic::ackhandler::send_packet_handler::dequeue_packet_for_retransmission() {
     if (this->retransmission_queue.empty()) {
-        return kuic::nullable<kuic::ackhandler::packet>(nullptr);
+        return std::shared_ptr<kuic::ackhandler::packet>();
     }
-    kuic::nullable<kuic::ackhandler::packet> result(this->retransmission_queue.front());
+    std::shared_ptr<kuic::ackhandler::packet> result(this->retransmission_queue.front());
     this->retransmission_queue.pop_front();
     return result;
 }
@@ -459,8 +458,8 @@ bool kuic::ackhandler::send_packet_handler::queue_rtos() {
     this->largest_sent_before_rto = this->last_sent_packet_number;
 
     for (int i = 0; i < 2; i++) {
-        kuic::nullable<kuic::ackhandler::packet> p = this->packet_history.get_first_outstanding();
-        if (p.is_null() == false) {
+        const kuic::ackhandler::packet *p = this->packet_history.get_first_outstanding();
+        if (p != nullptr) {
             if (this->queue_packet_for_retransmission(*p) == false) {
                 return false;
             }
@@ -496,7 +495,8 @@ bool kuic::ackhandler::send_packet_handler::queue_packet_for_retransmission(
 
     this->packet_history.mark_cannot_be_retransmitted(packet.packet_number);
     
-    this->retransmission_queue.push_back(packet);
+    this->retransmission_queue.push_back(
+            std::make_shared<kuic::ackhandler::packet>(packet));
     return true;
 }
 
