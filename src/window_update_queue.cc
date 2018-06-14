@@ -39,11 +39,11 @@ void kuic::window_update_queue::queue_all() {
             offset = this->crypto_stream.get_window_update();
         }
         else {
-            kuic::nullable<kuic::stream::receive_stream> str = this->stream_getter.get_or_open_receive_stream(*id_itr);
-            if (str.is_null()) {
+            const kuic::stream::receive_stream *str = this->stream_getter.get_or_open_receive_stream(*id_itr);
+            if (str == nullptr) {
                 continue;
             }
-            offset = str->get_window_update();
+            offset = const_cast<kuic::stream::receive_stream *>(str)->get_window_update();
         }
 
         if (offset == 0) {
