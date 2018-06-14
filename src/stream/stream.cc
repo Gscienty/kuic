@@ -68,19 +68,19 @@ void kuic::stream::stream::cancel_read(kuic::application_error_code_t error) {
     this->receive_stream.cancel_read(error);
 }
 
-kuic::bytes_count_t kuic::stream::stream::write(const kuic::byte_t *p, const kuic::bytes_count_t size) {
-    return this->send_stream.write(p, size);
+kuic::bytes_count_t kuic::stream::stream::write(const std::string &data) {
+    return this->send_stream.write(data);
 }
 
 kuic::bytes_count_t kuic::stream::stream::read(kuic::byte_t *p, const kuic::bytes_count_t size) {
     return this->receive_stream.read(p, size);
 }
 
-bool kuic::stream::stream::handle_stream_frame(kuic::frame::stream_frame &frame) {
+bool kuic::stream::stream::handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame) {
     return this->receive_stream.handle_stream_frame(frame);
 }
 
-std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>
+std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>
 kuic::stream::stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
     return this->send_stream.pop_stream_frame(max_bytes);
 }

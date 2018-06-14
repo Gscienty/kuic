@@ -3,7 +3,6 @@
 
 #include "stream/receive_stream.h"
 #include "frame/max_stream_id_frame.h"
-#include "nullable.h"
 #include "rw_lock.h"
 #include "type.h"
 #include <map>
@@ -17,7 +16,7 @@ namespace kuic {
         private:
             kuic::rw_lock mutex;
             std::condition_variable cond;
-            std::map<kuic::stream_id_t, std::unique_ptr<receive_stream>> streams;
+            std::map<kuic::stream_id_t, std::shared_ptr<receive_stream>> streams;
 
             kuic::stream_id_t next_stream;
             kuic::stream_id_t highest_stream;
@@ -36,8 +35,8 @@ namespace kuic {
                     int max_num_streams,
                     std::function<void (kuic::frame::frame &)> queue_control_frame,
                     std::function<receive_stream *(kuic::stream_id_t)> new_stream);
-            kuic::nullable<kuic::stream::receive_stream> accept_stream();
-            kuic::nullable<kuic::stream::receive_stream> get_or_open_stream(kuic::stream_id_t stream_id);
+            std::shared_ptr<kuic::stream::receive_stream> accept_stream();
+            std::shared_ptr<kuic::stream::receive_stream> get_or_open_stream(kuic::stream_id_t stream_id);
             bool delete_stream(kuic::stream_id_t stream_id);
             void close_with_error(kuic::error_t error);
         };

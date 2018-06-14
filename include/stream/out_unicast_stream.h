@@ -3,7 +3,6 @@
 
 #include "stream/send_stream.h"
 #include "frame/stream_id_blocked_frame.h"
-#include "nullable.h"
 #include "rw_lock.h"
 #include "type.h"
 #include <mutex>
@@ -18,7 +17,7 @@ namespace kuic {
         private:
             kuic::rw_lock mutex;
             
-            std::map<kuic::stream_id_t, std::unique_ptr<send_stream>> streams;
+            std::map<kuic::stream_id_t, std::shared_ptr<send_stream>> streams;
 
             kuic::stream_id_t next_stream;
             kuic::stream_id_t max_stream;
@@ -33,9 +32,9 @@ namespace kuic {
                     kuic::stream_id_t stream_id,
                     std::function<void (kuic::frame::stream_id_blocked_frame &)> queue_stream_id_blocked,
                     std::function<send_stream *(kuic::stream_id_t)> new_stream);
-            kuic::nullable<send_stream> open_stream();
-            kuic::nullable<send_stream> open_stream_implement();
-            kuic::nullable<send_stream> get_stream(kuic::stream_id_t stream_id);
+            std::shared_ptr<send_stream> open_stream();
+            std::shared_ptr<send_stream> open_stream_implement();
+            std::shared_ptr<send_stream> get_stream(kuic::stream_id_t stream_id);
             bool delete_stream(kuic::stream_id_t stream_id);
             void set_max_stream(kuic::stream_id_t stream_id);
             void close_with_error(kuic::error_t error);

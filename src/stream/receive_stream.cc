@@ -45,8 +45,8 @@ kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, con
 
     kuic::bytes_count_t bytes_read = 0;
     while (bytes_read < size) {
-        kuic::nullable<kuic::frame::stream_frame> frame = this->frame_queue.head();
-        if (frame.is_null() && bytes_read > 0) {
+        std::shared_ptr<kuic::frame::stream_frame> frame = this->frame_queue.head();
+        if (bool(frame) == false && bytes_read > 0) {
             return bytes_read;
         }
 
@@ -66,7 +66,7 @@ kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, con
                 return bytes_read;
             }
 
-            if (frame.is_null() == false) {
+            if (bool(frame) == true) {
                 this->read_position_in_frame = this->read_offset - frame->get_offset();
                 break;
             }
@@ -80,7 +80,7 @@ kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, con
                         std::chrono::milliseconds(
                             (this->read_deadline - kuic::current_clock()) / kuic::clock_millisecond));
             }
-            kuic::nullable<kuic::frame::stream_frame> next_frame = this->frame_queue.head();
+            std::shared_ptr<kuic::frame::stream_frame> next_frame = this->frame_queue.head();
             frame = next_frame;
         }
 
@@ -140,9 +140,9 @@ void kuic::stream::receive_stream::cancel_read(kuic::application_error_code_t er
     this->sender.queue_control_frame(frame);
 }
 
-bool kuic::stream::receive_stream::handle_stream_frame(kuic::frame::stream_frame &frame) {
-    kuic::bytes_count_t max_offset = frame.get_offset() + frame.get_data().size();
-    if (this->flow_controller->update_highest_received(max_offset, frame.get_fin_bit()) != kuic::no_error) {
+bool kuic::stream::receive_stream::handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame) {
+    kuic::bytes_count_t max_offset = frame->get_offset() + frame->get_data().size();
+    if (this->flow_controller->update_highest_received(max_offset, frame->get_fin_bit()) != kuic::no_error) {
         return false;
     }
 
@@ -184,9 +184,9 @@ bool kuic::stream::receive_stream::handle_rst_stream_frame(kuic::frame::rst_stre
 }
 
 void kuic::stream::receive_stream::close_remote(kuic::bytes_count_t offset) {
-    kuic::frame::stream_frame frame;
-    frame.get_fin_bit() = true;
-    frame.get_offset() = offset;
+    std::shared_ptr<kuic::frame::stream_frame> frame(new kuic::frame::stream_frame());
+    frame->get_fin_bit() = true;
+    frame->get_offset() = offset;
 
     this->handle_stream_frame(frame);
 }

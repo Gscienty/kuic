@@ -17,20 +17,20 @@ kuic::stream::in_unicast_stream::in_unicast_stream(
             })
     , error(kuic::no_error) { }
 
-kuic::nullable<kuic::stream::receive_stream>
+std::shared_ptr<kuic::stream::receive_stream>
 kuic::stream::in_unicast_stream::accept_stream() {
     std::unique_lock<std::mutex> lock(this->mutex.get_inner_mutex());
 
-    kuic::stream::receive_stream *ptr = nullptr;
+    std::shared_ptr<kuic::stream::receive_stream> ptr;
     while (true) {
         if (this->error != kuic::no_error) {
-            return kuic::nullable<kuic::stream::receive_stream>(nullptr);
+            return std::shared_ptr<kuic::stream::receive_stream>();
         }
 
         auto finded = this->streams.find(this->next_stream);
 
         if (finded != this->streams.end()) {
-            ptr = finded->second.get();
+            ptr = finded->second;
             break;
         }
         
@@ -38,18 +38,18 @@ kuic::stream::in_unicast_stream::accept_stream() {
     }
 
     this->next_stream += 4;
-    return kuic::nullable<kuic::stream::receive_stream>(*ptr);
+    return ptr;
 }
 
-kuic::nullable<kuic::stream::receive_stream>
+std::shared_ptr<kuic::stream::receive_stream>
 kuic::stream::in_unicast_stream::get_or_open_stream(kuic::stream_id_t stream_id) {
     {
         kuic::reader_lock_guard lock(this->mutex);
         if (stream_id > this->max_stream) {
-            return kuic::nullable<kuic::stream::receive_stream>(nullptr);
+            return std::shared_ptr<kuic::stream::receive_stream>();
         }
         if (stream_id <= this->highest_stream) {
-            return kuic::nullable<kuic::stream::receive_stream>(*this->streams.find(stream_id)->second);
+            return this->streams.find(stream_id)->second;
         }
     }
 
@@ -65,12 +65,12 @@ kuic::stream::in_unicast_stream::get_or_open_stream(kuic::stream_id_t stream_id)
 
         for (kuic::stream_id_t new_id = start; new_id <= stream_id; new_id += 4) {
             this->streams.insert(
-                    std::pair<kuic::stream_id_t, std::unique_ptr<kuic::stream::receive_stream>>(
-                        new_id, std::unique_ptr<kuic::stream::receive_stream>(this->new_stream(new_id))));
+                    std::pair<kuic::stream_id_t, std::shared_ptr<kuic::stream::receive_stream>>(
+                        new_id, std::shared_ptr<kuic::stream::receive_stream>(this->new_stream(new_id))));
             this->cond.notify_one();
         }
         this->highest_stream = stream_id;
-        return kuic::nullable<kuic::stream::receive_stream>(*this->streams.find(stream_id)->second);
+        return this->streams.find(stream_id)->second;
     }
 }
 
@@ -100,7 +100,7 @@ void kuic::stream::in_unicast_stream::close_with_error(kuic::error_t error) {
         this->error = error;
         std::for_each(
                 this->streams.begin(), this->streams.end(),
-                [&] (std::map<kuic::stream_id_t, std::unique_ptr<kuic::stream::receive_stream>>::reference stream) -> void {
+                [&] (std::map<kuic::stream_id_t, std::shared_ptr<kuic::stream::receive_stream>>::reference stream) -> void {
                     stream.second->close_for_shutdown(error);
                 });
     }

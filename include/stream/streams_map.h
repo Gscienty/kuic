@@ -9,7 +9,6 @@
 #include "flowcontrol/stream_flow_controller.h"
 #include "handshake/transport_parameters.h"
 #include "type.h"
-#include "nullable.h"
 #include <functional>
 
 namespace kuic {
@@ -32,11 +31,11 @@ namespace kuic {
 
             kuic::stream_type_t get_stream_type(const kuic::stream_id_t stream_id) const;
 
-            kuic::nullable<receive_stream> accept_unicast_stream(); 
-            kuic::nullable<send_stream> open_unicast_stream();
+            std::shared_ptr<receive_stream> accept_unicast_stream(); 
+            std::shared_ptr<send_stream> open_unicast_stream();
             bool delete_stream(kuic::stream_id_t stream_id);
-            kuic::nullable<receive_stream> get_or_open_receive_stream(const kuic::stream_id_t stream_id);
-            kuic::nullable<send_stream> get_or_open_send_stream(const kuic::stream_id_t stream_id);
+            std::shared_ptr<receive_stream> get_or_open_receive_stream(const kuic::stream_id_t stream_id);
+            std::shared_ptr<send_stream> get_or_open_send_stream(const kuic::stream_id_t stream_id);
             bool handle_max_stream_id_frame(kuic::frame::max_stream_id_frame &frame);
             void update_limit(kuic::handshake::transport_parameters &parameters);
             void close_with_error(kuic::error_t error);

@@ -7,12 +7,12 @@ kuic::stream::stream_frame_sorter::stream_frame_sorter()
     this->gaps.push_front(std::pair<kuic::bytes_count_t, kuic::bytes_count_t>(0, kuic::max_byte_count));
 }
 
-bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
-    if (frame.get_data().empty()) {
-        if (frame.get_fin_bit()) {
+bool kuic::stream::stream_frame_sorter::push(std::shared_ptr<kuic::frame::stream_frame> &frame) {
+    if (frame->get_data().empty()) {
+        if (frame->get_fin_bit()) {
             this->queued_frames.insert(
-                    std::pair<kuic::bytes_count_t, kuic::frame::stream_frame &>(
-                        frame.get_offset(), frame));
+                    std::pair<kuic::bytes_count_t, std::shared_ptr<kuic::frame::stream_frame>>(
+                        frame->get_offset(), frame));
             return true;
         }
         return false;
@@ -20,18 +20,18 @@ bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
 
     bool was_cut = false;
 
-    if (this->queued_frames.find(frame.get_offset()) != this->queued_frames.end()) {
-        kuic::frame::stream_frame &old_frame = this->queued_frames.find(frame.get_offset())->second;
-        if (frame.get_data().size() <= old_frame.get_data().size()) {
+    if (this->queued_frames.find(frame->get_offset()) != this->queued_frames.end()) {
+        std::shared_ptr<kuic::frame::stream_frame> &old_frame = this->queued_frames.find(frame->get_offset())->second;
+        if (frame->get_data().size() <= old_frame->get_data().size()) {
             return false;
         }
-        frame.get_data().assign(frame.get_data().begin() + old_frame.get_data().size(), frame.get_data().end());
-        frame.get_offset() += old_frame.get_data().size();
+        frame->get_data().assign(frame->get_data().begin() + old_frame->get_data().size(), frame->get_data().end());
+        frame->get_offset() += old_frame->get_data().size();
         was_cut = true;
     }
 
-    kuic::bytes_count_t start = frame.get_offset();
-    kuic::bytes_count_t end = frame.get_offset() + frame.get_data().size();
+    kuic::bytes_count_t start = frame->get_offset();
+    kuic::bytes_count_t end = frame->get_offset() + frame->get_data().size();
 
     auto gap_itr = this->gaps.begin();
     for (; gap_itr != this->gaps.end(); gap_itr++) {
@@ -49,9 +49,9 @@ bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
 
     if (start < gap_itr->first) {
         kuic::bytes_count_t add = gap_itr->first - start;
-        frame.get_offset() += add;
+        frame->get_offset() += add;
         start += add;
-        frame.get_data().assign(frame.get_data().begin() + add, frame.get_data().end());
+        frame->get_data().assign(frame->get_data().begin() + add, frame->get_data().end());
         was_cut = true;
     }
 
@@ -78,9 +78,9 @@ bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
 
     if (end > end_gap_itr->second) {
         kuic::bytes_count_t cut_length = end - end_gap_itr->second;
-        kuic::bytes_count_t length = frame.get_data().size() - cut_length;
+        kuic::bytes_count_t length = frame->get_data().size() - cut_length;
         end -= cut_length;
-        frame.get_data().assign(frame.get_data().begin(), frame.get_data().begin() + length);
+        frame->get_data().assign(frame->get_data().begin(), frame->get_data().begin() + length);
         was_cut = true;
     }
 
@@ -111,28 +111,27 @@ bool kuic::stream::stream_frame_sorter::push(kuic::frame::stream_frame &frame) {
     }
 
     this->queued_frames.insert(
-            std::pair<kuic::bytes_count_t, kuic::frame::stream_frame &>(
-                frame.get_offset(), frame));
+            std::pair<kuic::bytes_count_t, std::shared_ptr<kuic::frame::stream_frame>>(
+                frame->get_offset(), frame));
     return true;
 }
 
-kuic::nullable<kuic::frame::stream_frame>
+std::shared_ptr<kuic::frame::stream_frame>
 kuic::stream::stream_frame_sorter::pop() {
-    kuic::nullable<kuic::frame::stream_frame> frame = this->head();
-    if (frame.is_null() == false) {
+    std::shared_ptr<kuic::frame::stream_frame> frame = this->head();
+    if (bool(frame)) {
         this->read_position += frame->get_data().size();
         this->queued_frames.erase(this->queued_frames.find(frame->get_offset()));
     }
     return frame;
 }
 
-kuic::nullable<kuic::frame::stream_frame>
+std::shared_ptr<kuic::frame::stream_frame>
 kuic::stream::stream_frame_sorter::head() {
     if (this->queued_frames.find(this->read_position) != this->queued_frames.end()) {
-        return kuic::nullable<kuic::frame::stream_frame>(
-                this->queued_frames.find(this->read_position)->second);
+        return this->queued_frames.find(this->read_position)->second;
     }
-    return kuic::nullable<kuic::frame::stream_frame>(nullptr);
+    return std::shared_ptr<kuic::frame::stream_frame>();
 }
 
 kuic::bytes_count_t &kuic::stream::stream_frame_sorter::get_read_position() {

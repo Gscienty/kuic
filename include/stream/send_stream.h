@@ -6,13 +6,13 @@
 #include "frame/stop_sending_frame.h"
 #include "stream/stream_sender.h"
 #include "flowcontrol/stream_flow_controller.h"
-#include "nullable.h"
 #include "clock.h"
 #include "rw_lock.h"
 #include "type.h"
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <string>
 
 namespace kuic {
     namespace stream {
@@ -31,7 +31,7 @@ namespace kuic {
             bool _cancel_write;
             bool fin_sent;
 
-            std::vector<kuic::byte_t> data_for_waiting;
+            std::string data_for_waiting;
             kuic::special_clock write_deadline;
             std::condition_variable write_cond;
             std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller;
@@ -44,7 +44,7 @@ namespace kuic {
             kuic::bytes_count_t &get_write_offset();
 
             kuic::stream_id_t get_stream_id() const;
-            kuic::bytes_count_t write(const kuic::byte_t *p, const kuic::bytes_count_t size);
+            kuic::bytes_count_t write(const std::string &data);
             std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes);
             void signal_write();
             bool close();

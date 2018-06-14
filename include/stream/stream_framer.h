@@ -31,7 +31,7 @@ namespace kuic {
             pop_crypto_stream_frame(kuic::bytes_count_t max_len) override;
 
             virtual
-            std::list<kuic::nullable<kuic::frame::stream_frame>>
+            std::list<std::shared_ptr<kuic::frame::stream_frame>>
             pop_stream_frames(kuic::bytes_count_t max_total_len) override;
         };
     }

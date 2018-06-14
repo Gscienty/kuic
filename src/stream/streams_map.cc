@@ -59,12 +59,12 @@ kuic::stream::streams_map::get_stream_type(const kuic::stream_id_t stream_id) co
     return kuic::stream_type_unknow;
 }
 
-kuic::nullable<kuic::stream::receive_stream>
+std::shared_ptr<kuic::stream::receive_stream>
 kuic::stream::streams_map::accept_unicast_stream() {
     return this->in_uni.accept_stream();
 }
 
-kuic::nullable<kuic::stream::send_stream>
+std::shared_ptr<kuic::stream::send_stream>
 kuic::stream::streams_map::open_unicast_stream() {
     return this->out_uni.open_stream();
 }
@@ -80,23 +80,23 @@ bool kuic::stream::streams_map::delete_stream(kuic::stream_id_t stream_id) {
     return false;
 }
 
-kuic::nullable<kuic::stream::receive_stream>
+std::shared_ptr<kuic::stream::receive_stream>
 kuic::stream::streams_map::get_or_open_receive_stream(const kuic::stream_id_t stream_id) {
     switch (this->get_stream_type(stream_id)) {
     case kuic::stream_type_in_unicast:
         return this->in_uni.get_or_open_stream(stream_id);
     }
-    return kuic::nullable<kuic::stream::receive_stream>(nullptr);
+    return std::shared_ptr<kuic::stream::receive_stream>();
 }
 
-kuic::nullable<kuic::stream::send_stream>
+std::shared_ptr<kuic::stream::send_stream>
 kuic::stream::streams_map::get_or_open_send_stream(const kuic::stream_id_t stream_id) {
     switch (this->get_stream_type(stream_id)) {
     case kuic::stream_type_out_unicast:
         return this->out_uni.get_stream(stream_id);
     }
 
-    return kuic::nullable<kuic::stream::send_stream>(nullptr);
+    return std::shared_ptr<kuic::stream::send_stream>();
 }
 
 bool kuic::stream::streams_map::handle_max_stream_id_frame(kuic::frame::max_stream_id_frame &frame) {

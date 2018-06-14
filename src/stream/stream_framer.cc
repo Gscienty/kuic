@@ -33,17 +33,17 @@ bool kuic::stream::stream_framer::get_has_crypto_stream_data() {
 kuic::frame::stream_frame &
 kuic::stream::stream_framer::pop_crypto_stream_frame(kuic::bytes_count_t max_len) {
     std::lock_guard<std::mutex> lock(this->mutex);
-    std::pair<kuic::nullable<kuic::frame::stream_frame>, bool> result =
+    std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool> result =
         this->_crypto_stream.pop_stream_frame(max_len);
     this->has_crypto_stream_data = result.second;
 
     return *result.first;
 }
 
-std::list<kuic::nullable<kuic::frame::stream_frame>>
+std::list<std::shared_ptr<kuic::frame::stream_frame>>
 kuic::stream::stream_framer::pop_stream_frames(kuic::bytes_count_t max_total_len) {
     kuic::bytes_count_t current_length = 0;
-    std::list<kuic::nullable<kuic::frame::stream_frame>> frames;
+    std::list<std::shared_ptr<kuic::frame::stream_frame>> frames;
 
     std::lock_guard<std::mutex> lock(this->mutex);
     
@@ -56,13 +56,14 @@ kuic::stream::stream_framer::pop_stream_frames(kuic::bytes_count_t max_total_len
         kuic::stream_id_t id = this->stream_queue.front();
         this->stream_queue.pop_front();
 
-        kuic::nullable<kuic::stream::send_stream> send_stream = this->_stream_getter.get_or_open_send_stream(id);
-        if (send_stream.is_null()) {
+        const kuic::stream::send_stream *send_stream = this->_stream_getter.get_or_open_send_stream(id);
+        if (send_stream == nullptr) {
             this->active_streams.erase(this->active_streams.find(id));
             continue;
         }
 
-        auto poped_stream_frame = send_stream->pop_stream_frame(max_total_len - current_length);
+        auto poped_stream_frame = const_cast<kuic::stream::send_stream *>(send_stream)
+            ->pop_stream_frame(max_total_len - current_length);
         if (poped_stream_frame.second) {
             this->stream_queue.push_back(id);
         }
@@ -70,11 +71,11 @@ kuic::stream::stream_framer::pop_stream_frames(kuic::bytes_count_t max_total_len
             this->active_streams.erase(this->active_streams.find(id));
         }
 
-        if (poped_stream_frame.first.is_null()) {
+        if (bool(poped_stream_frame.first)) {
             continue;
         }
 
-        frames.push_back(*poped_stream_frame.first);
+        frames.push_back(poped_stream_frame.first);
         current_length += poped_stream_frame.first->length();
     }
 

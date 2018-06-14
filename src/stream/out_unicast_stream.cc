@@ -13,10 +13,10 @@ kuic::stream::out_unicast_stream::out_unicast_stream(
     , queue_stream_id_blocked(queue_stream_id_blocked)
     , close_error(kuic::no_error) { }
 
-kuic::nullable<kuic::stream::send_stream>
+std::shared_ptr<kuic::stream::send_stream>
 kuic::stream::out_unicast_stream::open_stream_implement() {
     if (this->close_error != kuic::no_error) {
-        return kuic::nullable<kuic::stream::send_stream>(nullptr);
+        return std::shared_ptr<kuic::stream::send_stream>();
     }
     if (this->next_stream > this->max_stream) {
         if (this->max_stream == 0 || this->hightst_blocked < this->max_stream) {
@@ -25,30 +25,29 @@ kuic::stream::out_unicast_stream::open_stream_implement() {
             this->queue_stream_id_blocked(frame);
             this->hightst_blocked = this->max_stream;
         }
-        return kuic::nullable<kuic::stream::send_stream>(nullptr);
+        return std::shared_ptr<kuic::stream::send_stream>();
     }
-    kuic::stream::send_stream *s = this->new_stream(this->next_stream);
+    std::shared_ptr<kuic::stream::send_stream> s(this->new_stream(this->next_stream));
     this->streams.insert(
-            std::pair<kuic::stream_id_t, std::unique_ptr<kuic::stream::send_stream>>(
-                this->next_stream, std::unique_ptr<kuic::stream::send_stream>(s)));
+            std::pair<kuic::stream_id_t, std::shared_ptr<kuic::stream::send_stream>>(
+                this->next_stream, s));
     this->next_stream += 4;
-    return kuic::nullable<kuic::stream::send_stream>(s);
+    return s;
 }
 
-kuic::nullable<kuic::stream::send_stream>
+std::shared_ptr<kuic::stream::send_stream>
 kuic::stream::out_unicast_stream::open_stream() {
     kuic::writer_lock_guard lock(this->mutex);
     return this->open_stream_implement();
 }
 
-kuic::nullable<kuic::stream::send_stream>
+std::shared_ptr<kuic::stream::send_stream>
 kuic::stream::out_unicast_stream::get_stream(kuic::stream_id_t stream_id) {
     kuic::reader_lock_guard lock(this->mutex);
     if (stream_id >= this->next_stream) {
-        return kuic::nullable<kuic::stream::send_stream>(nullptr);
+        return std::shared_ptr<kuic::stream::send_stream>();
     }
-    kuic::stream::send_stream *stream = this->streams.find(stream_id)->second.get();
-    return kuic::nullable<kuic::stream::send_stream>(*stream);
+    return this->streams.find(stream_id)->second;
 }
 
 bool kuic::stream::out_unicast_stream::delete_stream(kuic::stream_id_t stream_id) {
@@ -74,7 +73,7 @@ void kuic::stream::out_unicast_stream::close_with_error(kuic::error_t error) {
     this->close_error = error;
     std::for_each(
             this->streams.begin(), this->streams.end(),
-            [&] (std::map<kuic::stream_id_t, std::unique_ptr<kuic::stream::send_stream>>::reference stream) -> void {
+            [&] (std::map<kuic::stream_id_t, std::shared_ptr<kuic::stream::send_stream>>::reference stream) -> void {
                 stream.second->close_for_shutdown(error);
             });
 }
