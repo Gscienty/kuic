@@ -45,7 +45,7 @@ namespace kuic {
 
             kuic::stream_id_t get_stream_id() const;
             kuic::bytes_count_t write(const kuic::byte_t *p, const kuic::bytes_count_t size);
-            std::pair<kuic::nullable<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes);
+            std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes);
             void signal_write();
             bool close();
             bool cancel_write(kuic::application_error_code_t error);

@@ -65,13 +65,13 @@ kuic::bytes_count_t kuic::stream::send_stream::write(const kuic::byte_t *p, cons
     return bytes_written;
 }
 
-std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>
+std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>
 kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
     std::unique_lock<std::mutex> lock(this->mutex);
 
     if (this->_close_for_shutdown) {
-        return std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>(
-                kuic::nullable<kuic::frame::stream_frame>(nullptr), false);
+        return std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>(
+                std::shared_ptr<kuic::frame::stream_frame>(), false);
     }
 
     kuic::frame::stream_frame *frame = new kuic::frame::stream_frame();
@@ -81,8 +81,8 @@ kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
 
     kuic::bytes_count_t max_data_length = frame->max_data_length(max_bytes);
     if (max_data_length == 0) {
-        return std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>(
-                kuic::nullable<kuic::frame::stream_frame>(nullptr), this->data_for_waiting.empty() == false);
+        return std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>(
+                std::shared_ptr<kuic::frame::stream_frame>(), this->data_for_waiting.empty() == false);
     }
 
     if (this->data_for_waiting.empty()) {
@@ -112,11 +112,11 @@ kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
     if (frame->get_data().empty() && frame->get_fin_bit() == false) {
         delete frame;
         if (this->data_for_waiting.empty()) {
-            return std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>(
-                    kuic::nullable<kuic::frame::stream_frame>(nullptr), false);
+            return std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>(
+                    std::shared_ptr<kuic::frame::stream_frame>(), false);
         }
-        return std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>(
-                kuic::nullable<kuic::frame::stream_frame>(nullptr), this->flow_controller->is_blocked().first == false);
+        return std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>(
+                std::shared_ptr<kuic::frame::stream_frame>(), this->flow_controller->is_blocked().first == false);
     }
     if (frame->get_fin_bit()) {
         this->fin_sent = true;
@@ -132,12 +132,12 @@ kuic::stream::send_stream::pop_stream_frame(kuic::bytes_count_t max_bytes) {
             blocked.get_stream_id() = this->stream_id;
             blocked.get_offset() = offset;
             this->sender.queue_control_frame(blocked);
-            return std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>(
-                    kuic::nullable<kuic::frame::stream_frame>(frame), false);
+            return std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>(
+                    std::shared_ptr<kuic::frame::stream_frame>(frame), false);
         }
     }
-    return std::pair<kuic::nullable<kuic::frame::stream_frame>, bool>(
-            kuic::nullable<kuic::frame::stream_frame>(frame), this->data_for_waiting.empty() == false);
+    return std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool>(
+            std::shared_ptr<kuic::frame::stream_frame>(frame), this->data_for_waiting.empty() == false);
 }
 
 bool kuic::stream::send_stream::cancel_write(kuic::application_error_code_t error) {
