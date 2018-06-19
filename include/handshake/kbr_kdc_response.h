@@ -58,9 +58,9 @@ namespace kuic {
             std::string get_server_realm() const;
             kbr_principal_name get_server_name() const;
 
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
             static kbr_kdc_response_part deserialize(
-                    const kuic::byte_t *buffer, const size_t size, size_t &seek);
+                    const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
         };
 
 
@@ -81,15 +81,15 @@ namespace kuic {
             kbr_kdc_response(kuic::error_t err);
         public:
             static kbr_kdc_response build_as_response(
-                    std::string realm,
-                    kuic::kbr_encryption_type_t encryption_type,
-                    kuic::byte_t *secret_key,
-                    size_t secret_key_size,
+                    std::string &realm,
+                    kuic::crypt_mode_type_t crypt_mode_type,
+                    kuic::crypt::aead &sealer,
+                    std::basic_string<kuic::byte_t> &a_data,
                     kuic::handshake::kbr_kdc_response_part &part,
                     kuic::handshake::kbr_ticket &ticket);
 
             static kbr_kdc_response deserialize(handshake_message &msg);
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
 
             kuic::kbr_protocol_version_t get_version() const;
             kuic::kbr_message_type_t get_message_type() const;

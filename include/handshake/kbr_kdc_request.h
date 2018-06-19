@@ -32,7 +32,7 @@ namespace kuic {
             kuic::special_clock till;
             kuic::special_clock renew_time;
             unsigned int nonce;
-            std::vector<kuic::kbr_encryption_type_t> encrypt_types;
+            std::vector<kuic::crypt_mode_type_t> crypt_mode_types;
             std::string address;
             kbr_encrypted_data authorization_data;
             std::vector<kbr_ticket> tickets;
@@ -55,11 +55,11 @@ namespace kuic {
             kuic::special_clock get_renew_time() const;
             kbr_encrypted_data get_authorization_data() const;
             
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
             static kbr_kdc_request_body deserialize(
-                    const kuic::byte_t *buffer, size_t len, size_t &seek);
+                    const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
 
-            void support_encrypt_type(kuic::kbr_encryption_type_t encryption_type);
+            void support_encrypt_type(kuic::crypt_mode_type_t encryption_type);
             void add_ticket(kbr_ticket &ticket);
         };
 
@@ -89,7 +89,7 @@ namespace kuic {
             kuic::kbr_message_type_t get_message_type() const;
 
 
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
 
             void add_ticket(kbr_ticket &ticket);
         };

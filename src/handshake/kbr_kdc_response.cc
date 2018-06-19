@@ -69,7 +69,7 @@ void kuic::handshake::kbr_kdc_response_part::set_server_name(
     this->server_name = server_name;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_kdc_response_part::serialize() const {
     // declare temporary handshake_message 
     // machine will encrypte it & embedded kdc response package
@@ -103,9 +103,9 @@ kuic::handshake::kbr_kdc_response_part::serialize() const {
 
 kuic::handshake::kbr_kdc_response_part
 kuic::handshake::kbr_kdc_response_part::deserialize(
-        const kuic::byte_t *buffer, size_t size, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::handshake_message temporary_msg =
-        kuic::handshake::handshake_message::deserialize(buffer, size, seek);
+        kuic::handshake::handshake_message::deserialize(buffer, seek);
 
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_kdc_response_part(temporary_msg.get_error());
@@ -151,10 +151,10 @@ kuic::handshake::kbr_kdc_response::kbr_kdc_response(kuic::error_t err)
 
 kuic::handshake::kbr_kdc_response
 kuic::handshake::kbr_kdc_response::build_as_response(
-        std::string realm,
-        kuic::kbr_encryption_type_t encryption_type,
-        kuic::byte_t *secret_key,
-        size_t secret_key_size,
+        std::string &realm,
+        kuic::crypt_mode_type_t crypt_mode_type,
+        kuic::crypt::aead &sealer,
+        std::basic_string<kuic::byte_t> &a_data,
         kuic::handshake::kbr_kdc_response_part &part,
         kuic::handshake::kbr_ticket &ticket) {
     kuic::handshake::kbr_kdc_response ret;
@@ -169,14 +169,11 @@ kuic::handshake::kbr_kdc_response::build_as_response(
     ret.ticket = ticket;
 
     // crypt response enc-part
-    size_t serialized_part_buffer_size = 0;
-    kuic::byte_t *serialized_part_buffer_ptr = nullptr;
-    std::tie(serialized_part_buffer_ptr, serialized_part_buffer_size) = part.serialize();
-    std::unique_ptr<kuic::byte_t> serialized_part_buffer(serialized_part_buffer_ptr);
+    std::basic_string<kuic::byte_t> serialized_part_buffer = part.serialize();
 
     // construct encrypted data
-    kuic::handshake::kbr_encrypted_data encrypted_data(0x00000000, encryption_type);
-    encrypted_data.set_plain_message(serialized_part_buffer.get(), serialized_part_buffer_size, secret_key, secret_key_size);
+    kuic::handshake::kbr_encrypted_data encrypted_data(0x00000000, crypt_mode_type);
+    encrypted_data.set_plain_message(serialized_part_buffer, a_data, sealer);
     ret.encrypted_data = encrypted_data;
 
     return ret;
@@ -213,7 +210,7 @@ kuic::handshake::kbr_kdc_response::__serialize() const {
     return result;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_kdc_response::serialize() const {
     return this->__serialize().serialize();
 }

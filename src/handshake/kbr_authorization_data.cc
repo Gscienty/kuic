@@ -26,8 +26,8 @@ kuic::handshake::not_expect_ad_item::get_type() const {
 kuic::handshake::if_relevant_ad_item::if_relevant_ad_item() { }
 
 kuic::handshake::if_relevant_ad_item::if_relevant_ad_item(
-        const kuic::byte_t *buffer, size_t len) {
-    this->data.assign(buffer, buffer + len);
+        const std::basic_string<kuic::byte_t> &buffer) {
+    this->data.assign(buffer.begin(), buffer.end());
 }
 
 kuic::kbr_authorization_data_item_type_t
@@ -35,23 +35,21 @@ kuic::handshake::if_relevant_ad_item::get_type() const {
     return kuic::handshake::ad_type_if_relevant;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::if_relevant_ad_item::serialize() const {
-    kuic::byte_t *buffer = new kuic::byte_t[this->data.size()];
-    std::copy(this->data.begin(), this->data.end(), buffer);
-    return std::pair<kuic::byte_t *, size_t>(buffer, this->data.size());
+    return this->data;
 }
 
 kuic::handshake::if_relevant_ad_item
 kuic::handshake::if_relevant_ad_item::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::if_relevant_ad_item result;
-    result.data.assign(buffer + seek, buffer + len);
-    seek = len;
+    result.data.assign(buffer.begin() + seek, buffer.end());
+    seek = buffer.size();
     return result;
 }
 
-std::vector<kuic::byte_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::if_relevant_ad_item::get_data() const {
     return this->data;
 }
@@ -64,7 +62,7 @@ kuic::handshake::kdc_issued_ad_item::get_type() const {
 }
 
 // issued serialize
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kdc_issued_ad_item::serialize() const {
     kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_ad_issued);
 
@@ -82,9 +80,9 @@ kuic::handshake::kdc_issued_ad_item::serialize() const {
 
 // issued deserialize
 kuic::handshake::kdc_issued_ad_item
-kuic::handshake::kdc_issued_ad_item::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::handshake::kdc_issued_ad_item::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::kdc_issued_ad_item result;
-    kuic::handshake::handshake_message temporary_msg = kuic::handshake::handshake_message::deserialize(buffer, len, seek);
+    kuic::handshake::handshake_message temporary_msg = kuic::handshake::handshake_message::deserialize(buffer, seek);
     
     // deserialize checksum
     temporary_msg.assign(result.checksum    ,   kuic::handshake::tag_checksum               );
@@ -105,51 +103,28 @@ kuic::handshake::and_or_ad_item::get_type() const {
     return kuic::handshake::ad_type_and_or; 
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::and_or_ad_item::serialize() const {
-    // serialize elements
-    size_t elements_size = 0;
-    kuic::byte_t *elements_buffer = nullptr;
-    std::tie(elements_buffer, elements_size) = this->elements.serialize();
-    
-    // declare result
-    size_t result_size = elements_size + sizeof(int);
-    kuic::byte_t *result = new kuic::byte_t[result_size];
-    
-    // declare condition count serialize temporary buffer
-    size_t condition_count_size = 0;
-    kuic::byte_t *condition_count_buffer_ptr = nullptr;
-    
+    // declare result;
+    std::basic_string<kuic::byte_t> result;
     // serialize condition count
-    std::tie(condition_count_buffer_ptr, condition_count_size) =
-        eys::littleendian_serializer<kuic::byte_t, int>::serialize(this->condition_count);
-    std::unique_ptr<kuic::byte_t []> condition_count_buffer(condition_count_buffer_ptr);
-    
-    // copy condition count to result
-    std::copy(
-            condition_count_buffer.get(),
-            condition_count_buffer.get() + condition_count_size,
-            result);
-    // copy elements to result
-    std::copy(
-            elements_buffer,
-            elements_buffer + elements_size,
-            result + condition_count_size);
+    result.append(eys::littleendian_serializer<kuic::byte_t, int>::serialize(this->condition_count));
+    // serialize elements
+    result.append(this->elements.serialize());
 
-    delete[] elements_buffer;
-    return std::pair<kuic::byte_t *, size_t>(result, result_size);
+    return result;
 }
 
 kuic::handshake::and_or_ad_item
 kuic::handshake::and_or_ad_item::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::and_or_ad_item result;
 
     // deserialize condition count
     result.condition_count =
-        eys::littleendian_serializer<kuic::byte_t, int>::deserialize(buffer, len, seek);
+        eys::littleendian_serializer<kuic::byte_t, int>::deserialize(buffer, seek);
     // deserialize elements
-    result.elements = kuic::handshake::kbr_authorization_data::deserialize(buffer, len, seek);
+    result.elements = kuic::handshake::kbr_authorization_data::deserialize(buffer, seek);
    
    return result; 
 }
@@ -161,16 +136,16 @@ kuic::handshake::mandatory_ad_item::get_type() const {
     return kuic::handshake::ad_type_mandatory_for_kdc;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::mandatory_ad_item::serialize() const {
     return this->elements.serialize();
 }
 
 kuic::handshake::mandatory_ad_item
 kuic::handshake::mandatory_ad_item::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::mandatory_ad_item result;
-    result.elements = kuic::handshake::kbr_authorization_data::deserialize(buffer, len, seek);
+    result.elements = kuic::handshake::kbr_authorization_data::deserialize(buffer, seek);
     return result;
 }
 
@@ -179,47 +154,30 @@ kuic::handshake::mandatory_ad_item::deserialize(
 kuic::handshake::kbr_authorization_data_item::kbr_authorization_data_item() { }
 
 kuic::handshake::kbr_authorization_data_item::kbr_authorization_data_item(ad_item *item)
-    : type(item->get_type()) {
-    kuic::byte_t *serialized_buffer_ptr = nullptr;
-    size_t serialized_buffer_size = 0;
-    std::tie(serialized_buffer_ptr, serialized_buffer_size) = item->serialize();
+    : type(item->get_type())
+    , data(item->serialize()) { }
 
-    std::unique_ptr<kuic::byte_t []> serialized_buffer(serialized_buffer_ptr);
-    this->data.assign(
-            serialized_buffer.get(), serialized_buffer.get() + serialized_buffer_size);
-}
-
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_authorization_data_item::serialize() const {
-    size_t size = sizeof(kuic::kbr_authorization_data_item_type_t) + this->data.size();
-    kuic::byte_t *buffer = new kuic::byte_t[size];
-    
-    // declare temporary buffer
-    kuic::byte_t *type_buffer_ptr = nullptr;
-    size_t type_buffer_size = 0;
-    std::unique_ptr<kuic::byte_t []> type_buffer;
+    std::basic_string<kuic::byte_t> result;
 
     // serialize type
-    std::tie(type_buffer_ptr, type_buffer_size) =
-        kuic::handshake::kbr_authorization_data_type_serializer::serialize(this->type);
-    type_buffer = std::unique_ptr<kuic::byte_t []>(type_buffer_ptr);
-    // copy serialized type to result buffer
-    std::copy(type_buffer.get(), type_buffer.get() + type_buffer_size, buffer);
-    
+    result.append(kuic::handshake::kbr_authorization_data_type_serializer::serialize(this->type));
     // copy this->data to result buffer
-    std::copy(this->data.begin(), this->data.end(), buffer + type_buffer_size);
+    result.append(this->data);
 
-    return std::pair<kuic::byte_t *, size_t>(buffer, size);
+    return result;
 }
 
 kuic::handshake::kbr_authorization_data_item
 kuic::handshake::kbr_authorization_data_item::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::kbr_authorization_data_item result;
-    result.type = 
-        kuic::handshake::kbr_authorization_data_type_serializer::deserialize(buffer, len, seek);
-    result.data.assign(buffer + seek, buffer + len);
-    seek = len;
+
+    result.type = kuic::handshake::kbr_authorization_data_type_serializer::deserialize(buffer, seek);
+    result.data.assign(buffer.begin() + seek, buffer.end());
+
+    seek = buffer.size();
     return result;
 }
 
@@ -232,19 +190,19 @@ kuic::handshake::kbr_authorization_data_item::get_item() const {
     case kuic::handshake::ad_type_if_relevant:
         return  new kuic::handshake::if_relevant_ad_item(
                 kuic::handshake::if_relevant_ad_item::deserialize(
-                    this->data.data(), this->data.size(), seek));
+                    this->data, seek));
     case kuic::handshake::ad_type_kdc_issued:
         return new kuic::handshake::kdc_issued_ad_item(
                 kuic::handshake::kdc_issued_ad_item::deserialize(
-                    this->data.data(), this->data.size(), seek));
+                    this->data, seek));
     case kuic::handshake::ad_type_and_or:
         return new kuic::handshake::and_or_ad_item(
                 kuic::handshake::and_or_ad_item::deserialize(
-                    this->data.data(), this->data.size(), seek));
+                    this->data, seek));
     case kuic::handshake::ad_type_mandatory_for_kdc:
         return new kuic::handshake::mandatory_ad_item(
                 kuic::handshake::mandatory_ad_item::deserialize(
-                    this->data.data(), this->data.size(), seek));
+                    this->data, seek));
     default:
         return new kuic::handshake::not_expect_ad_item();
     }
@@ -259,73 +217,57 @@ kuic::handshake::kbr_authorization_data_item::get_type() const {
 
 kuic::handshake::kbr_authorization_data::kbr_authorization_data() { }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_authorization_data::serialize() const {
-    std::vector<kuic::byte_t> result;
-
-    // declare temporary buffer
-    kuic::byte_t *serialized_buffer_ptr = nullptr;
-    size_t serialized_size = 0;
-    std::unique_ptr<kuic::byte_t []> serialized_buffer;
+    std::basic_string<kuic::byte_t> result;
 
     // serialize elements count
-    std::tie(serialized_buffer_ptr, serialized_size) = 
-        eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(this->elements.size());
-
-    serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
-    // copy serialized elements count to result vector
-    result.insert(
-            result.begin(), serialized_buffer.get(), serialized_buffer.get() + sizeof(unsigned int));
+    result.append(eys::littleendian_serializer<kuic::byte_t, unsigned int>::serialize(this->elements.size()));
 
     // declare index area & data area
-    std::vector<kuic::byte_t> index;
-    std::vector<kuic::byte_t> data;
+    std::basic_string<kuic::byte_t> index;
+    std::basic_string<kuic::byte_t> data;
     int offset = 0;
     std::for_each(this->elements.begin(), this->elements.end(),
             [&] (const kuic::handshake::kbr_authorization_data_item &item) -> void {
                 // serialize current element
-                std::tie(serialized_buffer_ptr, serialized_size) = item.serialize();
-                serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
-                // insert serialized current element to data area
-                data.insert(data.end(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
+                std::basic_string<kuic::byte_t> serialized_item = item.serialize();
+                data.append(serialized_item);
                 // calculate offset (segment end position)
-                offset += serialized_size;
+                offset += serialized_item.size();
                 // serialize offset
-                std::tie(serialized_buffer_ptr, serialized_size) = 
-                    eys::littleendian_serializer<kuic::byte_t, int>::serialize(offset);
-
-                serialized_buffer = std::unique_ptr<kuic::byte_t []>(serialized_buffer_ptr);
-                // insert serialized offset to index area
-                index.insert(
-                        index.end(), serialized_buffer.get(), serialized_buffer.get() + serialized_size);
+                index.append(eys::littleendian_serializer<kuic::byte_t, int>::serialize(offset));
             });
 
-    // copy index to result vector
-    result.insert(result.end(), index.begin(), index.end());
-    // copy data to result vector
-    result.insert(result.end(), data.begin(), data.end());
+    // copy index to result
+    result.append(index);
+    // copy data to result
+    result.append(data);
 
-    kuic::byte_t *result_buffer = new kuic::byte_t[result.size()];
-    std::copy(result.begin(), result.end(), result_buffer);
-    return std::pair<kuic::byte_t *, size_t>(result_buffer, result.size());
+    return result;
 }
 
 kuic::handshake::kbr_authorization_data
-kuic::handshake::kbr_authorization_data::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::handshake::kbr_authorization_data::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::kbr_authorization_data result;
     unsigned int elements_size =
-        eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(buffer, len, seek);
+        eys::littleendian_serializer<kuic::byte_t, unsigned int>::deserialize(buffer, seek);
 
     std::vector<int> offsets;
     for (unsigned int i = 0; i < elements_size; i++) {
         offsets.push_back(
-                eys::littleendian_serializer<kuic::byte_t, int>::deserialize(buffer, len, seek));
+                eys::littleendian_serializer<kuic::byte_t, int>::deserialize(buffer, seek));
     }
-    size_t data_start_position = seek;
+
     for (unsigned int i = 0; i < elements_size; i++) {
+        std::basic_string<kuic::byte_t> item(
+                buffer.begin() + seek,
+                buffer.begin() + seek + size_t(offsets[i]));
+        seek += size_t(offsets[i]);
+
+        size_t item_seek = 0;
         result.elements.push_back(
-                kuic::handshake::kbr_authorization_data_item::deserialize(
-                    buffer, data_start_position + size_t(offsets[i]), seek));
+                kuic::handshake::kbr_authorization_data_item::deserialize(item, item_seek));
     }
 
     return result;

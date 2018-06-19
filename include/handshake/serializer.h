@@ -60,13 +60,13 @@ namespace kuic {
             }
         };
 
-        struct kbr_encryption_type_serializer {
-            static std::basic_string<kuic::byte_t> serialize(const kuic::kbr_encryption_type_t e) {
-                return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_type_t>::serialize(e);
+        struct crypt_mode_type_serializer {
+            static std::basic_string<kuic::byte_t> serialize(const kuic::crypt_mode_type_t e) {
+                return eys::bigendian_serializer<kuic::byte_t, kuic::crypt_mode_type_t>::serialize(e);
             }
 
             static kuic::kbr_name_type_t deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
-                return eys::bigendian_serializer<kuic::byte_t, kuic::kbr_encryption_type_t>::deserialize(buffer, seek);
+                return eys::bigendian_serializer<kuic::byte_t, kuic::crypt_mode_type_t>::deserialize(buffer, seek);
             }
         };
 

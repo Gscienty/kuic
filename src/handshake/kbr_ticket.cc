@@ -8,7 +8,7 @@ kuic::handshake::kbr_ticket_body::kbr_ticket_body() { }
 kuic::handshake::kbr_ticket_body::kbr_ticket_body(kuic::error_t err)
     : lawful_package(err) { }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_ticket_body::serialize() const {
     // declare temporary msg
     kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_ticket_body);
@@ -33,9 +33,9 @@ kuic::handshake::kbr_ticket_body::serialize() const {
 
 kuic::handshake::kbr_ticket_body
 kuic::handshake::kbr_ticket_body::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::handshake_message temporary_msg =
-        kuic::handshake::handshake_message::deserialize(buffer, len, seek);
+        kuic::handshake::handshake_message::deserialize(buffer, seek);
     
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_ticket_body(temporary_msg.get_error());
@@ -69,7 +69,7 @@ kuic::handshake::kbr_ticket::kbr_ticket() { }
 kuic::handshake::kbr_ticket::kbr_ticket(kuic::error_t err)
     : lawful_package(err) { }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_ticket::serialize() const {
     kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_ticket);
 
@@ -89,9 +89,9 @@ kuic::handshake::kbr_ticket::serialize() const {
 
 kuic::handshake::kbr_ticket
 kuic::handshake::kbr_ticket::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::handshake_message temporary_msg = 
-        kuic::handshake::handshake_message::deserialize(buffer, len, seek);
+        kuic::handshake::handshake_message::deserialize(buffer, seek);
 
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_ticket(temporary_msg.get_error());

@@ -15,9 +15,9 @@ namespace kuic {
             kbr_principal_name();
             kbr_principal_name(std::string name);
 
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
             static kbr_principal_name deserialize(
-                    const kuic::byte_t *buffer, size_t len, size_t &seek);
+                    const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
 
             kuic::kbr_name_type_t get_type() const;
             std::string get_name() const;

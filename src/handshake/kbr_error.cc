@@ -3,7 +3,7 @@
 #include "handshake/tag.h"
 #include "handshake/serializer.h"
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_error::serialize() const {
     kuic::handshake::handshake_message temporary_message(kuic::handshake::tag_error);
     
@@ -36,7 +36,7 @@ kuic::handshake::kbr_error::serialize() const {
 }
 
 kuic::handshake::kbr_error
-kuic::handshake::kbr_error::deserialize(const kuic::handshake::handshake_message &msg) {
+kuic::handshake::kbr_error::deserialize(kuic::handshake::handshake_message &msg) {
     kbr_error result;
     
     // deserialize version

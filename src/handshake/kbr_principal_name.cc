@@ -12,38 +12,27 @@ kuic::handshake::kbr_principal_name::kbr_principal_name(std::string name)
     : type(kuic::kbr_name_default_type)
     , name(name) { }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_principal_name::serialize() const {
-    size_t size = sizeof(kuic::kbr_name_type_t) + this->name.length();
-    kuic::byte_t *result = new kuic::byte_t[size];
-
-    size_t inner_size;
-    kuic::byte_t *name_type_buffer_ptr = nullptr;
-    std::unique_ptr<kuic::byte_t []> name_type_buffer;
+    std::basic_string<kuic::byte_t> result;
     
     // serialize type
-    std::tie(name_type_buffer_ptr, inner_size) = 
-        kuic::handshake::kbr_name_type_serializer::serialize(this->type);
-
-    name_type_buffer = std::unique_ptr<kuic::byte_t []>(name_type_buffer_ptr);
-    // copy serialized type to buffer
-    std::copy(name_type_buffer.get(), name_type_buffer.get() + inner_size, result);
-
+    result.append(kuic::handshake::kbr_name_type_serializer::serialize(this->type));
     // copy name to buffer
-    std::copy(this->name.begin(), this->name.end(), result + inner_size);
+    result.append(this->name.begin(), this->name.end());
 
-    return std::pair<kuic::byte_t *, size_t>(result, size);
+    return result;
 }
 
 kuic::handshake::kbr_principal_name
 kuic::handshake::kbr_principal_name::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::handshake::kbr_principal_name ret;
 
     seek = 0;
-    ret.type = kuic::handshake::kbr_name_type_serializer::deserialize(buffer, len, seek);
-    ret.name = std::string(buffer + seek, buffer + len);
-    seek = len;
+    ret.type = kuic::handshake::kbr_name_type_serializer::deserialize(buffer, seek);
+    ret.name = std::string(buffer.begin() + seek, buffer.end());
+    seek = buffer.size();
 
     return ret;
 }

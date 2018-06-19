@@ -32,11 +32,11 @@ namespace kuic {
             kbr_ticket_body();
             kbr_ticket_body(kuic::error_t err);
         public:
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
             
             static
             kbr_ticket_body
-            deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
+            deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
         };
 
         class kbr_ticket
@@ -50,11 +50,11 @@ namespace kuic {
             kbr_ticket(kuic::error_t err);
         public:
             kbr_ticket();
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
 
             static
             kbr_ticket
-            deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
+            deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
         };
     }
 }

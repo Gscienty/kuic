@@ -28,8 +28,8 @@ void kuic::handshake::kbr_kdc_request_body::add_ticket(kuic::handshake::kbr_tick
 }
 
 void kuic::handshake::kbr_kdc_request_body::support_encrypt_type(
-        kuic::kbr_encryption_type_t encryption_type) {
-    this->encrypt_types.push_back(encryption_type);
+        kuic::crypt_mode_type_t encryption_type) {
+    this->crypt_mode_types.push_back(encryption_type);
 }
 
 unsigned int kuic::handshake::kbr_kdc_request_body::get_nonce() const {
@@ -71,7 +71,7 @@ kuic::handshake::kbr_kdc_request_body::get_authorization_data() const {
     return this->authorization_data;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_kdc_request_body::serialize() const {
     // declare temporary handshake_message
     kuic::handshake::handshake_message temporary_msg(kuic::handshake::tag_kbr_kdc_request_body);
@@ -87,8 +87,8 @@ kuic::handshake::kbr_kdc_request_body::serialize() const {
     temporary_msg.insert(kuic::handshake::tag_renew_till_time, this->renew_time);
     // serialize encryption types
     temporary_msg.insert_elements<
-        kuic::kbr_encryption_type_t, kuic::handshake::kbr_encryption_type_serializer>(
-            kuic::handshake::tag_encrypt_type, this->encrypt_types);
+        kuic::crypt_mode_type_t, kuic::handshake::crypt_mode_type_serializer>(
+            kuic::handshake::tag_encrypt_type, this->crypt_mode_types);
     // serialize tickets
     temporary_msg.insert_elements(kuic::handshake::tag_additional_tickets, this->tickets);
 
@@ -116,10 +116,10 @@ kuic::handshake::kbr_kdc_request_body::serialize() const {
 
 kuic::handshake::kbr_kdc_request_body
 kuic::handshake::kbr_kdc_request_body::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
 
     kuic::handshake::handshake_message temporary_msg = 
-        kuic::handshake::handshake_message::deserialize(buffer, len, seek);
+        kuic::handshake::handshake_message::deserialize(buffer, seek);
     if (temporary_msg.is_lawful() == false) {
         return kuic::handshake::kbr_kdc_request_body(temporary_msg.get_error());
     }
@@ -142,8 +142,8 @@ kuic::handshake::kbr_kdc_request_body::deserialize(
     temporary_msg.assign(result.renew_time, kuic::handshake::tag_renew_till_time);
     // deserialize encryption types
     temporary_msg.assign_elements<
-        kuic::kbr_encryption_type_t, kuic::handshake::kbr_encryption_type_serializer>(
-                result.encrypt_types, kuic::handshake::tag_encrypt_type);
+        kuic::crypt_mode_type_t, kuic::handshake::crypt_mode_type_serializer>(
+                result.crypt_mode_types, kuic::handshake::tag_encrypt_type);
     // deserialize client principal
     temporary_msg.assign(result.client_name, kuic::handshake::tag_client_principal_name);
     // deserialize server principal
@@ -244,7 +244,7 @@ kuic::handshake::kbr_kdc_request::deserialize(kuic::handshake::handshake_message
     return result;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::handshake::kbr_kdc_request::serialize() const {
     return this->__serialize().serialize();
 }

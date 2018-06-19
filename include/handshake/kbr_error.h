@@ -26,13 +26,9 @@ namespace kuic {
             kbr_principal_name server_name;
             std::string error_string;
         public:
-            virtual
-            std::pair<kuic::byte_t *, size_t>
-            serialize() const override;
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
 
-            static
-            kbr_error
-            deserialize(const handshake_message &msg);
+            static kbr_error deserialize(handshake_message &msg);
         };
     }
 }
