@@ -4,6 +4,7 @@
 #include "type.h"
 #include "lawful_package.h"
 #include <cstddef>
+#include <string>
 
 namespace kuic {
     class connection_id 
@@ -15,7 +16,7 @@ namespace kuic {
     public:
         connection_id() { }
         static connection_id generate_connection_id();
-        static connection_id deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek, size_t connection_id_length);
+        static connection_id deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek, size_t connection_id_length);
         bool operator== (const connection_id &other_connection_id);
         const kuic::byte_t *bytes() const;
     };

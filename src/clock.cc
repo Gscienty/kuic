@@ -80,19 +80,19 @@ timespec kuic::current_clock::get() const {
     return result;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::clock::serialize() const {
     return eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::serialize(__inl_ttl(this->get()));
 }
 
 kuic::special_clock
 kuic::special_clock::deserialize(
-        const kuic::byte_t *buffer, size_t len, size_t &seek) {
-    if (seek + sizeof(unsigned long) < len) {
+        const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
+    if (seek + sizeof(unsigned long) < buffer.size()) {
         return kuic::special_clock();
     }
     kuic::kuic_time_t kuic_time =
-        eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::deserialize(buffer, len, seek);
+        eys::bigendian_serializer<kuic::byte_t, kuic::kuic_time_t>::deserialize(buffer, seek);
     return kuic::special_clock(
             timespec({ kuic_time / kuic::clock_second, kuic_time % kuic::clock_second }));
 }

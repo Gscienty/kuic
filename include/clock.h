@@ -16,7 +16,7 @@ namespace kuic {
         kuic_time_t since(const clock &) const;
         bool before(const clock &) const;
 
-        virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+        virtual std::basic_string<kuic::byte_t> serialize() const override;
 
         kuic_time_t operator- (const clock &b);
         kuic_time_t operator- (const kuic_time_t t);
@@ -46,7 +46,7 @@ namespace kuic {
         timespec special_time;
     public:
         static special_clock deserialize(
-                const kuic::byte_t *buffer, size_t len, size_t &seek);
+                const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
 
         special_clock();
         special_clock(const timespec &);
