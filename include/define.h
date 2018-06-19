@@ -40,7 +40,7 @@ namespace kuic {
     
     const kbr_name_type_t kbr_name_default_type = 0x00000000;
     const kbr_protocol_version_t kbr_current_protocol_version = 0x00000001;
-    const kbr_encryption_type_t kbr_encryption_type_sm4_ecb = 0x00010001;
+    const crypt_mode_type_t crypt_mode_type_sm4_gcm = 0x00010001;
 
 
     inline size_t __inl_packet_number_length_for_header(kuic::packet_number_t packet_number, kuic::packet_number_t least_unacked) {
