@@ -18,8 +18,8 @@ namespace kuic {
             kuic::bytes_count_t &get_offset();
 
             stream_blocked_frame() { }
-            static stream_blocked_frame deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
-            std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static stream_blocked_frame deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
+            std::basic_string<kuic::byte_t> serialize() const override;
             virtual size_t length() const override;
             virtual kuic::frame_type_t type() const override;
         };

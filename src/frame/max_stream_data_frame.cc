@@ -4,30 +4,29 @@
 #include "define.h"
 
 kuic::frame::max_stream_data_frame 
-kuic::frame::max_stream_data_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::frame::max_stream_data_frame::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     seek++;
-    if (seek >= len) {
+    if (seek >= buffer.size()) {
         return kuic::frame::max_stream_data_frame(kuic::not_expect);
     }
 
     kuic::frame::max_stream_data_frame frame;
-    frame.stream_id = kuic::variable_integer::read(buffer, len, seek);
-    frame.byte_offset = kuic::variable_integer::read(buffer, len, seek);
+    frame.stream_id = kuic::variable_integer::read(buffer, seek);
+    frame.byte_offset = kuic::variable_integer::read(buffer, seek);
 
     return frame;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::frame::max_stream_data_frame::serialize() const {
-    size_t size = this->length();
-    size_t seek = 0;
-    kuic::byte_t *buffer = new kuic::byte_t[size];
+    std::basic_string<kuic::byte_t> result;
 
-    buffer[seek++] = 0x05;
-    kuic::frame::frame::fill(buffer, size, seek, kuic::variable_integer::write(this->stream_id));
-    kuic::frame::frame::fill(buffer, size, seek, kuic::variable_integer::write(this->byte_offset));
+    result.push_back(this->type());
 
-    return std::pair<kuic::byte_t *, size_t>(buffer, size);
+    result.append(kuic::variable_integer::write(this->stream_id));
+    result.append(kuic::variable_integer::write(this->byte_offset));
+
+    return result;
 }
 
 size_t kuic::frame::max_stream_data_frame::length() const {

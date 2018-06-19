@@ -4,11 +4,11 @@
 #include <algorithm>
 
 kuic::frame::stream_frame
-kuic::frame::stream_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::frame::stream_frame::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::frame::stream_frame frame;
 
     kuic::byte_t type_byte = buffer[seek++];
-    if (seek >= len) {
+    if (seek >= buffer.size()) {
         return kuic::frame::stream_frame(kuic::reader_buffer_remain_not_enough);
     }
 
@@ -16,10 +16,10 @@ kuic::frame::stream_frame::deserialize(const kuic::byte_t *buffer, size_t len, s
     frame.data_length_present = (type_byte & 0x02) > 0;
     bool has_offset = (type_byte & 0x04) > 0;
 
-    frame.stream_id = kuic::variable_integer::read(buffer, len, seek);
+    frame.stream_id = kuic::variable_integer::read(buffer, seek);
 
     if (has_offset) {
-        frame.offset = kuic::variable_integer::read(buffer, len, seek);
+        frame.offset = kuic::variable_integer::read(buffer, seek);
     }
     else {
         frame.offset = 0;
@@ -27,33 +27,30 @@ kuic::frame::stream_frame::deserialize(const kuic::byte_t *buffer, size_t len, s
 
     kuic::bytes_count_t data_length = 0;
     if (frame.data_length_present) {
-        data_length = kuic::variable_integer::read(buffer, len, seek);
-        if (data_length > len - seek) {
+        data_length = kuic::variable_integer::read(buffer, seek);
+        if (data_length > buffer.size() - seek) {
             return kuic::frame::stream_frame(kuic::reader_buffer_remain_not_enough);
         }
     }
     else {
-        data_length = len - seek;
+        data_length = buffer.size() - seek;
     }
     
     if (data_length != 0) {
-        frame.data.assign(buffer + seek, buffer + seek + data_length);
+        frame.data.assign(buffer.begin() + seek, buffer.begin() + seek + data_length);
         seek += data_length;
     }
 
     return frame;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::frame::stream_frame::serialize() const {
     if (this->data.empty() && this->fin_bit == false) {
-        return std::pair<kuic::byte_t *, size_t>(nullptr, 0);
+        return std::basic_string<kuic::byte_t>();
     }
 
-    size_t size = this->length();
-    size_t seek = 0;
-    kuic::byte_t *result = new kuic::byte_t[size];
-
+    std::basic_string<kuic::byte_t> result;
     kuic::byte_t type_byte = 0x10;
 
     if (this->fin_bit) {
@@ -66,18 +63,18 @@ kuic::frame::stream_frame::serialize() const {
         type_byte ^= 0x04;
     }
 
-    result[seek++] = type_byte;
-    kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->stream_id));
+    result.push_back(type_byte);
+    result.append(kuic::variable_integer::write(this->stream_id));
     if (this->offset != 0) {
-        kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->offset));
+        result.append(kuic::variable_integer::write(this->offset));
     }
     if (this->data_length_present) {
-        kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->data.size()));
+        result.append(kuic::variable_integer::write(this->data.size()));
     }
 
-    std::copy(this->data.begin(), this->data.end(), result + seek);
+    result.append(this->data.begin(), this->data.end());
 
-    return std::pair<kuic::byte_t *, size_t>(result, size);
+    return result;
 }
 
 size_t kuic::frame::stream_frame::length() const {

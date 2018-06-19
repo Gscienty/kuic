@@ -13,8 +13,8 @@ namespace kuic {
             kuic::application_error_code_t error_code;
             std::string reason_phrase;
         public:
-            static application_close_frame deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
+            static application_close_frame deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
             virtual size_t length() const override;
             virtual kuic::frame_type_t type() const override;
         };

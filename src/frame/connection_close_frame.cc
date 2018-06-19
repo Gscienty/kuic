@@ -5,28 +5,26 @@
 #include <algorithm>
 
 kuic::frame::connection_close_frame
-kuic::frame::connection_close_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::frame::connection_close_frame::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::frame::connection_close_frame frame;
-    frame.error_code = eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::deserialize(buffer, len, seek);
-    int reason_phrase_length = kuic::variable_integer::read(buffer, len, seek);
-    frame.reason_phrase.assign(buffer + seek, buffer + seek + reason_phrase_length);
+    frame.error_code = eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::deserialize(buffer, seek);
+    int reason_phrase_length = kuic::variable_integer::read(buffer, seek);
+    frame.reason_phrase.assign(buffer.begin() + seek, buffer.begin() + seek + reason_phrase_length);
     seek += reason_phrase_length;
 
     return frame;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::frame::connection_close_frame::serialize() const {
-    size_t size = this->length();
-    size_t seek = 0;
-    kuic::byte_t *result = new kuic::byte_t[size];
-    result[seek++] = this->type();
+    std::basic_string<kuic::byte_t> buffer;
+    buffer.push_back(this->type());
 
-    kuic::frame::frame::fill(result, size, seek, eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::serialize(this->error_code));
-    kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->reason_phrase.length()));
-    std::copy(this->reason_phrase.begin(), this->reason_phrase.end(), result + seek);
+    buffer.append(eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::serialize(this->error_code));
+    buffer.append(kuic::variable_integer::write(this->reason_phrase.length()));
+    buffer.append(this->reason_phrase.begin(), this->reason_phrase.end());
 
-    return std::pair<kuic::byte_t *, size_t>(result, seek);
+    return buffer;
 }
 
 size_t kuic::frame::connection_close_frame::length() const {

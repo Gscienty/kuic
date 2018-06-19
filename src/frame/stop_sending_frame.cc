@@ -4,32 +4,30 @@
 #include "eys.h"
 
 kuic::frame::stop_sending_frame
-kuic::frame::stop_sending_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::frame::stop_sending_frame::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     // ignore type
     seek++;
     
-    if (seek >= len) {
+    if (seek >= buffer.size()) {
         return kuic::frame::stop_sending_frame(kuic::reader_buffer_remain_not_enough);
     }
 
     kuic::frame::stop_sending_frame frame;
-    frame.stream_id = kuic::variable_integer::read(buffer, len, seek);
-    frame.error = eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::deserialize(buffer, len, seek);
+    frame.stream_id = kuic::variable_integer::read(buffer, seek);
+    frame.error = eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::deserialize(buffer, seek);
 
     return frame;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::frame::stop_sending_frame::serialize() const {
-    size_t size = this->length();
-    size_t seek = 0;
-    kuic::byte_t *buffer = new kuic::byte_t[size];
+    std::basic_string<kuic::byte_t> result;
+    result.push_back(this->type());
 
-    buffer[seek++] = 0x0C;
-    kuic::frame::frame::fill(buffer, size, seek, kuic::variable_integer::write(this->stream_id));
-    kuic::frame::frame::fill(buffer, size, seek, eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::serialize(this->error));
+    result.append(kuic::variable_integer::write(this->stream_id));
+    result.append(eys::bigendian_serializer<kuic::byte_t, kuic::application_error_code_t>::serialize(this->error));
 
-    return std::pair<kuic::byte_t *, size_t>(buffer, size);
+    return result;
 }
 
 size_t kuic::frame::stop_sending_frame::length() const {

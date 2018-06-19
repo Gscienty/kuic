@@ -21,23 +21,22 @@ namespace kuic {
                 return this->stream_id;
             }
 
-            static max_stream_id_frame deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+            static max_stream_id_frame deserialize(std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
                 seek++;
-                if (seek >= len) {
+                if (seek >= buffer.size()) {
                     return max_stream_id_frame(kuic::reader_buffer_remain_not_enough);
                 }
                 max_stream_id_frame frame;
-                frame.stream_id = kuic::variable_integer::read(buffer, len, seek);
+                frame.stream_id = kuic::variable_integer::read(buffer, seek);
                 return frame;
             }
 
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override {
+            virtual std::basic_string<kuic::byte_t> serialize() const override {
                 size_t size = this->length();
-                size_t seek = 0;
-                kuic::byte_t *result = new kuic::byte_t[size];
-                result[seek++] = 0x06;
-                kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->stream_id));
-                return std::pair<kuic::byte_t *, size_t>(result, size);
+                std::basic_string<kuic::byte_t> result;
+                result.push_back(0x06);
+                result.append(kuic::variable_integer::write(this->stream_id));
+                return result;
             }
 
             virtual size_t length() const override {

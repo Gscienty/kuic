@@ -25,13 +25,13 @@ namespace kuic {
             bool is_long;
             kuic::bytes_count_t payload_length;
 
-            static header deserialize_long_header(const kuic::byte_t *buffer, size_t len, size_t &seek, kuic::byte_t type_byte);
-            static header deserialize_short_header(const kuic::byte_t *buffer, size_t len, size_t &seek, kuic::byte_t type_byte);
+            static header deserialize_long_header(const std::basic_string<kuic::byte_t> &buffer, size_t &seek, kuic::byte_t type_byte);
+            static header deserialize_short_header(const std::basic_string<kuic::byte_t> &buffer, size_t &seek, kuic::byte_t type_byte);
             
             static int decode_single_connection_id_length(kuic::byte_t enc);
             
-            std::pair<kuic::byte_t *, size_t> serialize_long_header() const;
-            std::pair<kuic::byte_t *, size_t> serialize_short_header() const;
+            std::basic_string<kuic::byte_t> serialize_long_header() const;
+            std::basic_string<kuic::byte_t> serialize_short_header() const;
         public:
             header()
                 : omit_connection_id(false)
@@ -49,8 +49,8 @@ namespace kuic {
             bool &get_is_long();
             kuic::bytes_count_t &get_payload_length();
 
-            static header deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
-            std::string serialize() const;
+            static header deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
+            std::basic_string<kuic::byte_t> serialize() const;
             size_t length() const;
         };
     }

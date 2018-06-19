@@ -14,8 +14,8 @@ namespace kuic {
             stop_sending_frame(kuic::error_t error) : frame(error) { }
         public:
             stop_sending_frame() { }
-            virtual std::pair<kuic::byte_t *, size_t> serialize() const override;
-            static stop_sending_frame deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek);
+            virtual std::basic_string<kuic::byte_t> serialize() const override;
+            static stop_sending_frame deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
             virtual size_t length() const override;
             virtual kuic::frame_type_t type() const override;
 

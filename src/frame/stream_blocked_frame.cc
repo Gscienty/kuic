@@ -3,26 +3,25 @@
 #include "define.h"
 
 kuic::frame::stream_blocked_frame
-kuic::frame::stream_blocked_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::frame::stream_blocked_frame::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     kuic::frame::stream_blocked_frame frame;
     seek++;
 
-    frame.stream_id = kuic::variable_integer::read(buffer, len, seek);
-    frame.offset = kuic::variable_integer::read(buffer, len, seek);
+    frame.stream_id = kuic::variable_integer::read(buffer, seek);
+    frame.offset = kuic::variable_integer::read(buffer, seek);
 
     return frame;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::frame::stream_blocked_frame::serialize() const {
-    size_t size = this->length();
-    size_t seek = 0;
-    kuic::byte_t *buffer = new kuic::byte_t[size];
-    buffer[seek++] = 0x09;
-    kuic::frame::frame::fill(buffer, size, seek, kuic::variable_integer::write(this->stream_id));
-    kuic::frame::frame::fill(buffer, size, seek, kuic::variable_integer::write(this->offset));
+    std::basic_string<kuic::byte_t> result;
+    result.push_back(this->type());
 
-    return std::pair<kuic::byte_t *, size_t>(buffer, size);
+    result.append(kuic::variable_integer::write(this->stream_id));
+    result.append(kuic::variable_integer::write(this->offset));
+
+    return result;
 }
 
 size_t

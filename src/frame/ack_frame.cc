@@ -9,18 +9,18 @@ kuic::frame::ack_frame::type() const {
 }
 
 kuic::frame::ack_frame
-kuic::frame::ack_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::frame::ack_frame::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     seek++; // ignore frame type byte (ACK)
 
     kuic::frame::ack_frame frame;
-    kuic::packet_number_t largest_acked = kuic::packet_number_t(kuic::variable_integer::read(buffer, len, seek));
-    kuic::kuic_time_t delay = kuic::kuic_time_t(kuic::variable_integer::read(buffer, len, seek));
+    kuic::packet_number_t largest_acked = kuic::packet_number_t(kuic::variable_integer::read(buffer, seek));
+    kuic::kuic_time_t delay = kuic::kuic_time_t(kuic::variable_integer::read(buffer, seek));
 
     frame.delay_time = (delay * 1 << kuic::frame::ack_delay_exponent) * kuic::clock_microsecond;
-    int blocks_count = kuic::variable_integer::read(buffer, len, seek);
+    int blocks_count = kuic::variable_integer::read(buffer, seek);
 
     // read first ack range
-    kuic::packet_number_t block = kuic::variable_integer::read(buffer, len, seek);
+    kuic::packet_number_t block = kuic::variable_integer::read(buffer, seek);
     if (block > largest_acked) {
         return kuic::frame::ack_frame(kuic::invalid_value);
     }
@@ -29,7 +29,7 @@ kuic::frame::ack_frame::deserialize(const kuic::byte_t *buffer, size_t len, size
 
     frame.ranges.push_back(std::pair<kuic::packet_number_t, kuic::packet_number_t>(smallest, largest_acked));
     for (int i = 0; i < blocks_count; i++) {
-        kuic::packet_number_t gap = kuic::variable_integer::read(buffer, len, seek);
+        kuic::packet_number_t gap = kuic::variable_integer::read(buffer, seek);
         
         if (smallest < gap + 2) {
             return kuic::frame::ack_frame(kuic::invalid_ack_ranges);
@@ -37,7 +37,7 @@ kuic::frame::ack_frame::deserialize(const kuic::byte_t *buffer, size_t len, size
 
         kuic::packet_number_t largest = smallest - gap - 2;
 
-        kuic::packet_number_t block = kuic::variable_integer::read(buffer, len, seek);
+        kuic::packet_number_t block = kuic::variable_integer::read(buffer, seek);
         if (block > largest) {
             return kuic::frame::ack_frame(kuic::invalid_ack_ranges);
         }
@@ -53,32 +53,30 @@ bool kuic::frame::ack_frame::has_missing_ranges() const {
     return this->ranges.size() > 1;
 }
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::frame::ack_frame::serialize() const {
-    size_t size = this->length();
-    size_t seek = 0;
-    kuic::byte_t *result = new kuic::byte_t[size];
+    std::basic_string<kuic::byte_t> result;
 
-    result[seek++] = 0x0D;
-    kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->largest_acked()));
-    kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(this->encode_ack_delay(this->delay_time)));
+    result.push_back(this->type());
+    result.append(kuic::variable_integer::write(this->largest_acked()));
+    result.append(kuic::variable_integer::write(this->encode_ack_delay(this->delay_time)));
 
     int ranges_count = this->encodable_ack_ranges_count();
-    kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(ranges_count - 1));
+    result.append(kuic::variable_integer::write(ranges_count - 1));
 
     unsigned long first_range;
     std::tie(std::ignore, first_range) = this->encode_ack_range(0);
-    kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(first_range));
+    result.append(kuic::variable_integer::write(first_range));
 
     for (int i = 1; i < ranges_count; i++) {
         unsigned long gap;
         unsigned long len;
         std::tie(gap, len) = this->encode_ack_range(i);
-        kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(gap));
-        kuic::frame::frame::fill(result, size, seek, kuic::variable_integer::write(len));
+        result.append(kuic::variable_integer::write(gap));
+        result.append(kuic::variable_integer::write(len));
     }
 
-    return std::pair<kuic::byte_t *, size_t>(result, size);
+    return result;
 }
 
 size_t kuic::frame::ack_frame::length() const {

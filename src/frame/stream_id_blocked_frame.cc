@@ -3,26 +3,25 @@
 #include "error.h"
 #include "define.h"
 
-std::pair<kuic::byte_t *, size_t>
+std::basic_string<kuic::byte_t>
 kuic::frame::stream_id_blocked_frame::serialize() const {
-    size_t size = this->length();
-    size_t seek = 0;
-    kuic::byte_t *buffer = new kuic::byte_t[size];
-    buffer[seek++] = 0x0A;
-    kuic::frame::frame::fill(buffer, size, seek, kuic::variable_integer::write(this->stream_id));
+    std::basic_string<kuic::byte_t> result;
 
-    return std::pair<kuic::byte_t *, size_t>(buffer, size);
+    result.push_back(this->type());
+    result.append(kuic::variable_integer::write(this->stream_id));
+
+    return result;
 }
 
 kuic::frame::stream_id_blocked_frame 
-kuic::frame::stream_id_blocked_frame::deserialize(const kuic::byte_t *buffer, size_t len, size_t &seek) {
+kuic::frame::stream_id_blocked_frame::deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
     seek++; // ignore type
-    if (seek >= len) {
+    if (seek >= buffer.size()) {
         return kuic::frame::stream_id_blocked_frame(kuic::reader_buffer_remain_not_enough);
     }
 
     kuic::frame::stream_id_blocked_frame frame;
-    frame.stream_id = kuic::variable_integer::read(buffer, len, seek);
+    frame.stream_id = kuic::variable_integer::read(buffer, seek);
 
     return frame;
 }
