@@ -3,7 +3,7 @@
 
 #include "type.h"
 #include "unistd.h"
-#include "utility"
+#include <string>
 
 namespace kuic {
 
@@ -14,8 +14,8 @@ namespace kuic {
 
     class variable_integer {
     public:
-        static unsigned long read(const kuic::byte_t *buffer, size_t size, size_t &seek);
-        static std::pair<kuic::byte_t *, size_t> write(unsigned long value);
+        static unsigned long read(const std::basic_string<kuic::byte_t> &buffer, size_t &seek);
+        static std::basic_string<kuic::byte_t> write(unsigned long value);
         static size_t length(unsigned long value);
     };
 }
