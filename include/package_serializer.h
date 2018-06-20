@@ -2,6 +2,7 @@
 #define _KUIC_HANDSHAKE_PACKAGE_SERIALIZER_
 
 #include "type.h"
+#include "eys.h"
 #include <utility>
 #include <unistd.h>
 #include <string>
@@ -24,8 +25,7 @@ namespace kuic {
         }
     };
 
-    template <>
-    struct package_serializer<std::basic_string<kuic::byte_t>> {
+    template <> struct package_serializer<std::basic_string<kuic::byte_t>> {
         static std::basic_string<kuic::byte_t> serialize(const std::basic_string<kuic::byte_t> &entity) {
             return entity;
         }
@@ -37,8 +37,7 @@ namespace kuic {
         }
     };
 
-    template <>
-    struct package_serializer<std::string> {
+    template <> struct package_serializer<std::string> {
         static std::basic_string<kuic::byte_t> serialize(const std::string &entity) {
             return std::basic_string<kuic::byte_t>(entity.begin(), entity.end());
         }
@@ -47,6 +46,16 @@ namespace kuic {
             std::string result(buffer.begin() + seek, buffer.end());
             seek = buffer.size();
             return result;
+        }
+    };
+
+    template <> struct package_serializer<int> {
+        static std::basic_string<kuic::byte_t> serialize(const int &entity) {
+            return eys::bigendian_serializer<kuic::byte_t, int>::serialize(entity);
+        }
+        
+        static int deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
+            return eys::bigendian_serializer<kuic::byte_t, int>::deserialize(buffer, seek);
         }
     };
 }
