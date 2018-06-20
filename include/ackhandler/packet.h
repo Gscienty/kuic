@@ -28,7 +28,9 @@ namespace kuic {
 
             packet()
                 : packet_number(0)
+                , packet_type(0)
                 , length(0)
+                , send_time(kuic::special_clock({ 0, 0 }))
                 , largest_acked(0)
                 , can_be_retransmitted(false)
                 , included_in_bytes_in_flight(false)
