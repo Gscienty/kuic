@@ -12,7 +12,7 @@ namespace kuic {
     namespace ackhandler {
 
         const int max_tlps = 2;
-        const float time_reordering_fraction = 1.0 / 8;
+        const double time_reordering_fraction = 1.0 / 8;
         const kuic::kuic_time_t default_rto_timeout = 500 * kuic::clock_millisecond;
         const kuic::kuic_time_t min_tlp_timeout = 10 * kuic::clock_millisecond;
         const kuic::kuic_time_t min_rto_timeout = 200 * kuic::clock_millisecond;
@@ -62,11 +62,12 @@ namespace kuic {
             kuic::packet_number_t &get_last_sent_packet_number() { return this->last_sent_packet_number; }
             kuic::special_clock &get_last_sent_retransmittable_packet_time() { return this->last_sent_retransmittable_packet_time; }
             kuic::special_clock &get_last_sent_handshake_packet_time() { return this->last_sent_handshake_packet_time; }
+            kuic::congestion::rtt &get_rtt() { return this->_rtt; }
             
             send_packet_handler(kuic::congestion::rtt &_rtt);
             kuic::packet_number_t lowest_unacked() const;
             void set_handshake_complete();
-            void sent_packet(packet p);
+            void sent_packet(packet &p);
             bool sent_packet_implement(packet &p);
             void update_loss_detection_alarm();
             

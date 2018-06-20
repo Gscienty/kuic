@@ -27,8 +27,6 @@ kuic::ackhandler::send_packet_handler::send_packet_handler(kuic::congestion::rtt
     , loss_time(kuic::special_clock({ 0, 0 }))
     , alarm(kuic::special_clock({ 0, 0 })) { }
 
-#include <iostream>
-
 kuic::packet_number_t
 kuic::ackhandler::send_packet_handler::lowest_unacked() const {
     const kuic::ackhandler::packet *packet = this->packet_history.get_first_outstanding(); 
@@ -65,7 +63,7 @@ void kuic::ackhandler::send_packet_handler::set_handshake_complete() {
     this->handshake_complete = true;
 }
 
-void kuic::ackhandler::send_packet_handler::sent_packet(kuic::ackhandler::packet packet) {
+void kuic::ackhandler::send_packet_handler::sent_packet(kuic::ackhandler::packet &packet) {
     if (this->sent_packet_implement(packet)) {
         this->packet_history.send_packet(packet);
         this->update_loss_detection_alarm();
@@ -124,7 +122,7 @@ bool kuic::ackhandler::send_packet_handler::received_ack(
     }
     
     if (with_packet_number != 0 && with_packet_number <= this->largest_received_packet_with_ack) {
-        return false;
+        return true;
     }
 
     this->largest_received_packet_with_ack = with_packet_number;
@@ -139,9 +137,12 @@ bool kuic::ackhandler::send_packet_handler::received_ack(
     }
 
     std::list<kuic::ackhandler::packet> ack_packets = this->determine_newly_acked_packets(ack_frame);
-
+    
     kuic::bytes_count_t prior_in_flight = this->bytes_in_flight;
-    for (std::list<kuic::ackhandler::packet>::iterator packet_iterator = ack_packets.begin(); packet_iterator != ack_packets.end(); packet_iterator++) {
+    for (std::list<kuic::ackhandler::packet>::iterator packet_iterator = ack_packets.begin();
+            packet_iterator != ack_packets.end();
+            packet_iterator++) {
+
         if (is_handshake && packet_iterator->is_handshake == false) {
             return false;
         }
@@ -155,7 +156,6 @@ bool kuic::ackhandler::send_packet_handler::received_ack(
             this->congestion.on_packet_acked(packet_iterator->packet_number, packet_iterator->length, prior_in_flight, rcv_time);
         }
     }
-    
 
     if (this->detect_lost_packets(rcv_time, prior_in_flight) == false) {
         return false;
@@ -187,8 +187,9 @@ kuic::ackhandler::send_packet_handler::determine_newly_acked_packets(kuic::frame
                     return false;
                 }
 
-                if (ack_frame.has_missing_ranges()) {                    
-                    std::pair<kuic::packet_number_t, kuic::packet_number_t> range = *ack_frame.get_ranges().rbegin();
+                if (ack_frame.has_missing_ranges()) {
+                    std::pair<kuic::packet_number_t, kuic::packet_number_t> range = 
+                        *(ack_frame.get_ranges().rbegin() + ack_range_index);
 
                     while (packet.packet_number > range.second && ack_range_index < ack_frame.get_ranges().size() - 1) {
                         ack_range_index++;
@@ -201,7 +202,6 @@ kuic::ackhandler::send_packet_handler::determine_newly_acked_packets(kuic::frame
                         }
                         acked_packet.push_back(packet);
                     }
-
                 }
                 else {
                     acked_packet.push_back(packet);
@@ -215,7 +215,7 @@ kuic::ackhandler::send_packet_handler::determine_newly_acked_packets(kuic::frame
 bool kuic::ackhandler::send_packet_handler::maybe_update_rtt(
         kuic::packet_number_t largest_acked, kuic::kuic_time_t ack_delay, kuic::special_clock rcv_time) {
     auto p = this->packet_history.get_packet(largest_acked);
-    if (p == nullptr) {
+    if (p != nullptr) {
         this->_rtt.update_rtt(rcv_time - p->send_time, ack_delay);
         return true;
     }
@@ -253,11 +253,13 @@ bool kuic::ackhandler::send_packet_handler::detect_lost_packets(kuic::special_cl
     std::list<kuic::ackhandler::packet> lost_packets;
     this->packet_history.iterate(
             [&, this] (const kuic::ackhandler::packet &packet) -> bool {
+
                 if (packet.packet_number > this->largest_acked) {
                     return false;
                 }
 
                 kuic::kuic_time_t time_since_sent = now - packet.send_time;
+
                 if (time_since_sent > delay_until_lost) {
                     lost_packets.push_back(packet);
                 }
@@ -271,6 +273,7 @@ bool kuic::ackhandler::send_packet_handler::detect_lost_packets(kuic::special_cl
             [&, this] (const kuic::ackhandler::packet &packet) -> void {
                 if (packet.included_in_bytes_in_flight) {
                     this->bytes_in_flight -= packet.length;
+
                     this->congestion.on_packet_lost(packet.packet_number, packet.length, prior_in_flight);
                 }
                 if (packet.can_be_retransmitted) {
@@ -331,7 +334,9 @@ bool kuic::ackhandler::send_packet_handler::on_packet_acked(kuic::ackhandler::pa
                 const_cast<kuic::ackhandler::packet *>(parent)->retransmitted_as.clear();
             }
             else {
-                std::vector<kuic::packet_number_t> retransmitted_as;
+                std::vector<kuic::packet_number_t> retransmitted_as(
+                        parent->retransmitted_as.size() - 1, kuic::packet_number_t(0));
+
                 std::for_each(parent->retransmitted_as.begin(), parent->retransmitted_as.end(),
                         [&] (const kuic::packet_number_t &packet_number) -> void {
                             if (packet_number != p.packet_number) {
