@@ -7,11 +7,11 @@ kuic::kuic_time_t inline __inl_ttl(timespec t) {
 }
 
 kuic::kuic_time_t kuic::clock::operator- (const kuic::clock &b) {
-    return __inl_ttl(this->get()) - __inl_ttl(b.get());
+    return (this->get().tv_sec - b.get().tv_sec) * kuic::clock_second + (this->get().tv_nsec - b.get().tv_nsec);
 }
 
 kuic::kuic_time_t kuic::clock::operator- (const kuic::kuic_time_t b) {
-    return __inl_ttl(this->get()) - b;
+    return this->get().tv_sec * kuic::clock_second - b + this->get().tv_nsec;
 }
 
 bool kuic::clock::operator< (const kuic::clock &b) {
