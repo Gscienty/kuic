@@ -17,7 +17,9 @@ namespace kuic {
             kuic::kuic_time_t delay_time;
             std::vector<std::pair<kuic::packet_number_t, kuic::packet_number_t>> ranges;
 
-            ack_frame(kuic::error_t error) : frame(error) { }
+            ack_frame(kuic::error_t error)
+                : frame(error)
+                , delay_time(0) { }
 
             std::pair<unsigned long, unsigned long> encode_ack_range(int index) const;
             int encodable_ack_ranges_count() const;
