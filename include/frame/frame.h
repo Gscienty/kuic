@@ -4,6 +4,7 @@
 #include "type.h"
 #include "package_serializer.h"
 #include "lawful_package.h"
+#include <memory>
 
 namespace kuic {
     namespace frame {
@@ -21,6 +22,8 @@ namespace kuic {
             virtual kuic::frame_type_t type() const = 0;
 
             virtual ~frame() { }
+
+            static std::shared_ptr<kuic::frame::frame> parse_next_frame(std::basic_string<kuic::byte_t> &buffer, size_t &seek);
         };
 
     }
