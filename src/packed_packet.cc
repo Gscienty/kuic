@@ -18,7 +18,7 @@ kuic::packed_packet::get_header() {
     return this->header;
 }
 
-std::string &
+std::basic_string<kuic::byte_t>&
 kuic::packed_packet::get_raw() {
     return this->raw;
 }
