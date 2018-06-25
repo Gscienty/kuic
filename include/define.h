@@ -37,6 +37,7 @@ namespace kuic {
     const kuic::bytes_count_t max_packet_size_ipv4 = 1252;
     const kuic::packet_number_t skip_packet_average_period_length = 500;
     const kuic::bytes_count_t min_initial_packet_size = 1200;
+    const int max_non_retransmittable_acks = 19;
     
     const kbr_name_type_t kbr_name_default_type = 0x00000000;
     const kbr_protocol_version_t kbr_current_protocol_version = 0x00000001;
