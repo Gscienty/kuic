@@ -12,14 +12,14 @@ namespace kuic {
         class connection_flow_controller : public base_flow_controller {
         private:
             kuic::bytes_count_t last_blocked_at;
-            std::function<void ()> &queue_window_update;
+            std::function<void ()> queue_window_update;
 
         public:
             connection_flow_controller(
                 kuic::bytes_count_t receive_window,
                 kuic::bytes_count_t max_receive_window,
                 kuic::congestion::rtt &rtt,
-                std::function<void ()> &queue_window_update);
+                std::function<void ()> &&queue_window_update);
             
             kuic::bytes_count_t send_window_size() const;
             std::pair<bool, kuic::bytes_count_t> is_newly_blocked();

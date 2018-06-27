@@ -17,7 +17,8 @@ namespace kuic {
             bool contributes_to_connection;
             bool received_final_offset;
 
-            std::function<void ()> &queue_window_update;
+            std::function<void (kuic::stream_id_t)> inner_queue_window_update;
+            std::function<void ()> queue_window_update;
         public:
             stream_flow_controller(
                 kuic::stream_id_t stream_id,
@@ -26,7 +27,7 @@ namespace kuic {
                 kuic::bytes_count_t receive_window,
                 kuic::bytes_count_t max_receive_window,
                 kuic::bytes_count_t initial_send_window,
-                std::function<void ()> &queue_window_update,
+                std::function<void (kuic::stream_id_t)> &&queue_window_update,
                 kuic::congestion::rtt &rtt);
 
             kuic::error_t update_highest_received(kuic::bytes_count_t byte_offset, bool is_final);
