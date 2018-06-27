@@ -10,7 +10,7 @@
 #include "frame/frame.h"
 #include "frame/ack_frame.h"
 #include "frame/connection_close_frame.h"
-#include "stream_frame_source.h"
+#include "stream/stream_frame_source.h"
 #include "type.h"
 #include <memory>
 #include <vector>
@@ -28,7 +28,7 @@ namespace kuic {
         kuic::sealing_manager &sealing_manager;
 
         kuic::packet_number_generator packet_number_generator;
-        kuic::stream_frame_source &streams;
+        kuic::stream::stream_frame_source &streams;
         
         std::mutex control_frame_mutex;
         std::vector<std::shared_ptr<kuic::frame::frame>> control_frames;
@@ -45,7 +45,7 @@ namespace kuic {
                 kuic::packet_number_t initial_packet_number,
                 std::basic_string<kuic::byte_t> div_nonce,
                 kuic::sealing_manager &crypto_setup,
-                kuic::stream_frame_source &stream_framer,
+                kuic::stream::stream_frame_source &stream_framer,
                 bool is_client);
         
         std::shared_ptr<kuic::frame::header> get_header(bool is_handshake);
@@ -64,6 +64,8 @@ namespace kuic {
 
         std::vector<std::shared_ptr<kuic::frame::frame>> compose_next_packet(
                 kuic::bytes_count_t max_frame_size, bool can_send_stream_frames);
+
+        void queue_control_frame(std::shared_ptr<kuic::frame::frame> frame);
 
         bool can_send_data(bool is_handshake);
 

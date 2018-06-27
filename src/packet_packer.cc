@@ -10,7 +10,7 @@ kuic::packet_packer::packet_packer(
         kuic::packet_number_t initial_packet_number,
         std::basic_string<kuic::byte_t> div_nonce,
         kuic::sealing_manager &crypto_setup,
-        kuic::stream_frame_source &stream_framer,
+        kuic::stream::stream_frame_source &stream_framer,
         bool is_client)
     : dest_conn_id(dest_conn_id)
     , src_conn_id(src_conn_id)
@@ -263,11 +263,11 @@ kuic::packet_packer::pack_crypto_packet() {
     kuic::bytes_count_t header_length = header->length();
     kuic::bytes_count_t max_len = this->max_packet_size - sealer.overhead() - header_length;
 
-    kuic::frame::stream_frame &sf = this->streams.pop_crypto_stream_frame(max_len);
-    sf.get_data_length_present() = false;
+    std::shared_ptr<kuic::frame::stream_frame> sf = this->streams.pop_crypto_stream_frame(max_len);
+    sf->get_data_length_present() = false;
 
     std::vector<std::shared_ptr<kuic::frame::frame>> frames;
-    frames.push_back(std::make_shared<kuic::frame::frame>(sf));
+    frames.push_back(sf);
 
     std::unique_ptr<kuic::packed_packet> result(new kuic::packed_packet());
 
@@ -392,4 +392,14 @@ void kuic::packet_packer::change_dest_conn_id(kuic::connection_id &conn_id) {
 
 void kuic::packet_packer::set_max_packet_size(kuic::bytes_count_t size) {
     this->max_packet_size = std::min(this->max_packet_size, size);
+}
+
+void kuic::packet_packer::queue_control_frame(std::shared_ptr<kuic::frame::frame> frame) {
+    if (frame->type() == kuic::frame_type_ack) {
+        this->ack_frame = frame;
+    }
+    else {
+        std::lock_guard<std::mutex> lock(this->control_frame_mutex);
+        this->control_frames.push_back(frame);
+    }
 }

@@ -6,7 +6,7 @@ kuic::window_update_queue::window_update_queue(
         kuic::stream::stream_getter &stream_getter,
         kuic::stream::crypto_stream &crypto_stream,
         kuic::flowcontrol::connection_flow_controller &conn_flow_controller,
-        std::function<void (kuic::frame::frame &)> callback)
+        std::function<void (std::shared_ptr<kuic::frame::frame>)> callback)
     : queued_conn(false)
     , crypto_stream(crypto_stream)
     , stream_getter(stream_getter)
@@ -39,11 +39,11 @@ void kuic::window_update_queue::queue_all() {
             offset = this->crypto_stream.get_window_update();
         }
         else {
-            const kuic::stream::receive_stream *str = this->stream_getter.get_or_open_receive_stream(*id_itr);
-            if (str == nullptr) {
+            std::shared_ptr<kuic::stream::receive_stream> str = this->stream_getter.get_or_open_receive_stream(*id_itr);
+            if (bool(str) == false) {
                 continue;
             }
-            offset = const_cast<kuic::stream::receive_stream *>(str)->get_window_update();
+            offset = const_cast<kuic::stream::receive_stream *>(str.get())->get_window_update();
         }
 
         if (offset == 0) {
