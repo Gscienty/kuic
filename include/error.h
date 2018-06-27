@@ -17,6 +17,8 @@ namespace kuic {
 
     const error_t invalid_ack_ranges = 6001;
 
+    const error_t peer_going_away = 7001;
+    const error_t decryption_failure = 7002;
 }
 
 #endif
