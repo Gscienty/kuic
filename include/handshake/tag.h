@@ -52,6 +52,10 @@ namespace kuic {
         const kuic::tag_t tag_error_code            = 'ERRC';
         const kuic::tag_t tag_error_string          = 'ERRS';
 
+        const kuic::tag_t tag_public_reset          = 'PRST';
+        const kuic::tag_t tag_rejected_packet_number    = 'RRPN';
+        const kuic::tag_t tag_public_reset_nonce    = 'RNON';
+
         struct tag_serializer {
             static std::basic_string<kuic::byte_t> serialize(const kuic::tag_t e) {
                 std::basic_string<kuic::byte_t> buffer;

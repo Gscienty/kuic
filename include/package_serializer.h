@@ -58,6 +58,26 @@ namespace kuic {
             return eys::bigendian_serializer<kuic::byte_t, int>::deserialize(buffer, seek);
         }
     };
+
+    template <> struct package_serializer<kuic::packet_number_t> {
+        static std::basic_string<kuic::byte_t> serialize(const kuic::packet_number_t &entity) {
+            return eys::bigendian_serializer<kuic::byte_t, kuic::packet_number_t>::serialize(entity);
+        }
+
+        static kuic::packet_number_t deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
+            return eys::bigendian_serializer<kuic::byte_t, kuic::packet_number_t>::deserialize(buffer, seek);
+        }
+    };
+
+    template <> struct package_serializer<unsigned long> {
+        static std::basic_string<kuic::byte_t> serialize(const unsigned long &entity) {
+            return eys::bigendian_serializer<kuic::byte_t, unsigned long>::serialize(entity);
+        }
+
+        static unsigned long deserialize(const std::basic_string<kuic::byte_t> &buffer, size_t &seek) {
+            return eys::bigendian_serializer<kuic::byte_t, unsigned long>::deserialize(buffer, seek);
+        }
+    };
 }
 
 #endif
