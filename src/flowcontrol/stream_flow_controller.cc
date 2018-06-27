@@ -1,4 +1,5 @@
 #include "flowcontrol/stream_flow_controller.h"
+#include <utility>
 
 kuic::flowcontrol::stream_flow_controller::stream_flow_controller(
     kuic::stream_id_t stream_id,
@@ -7,7 +8,7 @@ kuic::flowcontrol::stream_flow_controller::stream_flow_controller(
     kuic::bytes_count_t receive_window,
     kuic::bytes_count_t max_receive_window,
     kuic::bytes_count_t initial_send_window,
-    std::function<void ()> &queue_window_update,
+    std::function<void (kuic::stream_id_t)> &&queue_window_update,
     kuic::congestion::rtt &rtt)
         : kuic::flowcontrol::base_flow_controller(
             rtt,
@@ -17,7 +18,10 @@ kuic::flowcontrol::stream_flow_controller::stream_flow_controller(
         , stream_id(stream_id)
         , conn_ctrl(conn_ctrl)
         , contributes_to_connection(contributes_to_connection)
-        , queue_window_update(queue_window_update) { }
+        , inner_queue_window_update(std::move(queue_window_update))
+        , queue_window_update([this] () -> void {
+                    this->inner_queue_window_update(this->stream_id);
+                }) { }
 
 kuic::error_t
 kuic::flowcontrol::stream_flow_controller::update_highest_received(

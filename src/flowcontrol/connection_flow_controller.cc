@@ -1,17 +1,18 @@
 #include "flowcontrol/connection_flow_controller.h"
+#include <utility>
 
 kuic::flowcontrol::connection_flow_controller::connection_flow_controller(
     kuic::bytes_count_t receive_window,
     kuic::bytes_count_t max_receive_window,
     kuic::congestion::rtt &rtt,
-    std::function<void ()> &queue_window_update)
+    std::function<void ()> &&queue_window_update)
         : kuic::flowcontrol::base_flow_controller(
             rtt,
             receive_window,
             max_receive_window,
             0)
         , last_blocked_at(0) 
-        , queue_window_update(queue_window_update) { }
+        , queue_window_update(std::move(queue_window_update)) { }
 
 kuic::bytes_count_t
 kuic::flowcontrol::connection_flow_controller::send_window_size() const {
