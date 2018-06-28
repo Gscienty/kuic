@@ -21,7 +21,7 @@ namespace kuic {
             blocked_frame() { }
 
             kuic::bytes_count_t &get_offset();
-        }
+        };
     }
 }
 
