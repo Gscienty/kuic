@@ -26,8 +26,8 @@ void kuic::window_update_queue::add_connection() {
 void kuic::window_update_queue::queue_all() {
     std::lock_guard<std::mutex> lock(this->mutex);
     if (this->queued_conn) {
-        kuic::frame::max_stream_data_frame frame;
-        frame.get_byte_offset() = this->conn_flow_controller.get_window_update();
+        std::shared_ptr<kuic::frame::max_stream_data_frame> frame(new kuic::frame::max_stream_data_frame());
+        frame->get_byte_offset() = this->conn_flow_controller.get_window_update();
         this->callback(frame);
         this->queued_conn = false;
     }
@@ -50,9 +50,9 @@ void kuic::window_update_queue::queue_all() {
             continue;
         }
         
-        kuic::frame::max_stream_data_frame frame;
-        frame.get_stream_id() = *id_itr;
-        frame.get_byte_offset() = offset;
+        std::shared_ptr<kuic::frame::max_stream_data_frame> frame(new kuic::frame::max_stream_data_frame());
+        frame->get_stream_id() = *id_itr;
+        frame->get_byte_offset() = offset;
 
         this->callback(frame);
 
