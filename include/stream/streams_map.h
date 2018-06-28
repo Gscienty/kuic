@@ -6,6 +6,7 @@
 #include "stream/out_unicast_stream.h"
 #include "stream/receive_stream.h"
 #include "stream/send_stream.h"
+#include "stream/stream_getter.h"
 #include "flowcontrol/stream_flow_controller.h"
 #include "handshake/transport_parameters.h"
 #include "type.h"
@@ -13,7 +14,8 @@
 
 namespace kuic {
     namespace stream {
-        class streams_map {
+        class streams_map
+            : stream_getter {
         private:
             bool is_client;
             std::function<kuic::flowcontrol::stream_flow_controller *(kuic::stream_id_t)> new_flow_controller;
@@ -34,9 +36,9 @@ namespace kuic {
             std::shared_ptr<receive_stream> accept_unicast_stream(); 
             std::shared_ptr<send_stream> open_unicast_stream();
             bool delete_stream(kuic::stream_id_t stream_id);
-            std::shared_ptr<receive_stream> get_or_open_receive_stream(const kuic::stream_id_t stream_id);
-            std::shared_ptr<send_stream> get_or_open_send_stream(const kuic::stream_id_t stream_id);
-            bool handle_max_stream_id_frame(kuic::frame::max_stream_id_frame &frame);
+            virtual std::shared_ptr<receive_stream> get_or_open_receive_stream(const kuic::stream_id_t stream_id) override;
+            virtual std::shared_ptr<send_stream> get_or_open_send_stream(const kuic::stream_id_t stream_id) override;
+            bool handle_max_stream_id_frame(std::shared_ptr<kuic::frame::max_stream_id_frame> &frame);
             void update_limit(kuic::handshake::transport_parameters &parameters);
             void close_with_error(kuic::error_t error);
         };

@@ -41,7 +41,7 @@ namespace kuic {
             bool close();
             void set_deadline(kuic::special_clock clock);
             void close_for_shutdown(kuic::error_t error);
-            bool handle_rst_stream_frame(kuic::frame::rst_stream_frame &frame);
+            bool handle_rst_stream_frame(std::shared_ptr<kuic::frame::rst_stream_frame> &frame);
             bool handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame);
             void cancel_read(kuic::application_error_code_t error);
             std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes);
@@ -50,12 +50,20 @@ namespace kuic {
         };
 
         class crypto_stream 
-            : public stream {
+            : protected stream {
         public:
             crypto_stream(kuic::stream::stream_sender &sender, std::shared_ptr<kuic::flowcontrol::stream_flow_controller> flow_controller)
                 : stream(0, sender, flow_controller) { }
 
             void set_read_offset(kuic::bytes_count_t offset);
+            kuic::stream_id_t get_stream_id() const {
+                return this->stream::get_stream_id();
+            }
+            virtual bool handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame) = 0;
+            virtual std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool> pop_stream_frame(kuic::bytes_count_t max_bytes) = 0;
+            virtual bool close_for_shutdown() = 0;
+            virtual kuic::bytes_count_t get_window_update() = 0;
+            virtual void handle_max_stream_data_frame(std::shared_ptr<kuic::frame::max_stream_data_frame> &frame);
         };
     }
 }

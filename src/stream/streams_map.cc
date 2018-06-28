@@ -99,10 +99,10 @@ kuic::stream::streams_map::get_or_open_send_stream(const kuic::stream_id_t strea
     return std::shared_ptr<kuic::stream::send_stream>();
 }
 
-bool kuic::stream::streams_map::handle_max_stream_id_frame(kuic::frame::max_stream_id_frame &frame) {
-    switch (this->get_stream_type(frame.get_stream_id())) {
+bool kuic::stream::streams_map::handle_max_stream_id_frame(std::shared_ptr<kuic::frame::max_stream_id_frame> &frame) {
+    switch (this->get_stream_type(frame->get_stream_id())) {
     case kuic::stream_type_out_unicast:
-        this->out_uni.set_max_stream(frame.get_stream_id());
+        this->out_uni.set_max_stream(frame->get_stream_id());
         return true;
     }
     return false;

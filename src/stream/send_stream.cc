@@ -194,10 +194,10 @@ kuic::bytes_count_t &kuic::stream::send_stream::get_write_offset() {
     return this->write_offset;
 }
 
-void kuic::stream::send_stream::handle_stop_sending_frame(kuic::frame::stop_sending_frame &frame) {
+void kuic::stream::send_stream::handle_stop_sending_frame(std::shared_ptr<kuic::frame::stop_sending_frame> &frame) {
     std::lock_guard<std::mutex> lock(this->mutex);
 
-    this->cancel_write(frame.get_application_error());
+    this->cancel_write(frame->get_application_error());
 }
 
 void kuic::stream::send_stream::signal_write() {

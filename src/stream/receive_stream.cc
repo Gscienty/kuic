@@ -156,18 +156,18 @@ bool kuic::stream::receive_stream::handle_stream_frame(std::shared_ptr<kuic::fra
     return true;
 }
 
-bool kuic::stream::receive_stream::handle_rst_stream_frame(kuic::frame::rst_stream_frame &frame) {
+bool kuic::stream::receive_stream::handle_rst_stream_frame(std::shared_ptr<kuic::frame::rst_stream_frame> &frame) {
     std::lock_guard<std::mutex> lock(this->mutex);
 
     if (this->_close_for_shutdown) {
         return true;
     }
 
-    if (this->flow_controller->update_highest_received(frame.get_offset(), true) != kuic::no_error) {
+    if (this->flow_controller->update_highest_received(frame->get_offset(), true) != kuic::no_error) {
         return false;
     }
 
-    if (frame.get_error_code() == 0) {
+    if (frame->get_error_code() == 0) {
         return true;
     }
 

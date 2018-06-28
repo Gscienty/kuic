@@ -30,14 +30,14 @@ bool kuic::stream::stream_framer::get_has_crypto_stream_data() {
     return result;
 }
 
-kuic::frame::stream_frame &
+std::shared_ptr<kuic::frame::stream_frame>
 kuic::stream::stream_framer::pop_crypto_stream_frame(kuic::bytes_count_t max_len) {
     std::lock_guard<std::mutex> lock(this->mutex);
     std::pair<std::shared_ptr<kuic::frame::stream_frame>, bool> result =
         this->_crypto_stream.pop_stream_frame(max_len);
     this->has_crypto_stream_data = result.second;
 
-    return *result.first;
+    return result.first;
 }
 
 std::list<std::shared_ptr<kuic::frame::stream_frame>>
@@ -56,13 +56,13 @@ kuic::stream::stream_framer::pop_stream_frames(kuic::bytes_count_t max_total_len
         kuic::stream_id_t id = this->stream_queue.front();
         this->stream_queue.pop_front();
 
-        const kuic::stream::send_stream *send_stream = this->_stream_getter.get_or_open_send_stream(id);
+        std::shared_ptr<kuic::stream::send_stream> send_stream = this->_stream_getter.get_or_open_send_stream(id);
         if (send_stream == nullptr) {
             this->active_streams.erase(this->active_streams.find(id));
             continue;
         }
 
-        auto poped_stream_frame = const_cast<kuic::stream::send_stream *>(send_stream)
+        auto poped_stream_frame = const_cast<kuic::stream::send_stream *>(send_stream.get())
             ->pop_stream_frame(max_total_len - current_length);
         if (poped_stream_frame.second) {
             this->stream_queue.push_back(id);

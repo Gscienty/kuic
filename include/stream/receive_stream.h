@@ -49,7 +49,7 @@ namespace kuic {
             void cancel_read(kuic::application_error_code_t error);
             void signal_read();
             bool handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame);
-            bool handle_rst_stream_frame(kuic::frame::rst_stream_frame &frame);
+            bool handle_rst_stream_frame(std::shared_ptr<kuic::frame::rst_stream_frame> &frame);
             void close_remote(kuic::bytes_count_t offset);
             void set_read_deadline(kuic::special_clock clock);
             void close_for_shutdown(kuic::error_t error);

@@ -47,7 +47,7 @@ void kuic::stream::stream::close_for_shutdown(kuic::error_t error) {
     this->receive_stream.close_for_shutdown(error);
 }
 
-bool kuic::stream::stream::handle_rst_stream_frame(kuic::frame::rst_stream_frame &frame) {
+bool kuic::stream::stream::handle_rst_stream_frame(std::shared_ptr<kuic::frame::rst_stream_frame> &frame) {
     if (this->receive_stream.handle_rst_stream_frame(frame) == false) {
         return false;
     }
