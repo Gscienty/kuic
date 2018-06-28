@@ -17,12 +17,12 @@ namespace kuic {
 
     class unpacked_aead {
     public:
-        std::basic_string<kuic::byte_t> open_handshake(
+        virtual std::basic_string<kuic::byte_t> open_handshake(
                 std::basic_string<kuic::byte_t> &secret,
                 kuic::packet_number_t &packet_number,
                 std::basic_string<kuic::byte_t> &a_data) = 0; 
 
-        std::basic_string<kuic::byte_t> open(
+        virtual std::basic_string<kuic::byte_t> open(
                 std::basic_string<kuic::byte_t> &secret,
                 kuic::packet_number_t &packet_number,
                 std::basic_string<kuic::byte_t> &a_data) = 0;
