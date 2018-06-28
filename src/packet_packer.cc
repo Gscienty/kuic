@@ -396,7 +396,7 @@ void kuic::packet_packer::set_max_packet_size(kuic::bytes_count_t size) {
 
 void kuic::packet_packer::queue_control_frame(std::shared_ptr<kuic::frame::frame> frame) {
     if (frame->type() == kuic::frame_type_ack) {
-        this->ack_frame = frame;
+        this->ack_frame = std::make_shared<kuic::frame::ack_frame>(*reinterpret_cast<kuic::frame::ack_frame *>(frame.get()));
     }
     else {
         std::lock_guard<std::mutex> lock(this->control_frame_mutex);
