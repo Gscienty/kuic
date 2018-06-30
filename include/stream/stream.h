@@ -32,7 +32,7 @@ namespace kuic {
             
             kuic::bytes_count_t &get_write_offset();
             kuic::bytes_count_t write(const std::string &data);
-            kuic::bytes_count_t read(kuic::byte_t *buffer, const kuic::bytes_count_t size);
+            std::basic_string<kuic::byte_t> read(const kuic::bytes_count_t size);
 
 
             void check_if_completed();

@@ -72,8 +72,8 @@ kuic::bytes_count_t kuic::stream::stream::write(const std::string &data) {
     return this->send_stream.write(data);
 }
 
-kuic::bytes_count_t kuic::stream::stream::read(kuic::byte_t *p, const kuic::bytes_count_t size) {
-    return this->receive_stream.read(p, size);
+std::basic_string<kuic::byte_t> kuic::stream::stream::read(const kuic::bytes_count_t size) {
+    return this->receive_stream.read(size);
 }
 
 bool kuic::stream::stream::handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame) {
