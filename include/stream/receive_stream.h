@@ -45,7 +45,7 @@ namespace kuic {
             kuic::bytes_count_t &get_read_offset();
 
             kuic::stream_id_t get_stream_id();
-            kuic::bytes_count_t read(kuic::byte_t *buffer, const kuic::bytes_count_t size);
+            std::basic_string<kuic::byte_t> read(const kuic::bytes_count_t size);
             void cancel_read(kuic::application_error_code_t error);
             void signal_read();
             bool handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame);

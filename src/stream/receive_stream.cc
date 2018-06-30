@@ -27,7 +27,7 @@ kuic::stream::receive_stream::get_stream_id() {
     return this->stream_id;
 }
 
-kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, const kuic::bytes_count_t size) {
+std::basic_string<kuic::byte_t> kuic::stream::receive_stream::read(const kuic::bytes_count_t size) {
     std::unique_lock<std::mutex> lock(this->mutex);
 
     if (this->fin_read) {
@@ -44,26 +44,26 @@ kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, con
     }
 
     kuic::bytes_count_t bytes_read = 0;
+    std::basic_string<kuic::byte_t> result;
     while (bytes_read < size) {
         std::shared_ptr<kuic::frame::stream_frame> frame = this->frame_queue.head();
         if (bool(frame) == false && bytes_read > 0) {
-            return bytes_read;
+            return result;
         }
-
         while (true) {
             if (this->_close_for_shutdown) {
-                return bytes_read;
+                return result;
             }
             if (this->canceled_read) {
-                return bytes_read;
+                return result;
             }
             if (this->reset_remotely) {
-                return bytes_read;
+                return result;
             }
 
             kuic::special_clock deadline = this->read_deadline;
             if (deadline.is_zero() == false && kuic::current_clock() >= deadline) {
-                return bytes_read;
+                return result;
             }
 
             if (bool(frame) == true) {
@@ -85,24 +85,26 @@ kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, con
         }
 
         if (bytes_read > size) {
-            return bytes_read;
+            return result;
         }
 
         if (this->read_position_in_frame > int(frame->get_data().size())) {
-            return bytes_read;
+            return result;
         }
 
         lock.unlock();
-        
-        std::copy(frame->get_data().begin() + this->read_position_in_frame, frame->get_data().end(), buffer + bytes_read);
 
         kuic::bytes_count_t middle_value = std::min(size - bytes_read, frame->get_data().size() - this->read_position_in_frame);
+        result.append(
+                frame->get_data().begin() + this->read_position_in_frame,
+                frame->get_data().begin() + this->read_position_in_frame + middle_value);
+
         this->read_position_in_frame += middle_value;
         bytes_read += middle_value;
         this->read_offset += middle_value;
 
-        lock.lock();
-        
+        lock.lock(); 
+
         if (this->reset_remotely == false) {
             this->flow_controller->add_bytes_read(middle_value);
         }
@@ -114,12 +116,12 @@ kuic::bytes_count_t kuic::stream::receive_stream::read(kuic::byte_t *buffer, con
             this->fin_read = frame->get_fin_bit();
             if (frame->get_fin_bit()) {
                 this->sender.on_stream_completed(this->stream_id);
-                return bytes_read;
+                return result;
             }
         }
     }
 
-    return bytes_read;
+    return result;
 }
 
 void kuic::stream::receive_stream::cancel_read(kuic::application_error_code_t error) {
@@ -142,12 +144,13 @@ void kuic::stream::receive_stream::cancel_read(kuic::application_error_code_t er
 
 bool kuic::stream::receive_stream::handle_stream_frame(std::shared_ptr<kuic::frame::stream_frame> &frame) {
     kuic::bytes_count_t max_offset = frame->get_offset() + frame->get_data().size();
-    if (this->flow_controller->update_highest_received(max_offset, frame->get_fin_bit()) != kuic::no_error) {
+    kuic::error_t err = this->flow_controller->update_highest_received(max_offset, frame->get_fin_bit());
+    if (err != kuic::no_error) {
         return false;
     }
 
     {
-        std::lock_guard<std::mutex> lock(this->mutex);
+        std::unique_lock<std::mutex> lock(this->mutex);
         if (this->frame_queue.push(frame) == false) {
             return false;
         }
