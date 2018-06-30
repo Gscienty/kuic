@@ -18,6 +18,7 @@ kuic::flowcontrol::stream_flow_controller::stream_flow_controller(
         , stream_id(stream_id)
         , conn_ctrl(conn_ctrl)
         , contributes_to_connection(contributes_to_connection)
+        , received_final_offset(false)
         , inner_queue_window_update(std::move(queue_window_update))
         , queue_window_update([this] () -> void {
                     this->inner_queue_window_update(this->stream_id);
