@@ -41,6 +41,7 @@ namespace kuic {
     const int receive_connection_flow_control_window = (1 << 10) * 48;
     const int receive_stream_flow_control_window = (1 << 10) * 32;
     const kuic::kuic_time_t public_reset_timeout = 500 * kuic::clock_millisecond;
+    const int max_session_unprocessed_packets = default_max_congestion_window_packets;
     
     const kbr_name_type_t kbr_name_default_type = 0x00000000;
     const kbr_protocol_version_t kbr_current_protocol_version = 0x00000001;
