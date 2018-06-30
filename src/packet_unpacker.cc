@@ -20,6 +20,9 @@ kuic::packet_unpacker::unpack(
         is_handshake = false;
     }
 
+    std::unique_ptr<kuic::unpacked_packet> unpacked_packet(new kuic::unpacked_packet());
+    unpacked_packet->get_frames() = this->parse_frames(decrypted);
+    return unpacked_packet;
 }
 
 std::vector<std::shared_ptr<kuic::frame::frame>>

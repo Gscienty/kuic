@@ -44,7 +44,7 @@ bool kuic::stream::stream_frame_sorter::push(std::shared_ptr<kuic::frame::stream
     }
 
     if (gap_itr == this->gaps.end()) {
-        return false;
+        return true;
     }
 
     if (start < gap_itr->first) {
@@ -62,7 +62,7 @@ bool kuic::stream::stream_frame_sorter::push(std::shared_ptr<kuic::frame::stream
         next_end_gap_itr++;
 
         if (next_end_gap_itr == this->gaps.end()) {
-            return false;
+            return true;
         }
 
         if (end_gap_itr != gap_itr) {
@@ -97,8 +97,9 @@ bool kuic::stream::stream_frame_sorter::push(std::shared_ptr<kuic::frame::stream
     }
     else {
         if (gap_itr == end_gap_itr) {
-            this->gaps.insert(gap_itr, std::pair<kuic::bytes_count_t, kuic::bytes_count_t>(end, gap_itr->second));
-            gap_itr->second = start;
+            kuic::bytes_count_t tmp_end = gap_itr->second;
+            gap_itr->second = start; 
+            this->gaps.insert(++gap_itr, std::pair<kuic::bytes_count_t, kuic::bytes_count_t>(end, tmp_end));
         }
         else {
             gap_itr->second = start;
@@ -113,6 +114,7 @@ bool kuic::stream::stream_frame_sorter::push(std::shared_ptr<kuic::frame::stream
     this->queued_frames.insert(
             std::pair<kuic::bytes_count_t, std::shared_ptr<kuic::frame::stream_frame>>(
                 frame->get_offset(), frame));
+
     return true;
 }
 
