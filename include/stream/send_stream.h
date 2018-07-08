@@ -49,7 +49,7 @@ namespace kuic {
             void signal_write();
             bool close();
             bool cancel_write(kuic::application_error_code_t error);
-            void handle_max_stream_data_frame(kuic::frame::max_stream_data_frame &frame);
+            void handle_max_stream_data_frame(std::shared_ptr<kuic::frame::max_stream_data_frame> &frame);
             void set_write_deadline(kuic::special_clock clock);
             void close_for_shutdown(kuic::error_t error);
             void handle_stop_sending_frame(std::shared_ptr<kuic::frame::stop_sending_frame> &frame);

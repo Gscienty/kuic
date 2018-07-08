@@ -159,8 +159,8 @@ bool kuic::stream::send_stream::cancel_write(kuic::application_error_code_t erro
     return true;
 }
 
-void kuic::stream::send_stream::handle_max_stream_data_frame(kuic::frame::max_stream_data_frame &frame) {
-    this->flow_controller->update_send_window(frame.get_byte_offset());
+void kuic::stream::send_stream::handle_max_stream_data_frame(std::shared_ptr<kuic::frame::max_stream_data_frame> &frame) {
+    this->flow_controller->update_send_window(frame->get_byte_offset());
 
     std::lock_guard<std::mutex> lock(this->mutex);
     if (this->data_for_waiting.empty() == false) {
