@@ -16,9 +16,11 @@ namespace kuic {
         std::queue<int> notify_queue;
     public:
         events_list();
-        bool push(int event_id, std::function<void ()> &events_func);
+        bool push(int event_id, std::function<void ()> &&events_func);
         void notify(int event_id);
         void wait(bool blocked = true);
+        void clear();
+        void clear_event();
     };
 }
 
