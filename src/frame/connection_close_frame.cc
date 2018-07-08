@@ -35,3 +35,11 @@ kuic::frame_type_t
 kuic::frame::connection_close_frame::type() const {
     return kuic::frame_type_connection_close;
 }
+
+kuic::application_error_code_t &kuic::frame::connection_close_frame::get_error_code() {
+    return this->error_code;
+}
+
+std::string &kuic::frame::connection_close_frame::get_reason_phrase() {
+    return this->reason_phrase;
+}
